@@ -51,7 +51,7 @@
       transition: background-color .25s ease, color .25s ease;
     }
 
-    /* Fondo por defecto con gradientes sutiles */
+    /* Fondo por defecto */
     body::before {
       content: "";
       position: fixed;
@@ -91,7 +91,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(20, 20, 30, 0.75);
+      background: rgba(20, 20, 30, 0.78);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       padding: 10px 18px;
@@ -154,10 +154,10 @@
       letter-spacing: 0.5px;
     }
     .role-editor { background: #2e7d32; color: #fff; box-shadow: 0 0 8px #2e7d32; }
-    .role-reader { background: #78909c; color: #fff; }
+    .role-reader { background: #1976d2; color: #fff; box-shadow: 0 0 8px #1976d2; }
 
-    .btn-sesion-cambiar {
-      padding: 5px 12px;
+    .btn-nav-action {
+      padding: 6px 12px;
       border-radius: 6px;
       border: 1px solid var(--accent);
       background: rgba(30,30,45,0.85);
@@ -167,9 +167,18 @@
       font-weight: bold;
       transition: background .2s ease;
     }
-    .btn-sesion-cambiar:hover {
+    .btn-nav-action:hover {
       background: var(--accent);
       color: var(--accent-oncolor);
+    }
+
+    .btn-nav-logout {
+      border-color: #d32f2f;
+      background: rgba(211, 47, 47, 0.25);
+    }
+    .btn-nav-logout:hover {
+      background: #d32f2f;
+      color: #fff;
     }
 
     .db-status-badge {
@@ -192,7 +201,7 @@
     .db-dot.offline { background: #ff9800; box-shadow: 0 0 6px #ff9800; }
 
     /* ========================================= */
-    /* CONTENEDOR VISTA GENERADOR               */
+    /* VISTAS SPA                               */
     /* ========================================= */
     #vistaGenerador {
       display: block;
@@ -217,7 +226,6 @@
       align-items: flex-start;
     }
 
-    /* Paneles flotantes sin marco grueso */
     .container {
       background: transparent !important;
       border: none !important;
@@ -299,6 +307,7 @@
     }
 
     .campo-wrapper input[type="text"],
+    .campo-wrapper input[type="password"],
     .campo-wrapper input[type="date"] {
       margin: 0;
     }
@@ -321,7 +330,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     }
 
-    select, textarea, input[type="text"], input[type="date"] {
+    select, textarea, input[type="text"], input[type="password"], input[type="date"] {
       display: block;
       width: 100%;
       margin: 8px 0;
@@ -343,7 +352,7 @@
       color: #ffffff;
     }
 
-    select:focus, textarea:focus, input[type="text"]:focus, input[type="date"]:focus {
+    select:focus, textarea:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus {
       outline: none;
       border-color: #ffffff;
       box-shadow: 0 0 12px var(--accent);
@@ -377,7 +386,7 @@
 
     .btn-subir-hoja {
       background-color: #2e7d32 !important;
-      display: none; /* Controlado dinámicamente según la plantilla */
+      display: none;
     }
 
     .box-titulo {
@@ -532,7 +541,7 @@
     }
 
     .sheet-header-bar {
-      background: #4a148c; /* Morado Google Sheets */
+      background: #4a148c;
       padding: 12px 18px;
       display: flex;
       justify-content: space-between;
@@ -556,7 +565,7 @@
     }
 
     .sheet-table th {
-      background: #38106a; /* Encabezado de columnas estilo imagen */
+      background: #38106a;
       color: #ffffff;
       padding: 10px 12px;
       border: 1px solid rgba(255,255,255,0.15);
@@ -579,7 +588,6 @@
       background: rgba(255, 255, 255, 0.08);
     }
 
-    /* Selectores tipo Píldora / Dropdown Google Sheets */
     .sheet-select {
       border-radius: 18px;
       padding: 5px 12px;
@@ -597,18 +605,13 @@
       cursor: not-allowed;
     }
 
-    /* ========================================= */
-    /* PÍLDORAS PARA AGENTE DE SOPORTE           */
-    /* ========================================= */
+    /* Píldoras de colores */
     .pill-soporte-empty { background: rgba(255,255,255,0.12) !important; color: #ffffff !important; border: 1px dashed #888 !important; }
-    .pill-soporte-antuan { background: #e91e63 !important; color: #ffffff !important; font-weight: bold; } /* Rosa Fuerte */
-    .pill-soporte-fabricio { background: #9ccc65 !important; color: #1a3300 !important; font-weight: bold; } /* Verde Lima */
-    .pill-soporte-adriel { background: #1e88e5 !important; color: #ffffff !important; font-weight: bold; } /* Azul */
-    .pill-soporte-enoc { background: #fbc02d !important; color: #202124 !important; font-weight: bold; } /* Amarillo Oro */
+    .pill-soporte-antuan { background: #e91e63 !important; color: #ffffff !important; font-weight: bold; }
+    .pill-soporte-fabricio { background: #9ccc65 !important; color: #1a3300 !important; font-weight: bold; }
+    .pill-soporte-adriel { background: #1e88e5 !important; color: #ffffff !important; font-weight: bold; }
+    .pill-soporte-enoc { background: #fbc02d !important; color: #202124 !important; font-weight: bold; }
 
-    /* ========================================= */
-    /* PÍLDORAS PARA CATEGORÍA (COLUMNA 7)       */
-    /* ========================================= */
     .pill-cat-empty { background: rgba(255,255,255,0.12) !important; color: #ffffff !important; border: 1px dashed #888 !important; }
     .pill-cat-noprocede { background: #990000 !important; color: #ffffff !important; }
     .pill-cat-repetida { background: #81c784 !important; color: #0d4214 !important; }
@@ -621,9 +624,6 @@
     .pill-cat-masiva3 { background: #0055ff !important; color: #ffffff !important; }
     .pill-cat-masiva4 { background: #ff0066 !important; color: #ffffff !important; }
 
-    /* ========================================= */
-    /* PÍLDORAS PARA MOTIVO (COLUMNA 8)          */
-    /* ========================================= */
     .pill-mot-empty { background: rgba(255,255,255,0.12) !important; color: #ffffff !important; border: 1px dashed #888 !important; }
     .pill-mot-wf-facturas { background: #b7e1cd !important; color: #0d652d !important; }
     .pill-mot-facturas-supera-63000 { background: #f9cb9c !important; color: #6e3a07 !important; }
@@ -762,12 +762,12 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.68);
-      backdrop-filter: blur(5px);
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
       display: none;
       justify-content: center;
       align-items: center;
-      z-index: 9999;
+      z-index: 99999;
     }
     .modal-content {
       background: rgba(22, 22, 34, 0.96);
@@ -780,11 +780,49 @@
       border: 1.5px solid var(--accent);
       box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
+
+    /* Modal de Login Especial */
+    .login-box {
+      max-width: 420px;
+      text-align: center;
+    }
+    .login-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      margin-bottom: 18px;
+    }
+    .login-tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      color: #aaa;
+      font-weight: bold;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .login-tab-btn.active {
+      color: #fff;
+      border-bottom-color: var(--accent);
+    }
+    .password-wrapper {
+      position: relative;
+    }
+    .password-toggle-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      user-select: none;
+      font-size: 1.1rem;
+      color: #bbb;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Notificaciones Flotantes Persistentes (Abajo a la derecha) -->
+  <!-- Notificaciones Flotantes Persistentes -->
   <div id="toastContainer"></div>
 
   <!-- Selector de tema y fondo flotante -->
@@ -801,7 +839,6 @@
         <input type="text" id="colorHex" value="#0078D7" maxlength="7" oninput="setAccentColorFromHex(this.value)" placeholder="#0078D7" style="margin:0; padding:6px 8px; font-size:0.85rem;">
       </div>
 
-      <!-- Control de Transparencia de los Campos y Calculadora -->
       <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🪟 Transparencia campos</h4>
       <div>
         <label style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
@@ -819,7 +856,6 @@
         >
       </div>
 
-      <!-- Control de Fondo Personalizado con Imagen y Oscuridad -->
       <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🖼️ Fondo personalizado</h4>
       <input type="file" id="bgImageInput" accept="image/*" style="display:none;" onchange="manejarSubidaFondo(event)">
       
@@ -848,7 +884,6 @@
   <!-- BARRA SUPERIOR CON BOTONES DE NAVEGACIÓN  -->
   <!-- ========================================= -->
   <div class="top-navbar">
-    <!-- Selector de Vistas / Pestañas SPA -->
     <div class="nav-tabs">
       <button id="tabBtnGenerador" class="nav-tab-btn active" onclick="cambiarVista('generador')">
         <span>📄</span> Generador de Plantillas
@@ -858,15 +893,16 @@
       </button>
     </div>
 
-    <!-- Información de Sesión y Base de Datos -->
     <div class="user-session-info">
       <div id="dbStatusBadge" class="db-status-badge" title="Estado de conexión Supabase">
         <span class="db-dot" id="dbDot"></span>
         <span id="dbStatusText">Supabase Online</span>
       </div>
-      <span>👤 Sesión: <strong id="lblUsuarioActual">Cargando...</strong></span>
+      <span>👤 <strong id="lblUsuarioNombre">Usuario</strong> (<span id="lblUsuarioUser" style="color:#aaa;">-</span>)</span>
       <span id="lblRolActual" class="role-badge role-reader">Lector</span>
-      <button class="btn-sesion-cambiar" onclick="abrirModalSesion()">Cambiar Usuario</button>
+      <button id="btnAdminUsuarios" class="btn-nav-action" onclick="abrirModalAdminUsuarios()" style="display:none; background: rgba(156, 39, 176, 0.4); border-color: #ba68c8;">👥 Gestionar Usuarios</button>
+      <button class="btn-nav-action" onclick="abrirModalConfigSupabase()" style="background: rgba(103, 58, 183, 0.4); border-color: #ab47bc;">⚙️ Supabase</button>
+      <button class="btn-nav-action btn-nav-logout" onclick="cerrarSesionUsuario()">🚪 Salir</button>
     </div>
   </div>
 
@@ -977,7 +1013,7 @@
               <span id="saldosLSError" class="error-msg">*Información Obligatoria*</span>
             </div>
 
-            <!-- Casilla Reversión exclusiva para Limpieza de Saldos -->
+            <!-- Casilla Reversión -->
             <div style="margin-top: 10px; background: rgba(0,0,0,0.4); padding: 9px 12px; border-radius: 8px; border-left: 3px solid #ff9800;">
               <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                 <input type="checkbox" id="chkReversionLS" style="width: auto; margin: 0;"> 
@@ -1049,7 +1085,6 @@
 
         <button class="btn-action" onclick="if (generarPlantilla()) { copiarTexto(); }">🧾 Generar Plantilla / 📋 Copiar texto</button>
 
-        <!-- BOTÓN CONDICIONAL: Solo aparece cuando la plantilla es LIMPIEZA DE SALDOS -->
         <button id="btnSubirLimpiezaLS" class="btn-action btn-subir-hoja" onclick="subirLimpiezaDesdePlantilla()">📤 Subir a Hoja de Limpiezas</button>
 
         <label for="resultado">Texto Generado:</label>
@@ -1126,15 +1161,132 @@
     </div>
   </div>
 
-  <!-- Modal Cambiar Usuario -->
-  <div id="modalSesion" class="modal-overlay">
+  <!-- ======================================================= -->
+  <!-- ======================================================= -->
+  <!-- MODAL DE INICIO DE SESIÓN / REGISTRO (AUTH GATE)        -->
+  <!-- ======================================================= -->
+  <div id="modalLogin" class="modal-overlay" style="display: flex; position: fixed; inset: 0; background: rgba(10, 10, 18, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 999999; justify-content: center; align-items: center;">
+    <div class="modal-content login-box" style="box-shadow: 0 0 35px rgba(0, 120, 215, 0.35); border: 2px solid var(--accent); max-width: 440px; width: 92%;">
+      <div style="font-size: 2.4rem; margin-bottom: 6px;">🔐</div>
+      <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Sistema de Control BURO</h2>
+      <p style="font-size: 0.85rem; color: #bbb; margin-bottom: 16px;">Ingresa tus credenciales para acceder al generador y a la hoja de control.</p>
+
+      <div class="login-tabs">
+        <button id="tabLoginIngreso" class="login-tab-btn active" onclick="cambiarTabLogin('ingreso')">Iniciar Sesión</button>
+        <button id="tabLoginRegistro" class="login-tab-btn" onclick="cambiarTabLogin('registro')">Registrarse</button>
+      </div>
+
+      <!-- MENSAJE DE ERROR / ESTADO INLINE -->
+      <div id="loginFeedback" style="display: none; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.84rem; font-weight: bold; text-align: left;"></div>
+
+      <!-- FORMULARIO DE INGRESO -->
+      <div id="formIngreso">
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Usuario:</label>
+          <input type="text" id="txtLoginUser" placeholder="ej: sharon.barquero" autocomplete="username" onkeydown="if(event.key==='Enter') document.getElementById('txtLoginPass').focus();">
+        </div>
+
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Contraseña:</label>
+          <div class="password-wrapper">
+            <input type="password" id="txtLoginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') ejecutarLogin();">
+            <span class="password-toggle-icon" onclick="togglePasswordVisibilidad('txtLoginPass', this)">👁️</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font-size: 0.82rem;">
+          <label style="margin:0; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <input type="checkbox" id="chkRecordarSesion" checked style="width:auto; margin:0;"> Recordar mi sesión
+          </label>
+        </div>
+
+        <button class="btn-action" style="margin-top: 10px; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarLogin()">🚀 Entrar al Sistema</button>
+
+        <div style="margin-top: 14px; font-size: 0.76rem; color: #aaa; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; text-align: left; line-height: 1.4;">
+          💡 <strong>Contraseña de agentes:</strong> Tu apellido + <code>123</code> (ej: <code>badilla123</code>, <code>barquero123</code>, <code>zuñiga123</code>).<br>
+          🔑 <strong>Editores / Soporte:</strong> <code>mora123</code>, <code>antuan123</code>, <code>adriel123</code>, <code>fabricio123</code>, <code>enoc123</code>, <code>admin123</code>.
+        </div>
+      </div>
+
+      <!-- FORMULARIO DE REGISTRO -->
+      <div id="formRegistro" style="display: none;">
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Nombre Completo:</label>
+          <input type="text" id="txtRegNombre" placeholder="ej: Sharon Barquero">
+        </div>
+
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Usuario (sin espacios):</label>
+          <input type="text" id="txtRegUser" placeholder="ej: sharon.barquero" oninput="this.value = this.value.toLowerCase().replace(/\s+/g, '');">
+        </div>
+
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Contraseña:</label>
+          <div class="password-wrapper">
+            <input type="password" id="txtRegPass" placeholder="Crea una contraseña segura">
+            <span class="password-toggle-icon" onclick="togglePasswordVisibilidad('txtRegPass', this)">👁️</span>
+          </div>
+        </div>
+
+        <button class="btn-action" style="margin-top: 14px; background: #2e7d32; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarRegistro()">✨ Crear Cuenta</button>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- MODAL: GESTIÓN DE USUARIOS Y PERMISOS (SOLO EDITORES)   -->
+  <!-- ======================================================= -->
+  <div id="modalAdminUsuarios" class="modal-overlay">
+    <div class="modal-content" style="max-width: 580px;">
+      <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <span>👥 Gestión de Usuarios y Permisos</span>
+      </h3>
+      <p style="font-size: 0.82rem; color: #bbb;">Administra los usuarios autorizados, cambia sus contraseñas o asígnales el rol de Editor o Solicitante.</p>
+
+      <div style="background: rgba(0,0,0,0.35); padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.1);">
+        <h4 style="margin: 0 0 8px 0; font-size: 0.85rem; color: var(--accent);">➕ Registrar / Modificar Usuario</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <input type="text" id="txtAdminNuevoUser" placeholder="Usuario (ej: adriel)" style="margin:0; font-size:0.85rem;">
+          <input type="text" id="txtAdminNuevoNombre" placeholder="Nombre completo" style="margin:0; font-size:0.85rem;">
+          <input type="text" id="txtAdminNuevoPass" placeholder="Nueva Contraseña" style="margin:0; font-size:0.85rem;">
+          <select id="selAdminNuevoRol" style="margin:0; font-size:0.85rem;">
+            <option value="editor">Editor (Puede modificar hoja)</option>
+            <option value="solicitante" selected>Solicitante (Solo lect/subida)</option>
+          </select>
+        </div>
+        <button class="btn-action" style="margin-top: 8px; padding: 8px;" onclick="guardarUsuarioDesdeAdmin()">Guardar Usuario</button>
+      </div>
+
+      <div style="max-height: 220px; overflow-y: auto; border: 1px solid #444; border-radius: 6px; padding: 6px; background: rgba(0,0,0,0.3);" id="listaUsuariosAdminUI">
+        <!-- Lista de usuarios renderizada dinámicamente -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+        <button onclick="cerrarModalAdminUsuarios()" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Configuración Supabase -->
+  <div id="modalConfigSupabase" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin-top: 0;">👤 Iniciar Sesión de Usuario</h3>
-      <p style="font-size: 0.88rem; color: #bbb;">Ingresa tu nombre o usuario (ej: <code>sharon.barquero</code>, <code>cristofer.mora</code>) para registrar tus solicitudes y cargar tus permisos:</p>
-      <input type="text" id="txtNombreSesion" placeholder="ej: sharon.barquero">
-      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
-        <button onclick="cerrarModalSesion()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cancelar</button>
-        <button onclick="guardarSesionUsuario()" style="padding: 8px 14px; border-radius: 6px; border: none; background: var(--accent); color: var(--accent-oncolor); cursor: pointer; font-weight: bold;">Guardar Sesión</button>
+      <h3 style="margin-top: 0;">⚙️ Configuración de Supabase</h3>
+      <p style="font-size: 0.84rem; color: #bbb;">Conecta tu base de datos de Supabase para sincronización en tiempo real y gestión segura de permisos:</p>
+      
+      <label style="font-size: 0.82rem; margin-top: 8px;">Supabase Project URL:</label>
+      <input type="text" id="txtSupabaseUrl" placeholder="https://xyzcompany.supabase.co" style="font-size: 0.85rem;">
+
+      <label style="font-size: 0.82rem; margin-top: 8px;">Supabase Anon Key:</label>
+      <input type="text" id="txtSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-size: 0.85rem;">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+        <button onclick="probarConexionSupabase()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ab47bc; background: rgba(171, 71, 188, 0.25); color: #fff; cursor: pointer; font-size: 0.82rem;">🔍 Probar Conexión</button>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="cerrarModalConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cerrar</button>
+          <button onclick="guardarConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: none; background: var(--accent); color: var(--accent-oncolor); cursor: pointer; font-weight: bold;">Guardar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1203,8 +1355,8 @@
     // ==========================================
     // CLIENTE SUPABASE & CONFIGURACIÓN
     // ==========================================
-    const DEFAULT_SUPABASE_URL = "https://upxhiylyiebljnpfgmut.supabase.co"; // 👈 Pega aquí tu Project URL
-    const DEFAULT_SUPABASE_KEY = "sb_publishable_ctDXquEkqLpXpuzOoRvtXQ_Vazap6tB"; // 👈 Pega aquí tu Anon Key
+    const DEFAULT_SUPABASE_URL = "https://upxhiylyiebljnpfgmut.supabase.co";
+    const DEFAULT_SUPABASE_KEY = "sb_publishable_ctDXquEkqLpXpuzOoRvtXQ_Vazap6tB";
 
     let supabaseClient = null;
 
@@ -1221,6 +1373,7 @@
           if (dot) dot.className = "db-dot";
           if (text) text.textContent = "Supabase Conectado";
           suscribirRealtimeSupabase();
+          cargarUsuariosDesdeSupabase();
           cargarDatosDesdeSupabase();
         } catch (e) {
           console.warn("Supabase init error:", e);
@@ -1251,7 +1404,7 @@
       localStorage.setItem("supabaseKeyBuro", key);
       cerrarModalConfigSupabase();
       inicializarSupabase();
-      notificar("success", "Configuración Guardada", "Parámetros de Supabase actualizados correctamente.");
+      notificar("success", "Configuración Guardada", "Parámetros de Supabase actualizados.");
     }
 
     async function probarConexionSupabase() {
@@ -1275,88 +1428,434 @@
     }
 
     // ==========================================
-    // SESIONES Y CONTROL DE ACCESO
+    // SISTEMA DE USUARIOS, LOGIN Y CONTRASEÑAS
     // ==========================================
-    const STORAGE_KEY_USER = "sesionUsuarioBuro";
-    const STORAGE_KEY_SHEET = "registroLimpiezasSheet_v4";
-    const STORAGE_KEY_ROLES = "rolesUsuariosCache_v2";
+    const STORAGE_KEY_AUTH = "sesionAuthBuro_v5";
+    const STORAGE_KEY_USERS = "dbUsuariosBuro_v5";
+    const STORAGE_KEY_SHEET = "registroLimpiezasSheet_v5";
 
-    let usuarioActual = localStorage.getItem(STORAGE_KEY_USER) || "";
-    let usuariosPermisosCache = JSON.parse(localStorage.getItem(STORAGE_KEY_ROLES) || '{"admin":"editor","supervisor":"editor","cristofer":"editor","cristofer.mora":"editor","antuan":"editor","adriel":"editor","fabricio":"editor","enoc":"editor"}');
-    let listaLimpiezas = JSON.parse(localStorage.getItem(STORAGE_KEY_SHEET) || '[]');
+    // Base de datos de usuarios local inicial / de respaldo (28 agentes + soporte)
+    const USUARIOS_INICIALES = [
+      // Administradores & Soporte (Editores)
+      { usuario: "admin", nombre: "Administrador", password: "admin123", rol: "editor", activo: true },
+      { usuario: "cristofer.mora", nombre: "Cristofer Mora", password: "mora123", rol: "editor", activo: true },
+      { usuario: "cristofer", nombre: "Cristofer Mora", password: "mora123", rol: "editor", activo: true },
+      { usuario: "antuan", nombre: "Antuan", password: "antuan123", rol: "editor", activo: true },
+      { usuario: "adriel", nombre: "Adriel", password: "adriel123", rol: "editor", activo: true },
+      { usuario: "fabricio", nombre: "Fabricio", password: "fabricio123", rol: "editor", activo: true },
+      { usuario: "enoc", nombre: "Enoc", password: "enoc123", rol: "editor", activo: true },
 
-    async function cargarPermisosDesdeSupabase() {
+      // Agentes Solicitantes (Contraseña: apellido + 123)
+      { usuario: "susan.badilla", nombre: "Susan Badilla", password: "badilla123", rol: "solicitante", activo: true },
+      { usuario: "kenneth.morera", nombre: "Kenneth Morera", password: "morera123", rol: "solicitante", activo: true },
+      { usuario: "sharon.barquero", nombre: "Sharon Barquero", password: "barquero123", rol: "solicitante", activo: true },
+      { usuario: "isaac.barrera", nombre: "Isaac Barrera", password: "barrera123", rol: "solicitante", activo: true },
+      { usuario: "joselyn.hidalgo", nombre: "Joselyn Hidalgo", password: "hidalgo123", rol: "solicitante", activo: true },
+      { usuario: "maria.chavarria", nombre: "Maria Chavarria", password: "chavarria123", rol: "solicitante", activo: true },
+      { usuario: "andrea.solis", nombre: "Andrea Solis", password: "solis123", rol: "solicitante", activo: true },
+      { usuario: "yesenia.benavides", nombre: "Yesenia Benavides", password: "benavides123", rol: "solicitante", activo: true },
+      { usuario: "michael.barrantes", nombre: "Michael Barrantes", password: "barrantes123", rol: "solicitante", activo: true },
+      { usuario: "farit.barrientos", nombre: "Farit Barrientos", password: "barrientos123", rol: "solicitante", activo: true },
+      { usuario: "alonso.marin", nombre: "Alonso Marin", password: "marin123", rol: "solicitante", activo: true },
+      { usuario: "fabiana.carrion", nombre: "Fabiana Carrion", password: "carrion123", rol: "solicitante", activo: true },
+      { usuario: "diana.obando", nombre: "Diana Obando", password: "obando123", rol: "solicitante", activo: true },
+      { usuario: "maria.camacho", nombre: "Maria Camacho", password: "camacho123", rol: "solicitante", activo: true },
+      { usuario: "joset.varela", nombre: "Joset Varela", password: "varela123", rol: "solicitante", activo: true },
+      { usuario: "jonathan.rodriguez", nombre: "Jonathan Rodriguez", password: "rodriguez123", rol: "solicitante", activo: true },
+      { usuario: "roberto.lopez", nombre: "Roberto Lopez", password: "lopez123", rol: "solicitante", activo: true },
+      { usuario: "laura.zuñiga", nombre: "Laura Zuñiga", password: "zuñiga123", rol: "solicitante", activo: true },
+      { usuario: "david.cordoba", nombre: "David Cordoba", password: "cordoba123", rol: "solicitante", activo: true },
+      { usuario: "yaslin.carmona", nombre: "Yaslin Carmona", password: "carmona123", rol: "solicitante", activo: true },
+      { usuario: "yulixa.ramirez", nombre: "Yulixa Ramirez", password: "ramirez123", rol: "solicitante", activo: true },
+      { usuario: "melany.iglesias", nombre: "Melany Iglesias", password: "iglesias123", rol: "solicitante", activo: true },
+      { usuario: "jorshan.jimenez", nombre: "Jorshan Jimenez", password: "jimenez123", rol: "solicitante", activo: true },
+      { usuario: "anthony.zapata", nombre: "Anthony Zapata", password: "zapata123", rol: "solicitante", activo: true },
+      { usuario: "olga.rodriguez", nombre: "Olga Rodriguez", password: "rodriguez123", rol: "solicitante", activo: true },
+      { usuario: "jazmin.jimenez", nombre: "Jazmin Jimenez", password: "jimenez123", rol: "solicitante", activo: true },
+      { usuario: "carlos.selva", nombre: "Carlos Selva", password: "selva123", rol: "solicitante", activo: true },
+      { usuario: "roberto.chacon", nombre: "Roberto Chacon", password: "chacon123", rol: "solicitante", activo: true }
+    ];
+
+    const STORAGE_KEY_USERS_V6 = "dbUsuariosBuro_v6";
+    let listaUsuarios = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS_V6)) || USUARIOS_INICIALES;
+    let usuarioLogueado = JSON.parse(localStorage.getItem(STORAGE_KEY_AUTH)) || null;
+    let listaLimpiezas = JSON.parse(localStorage.getItem(STORAGE_KEY_SHEET)) || [];
+
+    async function cargarUsuariosDesdeSupabase() {
       if (!supabaseClient) return;
       try {
-        const { data, error } = await supabaseClient.from("usuarios_permisos").select("nombre, rol, activo");
-        if (!error && data) {
-          const mapa = {};
-          data.forEach(u => {
-            if (u.activo !== false) {
-              mapa[u.nombre.trim().toLowerCase()] = u.rol;
+        const { data, error } = await supabaseClient.from("usuarios_permisos").select("*");
+        if (!error && data && data.length > 0) {
+          listaUsuarios = data.map(u => ({
+            id: u.id,
+            usuario: (u.usuario || u.nombre).trim().toLowerCase(),
+            nombre: u.nombre || u.usuario,
+            password: u.password || "123456",
+            rol: u.rol || "solicitante",
+            activo: u.activo !== false
+          }));
+          localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+          
+          // Refrescar permisos de la sesión activa
+          if (usuarioLogueado) {
+            const match = listaUsuarios.find(u => u.usuario === usuarioLogueado.usuario);
+            if (match) {
+              usuarioLogueado = match;
+              localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado));
+              actualizarUIUsuario();
             }
-          });
-          usuariosPermisosCache = mapa;
-          localStorage.setItem(STORAGE_KEY_ROLES, JSON.stringify(mapa));
-          actualizarBadgeUsuario();
+          }
         }
-      } catch (e) {
-        console.error("Error al cargar usuarios_permisos:", e);
+      } catch (err) {
+        console.error("Error cargando usuarios:", err);
       }
     }
 
     function esEditor() {
-      if (!usuarioActual) return false;
-      const key = usuarioActual.trim().toLowerCase();
-      return usuariosPermisosCache[key] === "editor";
+      return usuarioLogueado && usuarioLogueado.rol === "editor";
     }
 
-    function actualizarBadgeUsuario() {
-      const lblUser = document.getElementById("lblUsuarioActual");
-      const lblRol = document.getElementById("lblRolActual");
+    function cambiarTabLogin(tab) {
+      const btnIngreso = document.getElementById("tabLoginIngreso");
+      const btnRegistro = document.getElementById("tabLoginRegistro");
+      const formIngreso = document.getElementById("formIngreso");
+      const formRegistro = document.getElementById("formRegistro");
 
-      if (!usuarioActual) {
-        lblUser.textContent = "Sin Iniciar";
-        lblRol.textContent = "Lector";
-        lblRol.className = "role-badge role-reader";
+      if (tab === "ingreso") {
+        btnIngreso.classList.add("active");
+        btnRegistro.classList.remove("active");
+        formIngreso.style.display = "block";
+        formRegistro.style.display = "none";
       } else {
-        lblUser.textContent = usuarioActual;
+        btnIngreso.classList.remove("active");
+        btnRegistro.classList.add("active");
+        formIngreso.style.display = "none";
+        formRegistro.style.display = "block";
+      }
+    }
+
+    function togglePasswordVisibilidad(inputId, iconElem) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+        iconElem.textContent = "🙈";
+      } else {
+        input.type = "password";
+        iconElem.textContent = "👁️";
+      }
+    }
+
+    function normalizarStr(txt) {
+      return (txt || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function mostrarErrorLogin(mensaje) {
+      const fb = document.getElementById("loginFeedback");
+      if (fb) {
+        fb.style.display = "block";
+        fb.style.background = "rgba(211, 47, 47, 0.25)";
+        fb.style.border = "1px solid #d32f2f";
+        fb.style.color = "#ff8a80";
+        fb.innerHTML = `⚠️ ${mensaje}`;
+      }
+      notificar("error", "Acceso Inválido", mensaje);
+    }
+
+    async function ejecutarLogin() {
+      const fb = document.getElementById("loginFeedback");
+      if (fb) fb.style.display = "none";
+
+      const userInput = (document.getElementById("txtLoginUser").value || "").trim().toLowerCase();
+      const passInput = (document.getElementById("txtLoginPass").value || "").trim();
+
+      if (!userInput || !passInput) {
+        mostrarErrorLogin("Por favor ingresa tu usuario y tu contraseña.");
+        return;
+      }
+
+      const userNorm = normalizarStr(userInput);
+      const passNorm = normalizarStr(passInput);
+
+      // Intentar validar en Supabase primero si está conectado
+      let usuarioValido = null;
+
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from("usuarios_permisos")
+            .select("*")
+            .eq("activo", true);
+
+          if (!error && data && data.length > 0) {
+            const u = data.find(item => {
+              const uMatch = normalizarStr(item.usuario) === userNorm || normalizarStr(item.nombre) === userNorm;
+              const pMatch = item.password === passInput || normalizarStr(item.password) === passNorm;
+              return uMatch && pMatch;
+            });
+            if (u) {
+              usuarioValido = {
+                id: u.id,
+                usuario: (u.usuario || u.nombre).trim().toLowerCase(),
+                nombre: u.nombre || u.usuario,
+                rol: u.rol || "solicitante",
+                activo: true
+              };
+            }
+          }
+        } catch (e) {
+          console.warn("Error validando en Supabase:", e);
+        }
+      }
+
+      // Respaldo en base de datos local (incluye a los 28 agentes y soporte)
+      if (!usuarioValido) {
+        const localUser = listaUsuarios.find(u => {
+          if (!u.activo) return false;
+          const uMatch = normalizarStr(u.usuario) === userNorm || normalizarStr(u.nombre) === userNorm;
+          const pMatch = u.password === passInput || normalizarStr(u.password) === passNorm;
+          return uMatch && pMatch;
+        });
+        if (localUser) {
+          usuarioValido = localUser;
+        }
+      }
+
+      if (!usuarioValido) {
+        mostrarErrorLogin("Usuario o contraseña incorrectos. Verifica tus datos.");
+        return;
+      }
+
+      usuarioLogueado = usuarioValido;
+      const recordar = document.getElementById("chkRecordarSesion").checked;
+      if (recordar) {
+        localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado));
+      } else {
+        sessionStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado));
+      }
+
+      if (fb) {
+        fb.style.display = "block";
+        fb.style.background = "rgba(46, 125, 50, 0.25)";
+        fb.style.border = "1px solid #4caf50";
+        fb.style.color = "#a5d6a7";
+        fb.innerHTML = `✅ ¡Bienvenido(a), <strong>${usuarioLogueado.nombre}</strong>!`;
+      }
+
+      setTimeout(() => {
+        document.getElementById("modalLogin").style.display = "none";
+        if (fb) fb.style.display = "none";
+        actualizarUIUsuario();
+        notificar("success", "Sesión Iniciada", `Bienvenido(a), <strong>${usuarioLogueado.nombre}</strong>.`);
+      }, 300);
+    }
+
+    async function ejecutarRegistro() {
+      const nombre = document.getElementById("txtRegNombre").value.trim();
+      const user = document.getElementById("txtRegUser").value.trim().toLowerCase();
+      const pass = document.getElementById("txtRegPass").value.trim();
+
+      if (!nombre || !user || !pass) {
+        notificar("warning", "Campos Requeridos", "Completa todos los campos para crear tu cuenta.");
+        return;
+      }
+
+      const existeLocal = listaUsuarios.some(u => u.usuario === user);
+      if (existeLocal) {
+        notificar("error", "Usuario Existente", "El nombre de usuario ya está en uso. Elige otro.");
+        return;
+      }
+
+      const nuevoUsuario = {
+        usuario: user,
+        nombre: nombre,
+        password: pass,
+        rol: "solicitante",
+        activo: true
+      };
+
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient.from("usuarios_permisos").insert({
+            usuario: user,
+            nombre: nombre,
+            password: pass,
+            rol: "solicitante",
+            activo: true
+          });
+          if (error) {
+            notificar("error", "Error Supabase", error.message);
+            return;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      listaUsuarios.push(nuevoUsuario);
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+
+      usuarioLogueado = nuevoUsuario;
+      localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado));
+
+      document.getElementById("modalLogin").style.display = "none";
+      actualizarUIUsuario();
+      notificar("success", "Cuenta Creada", `¡Bienvenido(a), <strong>${nombre}</strong>! Tu cuenta ha sido registrada.`);
+    }
+
+    function cerrarSesionUsuario() {
+      usuarioLogueado = null;
+      localStorage.removeItem(STORAGE_KEY_AUTH);
+      sessionStorage.removeItem(STORAGE_KEY_AUTH);
+
+      document.getElementById("txtLoginUser").value = "";
+      document.getElementById("txtLoginPass").value = "";
+      const fb = document.getElementById("loginFeedback");
+      if (fb) fb.style.display = "none";
+      document.getElementById("modalLogin").style.display = "flex";
+      cambiarTabLogin('ingreso');
+      actualizarUIUsuario();
+      notificar("info", "Sesión Cerrada", "Has salido del sistema.");
+    }
+
+    function actualizarUIUsuario() {
+      const lblNombre = document.getElementById("lblUsuarioNombre");
+      const lblUser = document.getElementById("lblUsuarioUser");
+      const lblRol = document.getElementById("lblRolActual");
+      const btnAdmin = document.getElementById("btnAdminUsuarios");
+
+      if (!usuarioLogueado) {
+        lblNombre.textContent = "Invitado";
+        lblUser.textContent = "-";
+        lblRol.textContent = "Sin Sesión";
+        lblRol.className = "role-badge role-reader";
+        btnAdmin.style.display = "none";
+      } else {
+        lblNombre.textContent = usuarioLogueado.nombre;
+        lblUser.textContent = usuarioLogueado.usuario;
         if (esEditor()) {
           lblRol.textContent = "Editor Autorizado";
           lblRol.className = "role-badge role-editor";
+          btnAdmin.style.display = "inline-block";
         } else {
           lblRol.textContent = "Solicitante";
           lblRol.className = "role-badge role-reader";
+          btnAdmin.style.display = "none";
         }
       }
       renderizarTablaSheet();
     }
 
-    function abrirModalSesion() {
-      document.getElementById("txtNombreSesion").value = usuarioActual;
-      document.getElementById("modalSesion").style.display = "flex";
-    }
-    function cerrarModalSesion() {
-      document.getElementById("modalSesion").style.display = "none";
-    }
-    function guardarSesionUsuario() {
-      const val = document.getElementById("txtNombreSesion").value.trim();
-      if (!val) {
-        notificar("warning", "Campo Requerido", "Ingresa tu nombre o usuario para continuar.");
+    // ==========================================
+    // ADMINISTRACIÓN DE USUARIOS (SOLO EDITORES)
+    // ==========================================
+    function abrirModalAdminUsuarios() {
+      if (!esEditor()) {
+        notificar("error", "Acceso Restringido", "Solo administradores y editores pueden gestionar usuarios.");
         return;
       }
-      usuarioActual = val;
-      localStorage.setItem(STORAGE_KEY_USER, usuarioActual);
-      cerrarModalSesion();
-      actualizarBadgeUsuario();
-      notificar("success", "Sesión Iniciada", `Bienvenido(a), <strong>${usuarioActual}</strong>.`);
+      renderizarListaUsuariosAdminUI();
+      document.getElementById("modalAdminUsuarios").style.display = "flex";
+    }
+
+    function cerrarModalAdminUsuarios() {
+      document.getElementById("modalAdminUsuarios").style.display = "none";
+    }
+
+    function renderizarListaUsuariosAdminUI() {
+      const container = document.getElementById("listaUsuariosAdminUI");
+      container.innerHTML = "";
+
+      listaUsuarios.forEach((u, idx) => {
+        const item = document.createElement("div");
+        item.style = "display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem;";
+        item.innerHTML = `
+          <div>
+            <strong>${u.nombre}</strong> <span style="color:#aaa;">(@${u.usuario})</span>
+            <div><span class="role-badge ${u.rol==='editor'?'role-editor':'role-reader'}" style="font-size:0.68rem;">${u.rol}</span> · Clave: <code style="color:#81c784;">${u.password}</code></div>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button onclick="cambiarRolUsuario('${u.usuario}', '${u.rol==='editor'?'solicitante':'editor'}')" style="padding: 4px 8px; font-size: 0.75rem; border: 1px solid #777; background: #2a2a3a; color: #fff; border-radius: 4px; cursor: pointer;">Hacer ${u.rol==='editor'?'Solicitante':'Editor'}</button>
+            <button onclick="eliminarUsuarioAdmin(${idx})" style="padding: 4px 8px; font-size: 0.75rem; border: none; background: #d32f2f; color: #fff; border-radius: 4px; cursor: pointer;">🗑️</button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    async function guardarUsuarioDesdeAdmin() {
+      const user = document.getElementById("txtAdminNuevoUser").value.trim().toLowerCase();
+      const nombre = document.getElementById("txtAdminNuevoNombre").value.trim();
+      const pass = document.getElementById("txtAdminNuevoPass").value.trim();
+      const rol = document.getElementById("selAdminNuevoRol").value;
+
+      if (!user || !nombre || !pass) {
+        notificar("warning", "Faltan Datos", "Ingresa usuario, nombre y contraseña.");
+        return;
+      }
+
+      const idx = listaUsuarios.findIndex(u => u.usuario === user);
+      if (idx !== -1) {
+        listaUsuarios[idx].nombre = nombre;
+        listaUsuarios[idx].password = pass;
+        listaUsuarios[idx].rol = rol;
+      } else {
+        listaUsuarios.push({ usuario: user, nombre: nombre, password: pass, rol: rol, activo: true });
+      }
+
+      if (supabaseClient) {
+        await supabaseClient.from("usuarios_permisos").upsert({
+          usuario: user,
+          nombre: nombre,
+          password: pass,
+          rol: rol,
+          activo: true
+        }, { onConflict: "usuario" });
+      }
+
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+      renderizarListaUsuariosAdminUI();
+      actualizarUIUsuario();
+
+      document.getElementById("txtAdminNuevoUser").value = "";
+      document.getElementById("txtAdminNuevoNombre").value = "";
+      document.getElementById("txtAdminNuevoPass").value = "";
+
+      notificar("success", "Usuario Guardado", `Se actualizaron las credenciales de: <strong>${nombre}</strong>.`);
+    }
+
+    async function cambiarRolUsuario(usuario, nuevoRol) {
+      const item = listaUsuarios.find(u => u.usuario === usuario);
+      if (item) {
+        item.rol = nuevoRol;
+        if (supabaseClient) {
+          await supabaseClient.from("usuarios_permisos").update({ rol: nuevoRol }).eq("usuario", usuario);
+        }
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+        renderizarListaUsuariosAdminUI();
+        actualizarUIUsuario();
+        notificar("info", "Rol Actualizado", `@${usuario} ahora es <strong>${nuevoRol}</strong>.`);
+      }
+    }
+
+    async function eliminarUsuarioAdmin(index) {
+      const u = listaUsuarios[index];
+      if (u.usuario === usuarioLogueado.usuario) {
+        notificar("error", "Acción Bloqueada", "No puedes eliminar tu propio usuario activo.");
+        return;
+      }
+      if (supabaseClient) {
+        await supabaseClient.from("usuarios_permisos").delete().eq("usuario", u.usuario);
+      }
+      listaUsuarios.splice(index, 1);
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+      renderizarListaUsuariosAdminUI();
+      notificar("info", "Usuario Eliminado", `Se borró la cuenta de @${u.usuario}.`);
     }
 
     // ==========================================
     // CARGAR Y SINCRONIZAR DATOS CON SUPABASE
     // ==========================================
     async function cargarDatosDesdeSupabase() {
-      await cargarPermisosDesdeSupabase();
       if (!supabaseClient) return;
 
       try {
@@ -1387,6 +1886,7 @@
 
     async function sincronizarConSupabase() {
       if (supabaseClient) {
+        await cargarUsuariosDesdeSupabase();
         await cargarDatosDesdeSupabase();
         notificar("success", "Sincronizado", "Datos actualizados desde Supabase.");
       } else {
@@ -1441,11 +1941,11 @@
           const nuevoSoporte = nuevaFila.soporte || "";
           const nuevaCat = nuevaFila.categoria || "";
 
-          // Notificar al solicitante si su limpieza fue atendida
+          // Notificar al usuario si su limpieza fue atendida
           if (
-            usuarioActual &&
+            usuarioLogueado &&
             anterior.agente &&
-            anterior.agente.trim().toLowerCase() === usuarioActual.trim().toLowerCase() &&
+            (anterior.agente.toLowerCase() === usuarioLogueado.usuario.toLowerCase() || anterior.agente.toLowerCase() === usuarioLogueado.nombre.toLowerCase()) &&
             (anterior.soporte !== nuevoSoporte || anterior.categoria !== nuevaCat)
           ) {
             let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> fue actualizada.`;
@@ -1534,9 +2034,9 @@
     // SUBIDA DESDE LA PLANTILLA A LA HOJA
     // ==========================================
     async function subirLimpiezaDesdePlantilla() {
-      if (!usuarioActual) {
-        notificar("warning", "Sesión Requerida", "Por favor inicia sesión con tu nombre antes de subir.");
-        abrirModalSesion();
+      if (!usuarioLogueado) {
+        notificar("warning", "Sesión Requerida", "Debes iniciar sesión para subir una limpieza.");
+        document.getElementById("modalLogin").style.display = "flex";
         return;
       }
 
@@ -1560,7 +2060,9 @@
       const montoTexto = terminosMonto.length > 0 ? terminosMonto.join("+") : (document.getElementById("monto")?.value.trim() || "0.00");
       const tieneCeroPagos = !!montoCP;
 
-      // Validar duplicados según reglas de negocio
+      const agenteActual = usuarioLogueado.usuario || usuarioLogueado.nombre;
+
+      // Validar duplicados según reglas
       const existenteIndex = listaLimpiezas.findIndex(item => item.cedula && item.cedula.toLowerCase() === cedula.toLowerCase());
 
       if (existenteIndex !== -1) {
@@ -1581,10 +2083,10 @@
           
           existente.marcaTemporal = marcaNueva;
           existente.monto = montoTexto;
-          existente.agente = usuarioActual;
+          existente.agente = agenteActual;
           existente.ceroPagos = tieneCeroPagos;
           existente.categoria = "Reversión";
-          existente.soporte = ""; // Se libera para que un agente la atienda de nuevo
+          existente.soporte = ""; // Se libera para que un agente la tome de nuevo
           
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
 
@@ -1592,7 +2094,7 @@
             await supabaseClient.from("control_limpiezas").update({
               marca_temporal: marcaNueva,
               monto: montoTexto,
-              agente: usuarioActual,
+              agente: agenteActual,
               cero_pagos: tieneCeroPagos,
               categoria: "Reversión",
               soporte: ""
@@ -1605,7 +2107,7 @@
         }
 
         if (!esPermitidaPorEstado && !esReversion) {
-          notificar("warning", "Ya Registrada", `Ya existe una solicitud activa para la cédula <strong>${cedula}</strong> en la hoja.`);
+          notificar("warning", "Ya Registrada", `Ya existe una solicitud activa para la cédula <strong>${cedula}</strong>.`);
           return;
         }
       }
@@ -1616,7 +2118,7 @@
         id: "id_" + Date.now(),
         marcaTemporal: `${ahora.toLocaleDateString()} ${ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`,
         monto: montoTexto,
-        agente: usuarioActual,
+        agente: agenteActual,
         cedula: cedula,
         ceroPagos: tieneCeroPagos,
         soporte: "",
@@ -1858,7 +2360,6 @@
       const montoInput = document.getElementById("montoInput");
       const btnSubirLS = document.getElementById("btnSubirLimpiezaLS");
 
-      // CONDICIONAL: Botón de subir sólo visible en LIMPIEZA DE SALDOS
       if (seleccion === "LIMPIEZA DE SALDOS") {
         btnSubirLS.style.display = "block";
       } else {
@@ -2693,14 +3194,19 @@
     inicializarOpacidadCampos();
     inicializarFondoPersonalizado();
     inicializarSupabase();
-    actualizarBadgeUsuario();
 
-    // Disparar evento inicial del selector
-    document.getElementById("plantilla").dispatchEvent(new Event("change"));
-
-    if (!usuarioActual) {
-      setTimeout(() => abrirModalSesion(), 400);
+    // Comprobar sesión guardada
+    if (usuarioLogueado) {
+      document.getElementById("modalLogin").style.display = "none";
+      actualizarUIUsuario();
+    } else {
+      document.getElementById("modalLogin").style.display = "flex";
+      cambiarTabLogin('ingreso');
+      actualizarUIUsuario();
     }
+
+    // Disparar evento inicial del selector de plantilla
+    document.getElementById("plantilla").dispatchEvent(new Event("change"));
   </script>
 </body>
 </html>
