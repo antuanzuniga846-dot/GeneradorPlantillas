@@ -901,7 +901,6 @@
       <span>👤 <strong id="lblUsuarioNombre">Usuario</strong> (<span id="lblUsuarioUser" style="color:#aaa;">-</span>)</span>
       <span id="lblRolActual" class="role-badge role-reader">Lector</span>
       <button id="btnAdminUsuarios" class="btn-nav-action" onclick="abrirModalAdminUsuarios()" style="display:none; background: rgba(156, 39, 176, 0.4); border-color: #ba68c8;">👥 Gestionar Usuarios</button>
-      <button class="btn-nav-action" onclick="abrirModalConfigSupabase()" style="background: rgba(103, 58, 183, 0.4); border-color: #ab47bc;">⚙️ Supabase</button>
       <button class="btn-nav-action btn-nav-logout" onclick="cerrarSesionUsuario()">🚪 Salir</button>
     </div>
   </div>
@@ -1168,7 +1167,7 @@
   <div id="modalLogin" class="modal-overlay" style="display: flex; position: fixed; inset: 0; background: rgba(10, 10, 18, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 999999; justify-content: center; align-items: center;">
     <div class="modal-content login-box" style="box-shadow: 0 0 35px rgba(0, 120, 215, 0.35); border: 2px solid var(--accent); max-width: 440px; width: 92%;">
       <div style="font-size: 2.4rem; margin-bottom: 6px;">🔐</div>
-      <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Sistema de Control BURO</h2>
+      <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Generador de plantillas</h2>
       <p style="font-size: 0.85rem; color: #bbb; margin-bottom: 16px;">Ingresa tus credenciales para acceder al generador y a la hoja de control.</p>
 
       <div class="login-tabs">
@@ -1201,12 +1200,6 @@
         </div>
 
         <button class="btn-action" style="margin-top: 10px; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarLogin()">🚀 Entrar al Sistema</button>
-
-        <div style="margin-top: 14px; font-size: 0.76rem; color: #aaa; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; text-align: left; line-height: 1.4;">
-          💡 <strong>Contraseña de agentes:</strong> Tu apellido + <code>123</code> (ej: <code>badilla123</code>, <code>barquero123</code>, <code>zuñiga123</code>).<br>
-          🔑 <strong>Editores / Soporte:</strong> <code>mora123</code>, <code>antuan123</code>, <code>adriel123</code>, <code>fabricio123</code>, <code>enoc123</code>, <code>admin123</code>.
-        </div>
-      </div>
 
       <!-- FORMULARIO DE REGISTRO -->
       <div id="formRegistro" style="display: none;">
@@ -1265,28 +1258,6 @@
 
       <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
         <button onclick="cerrarModalAdminUsuarios()" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Configuración Supabase -->
-  <div id="modalConfigSupabase" class="modal-overlay">
-    <div class="modal-content">
-      <h3 style="margin-top: 0;">⚙️ Configuración de Supabase</h3>
-      <p style="font-size: 0.84rem; color: #bbb;">Conecta tu base de datos de Supabase para sincronización en tiempo real y gestión segura de permisos:</p>
-      
-      <label style="font-size: 0.82rem; margin-top: 8px;">Supabase Project URL:</label>
-      <input type="text" id="txtSupabaseUrl" placeholder="https://xyzcompany.supabase.co" style="font-size: 0.85rem;">
-
-      <label style="font-size: 0.82rem; margin-top: 8px;">Supabase Anon Key:</label>
-      <input type="text" id="txtSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-size: 0.85rem;">
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-        <button onclick="probarConexionSupabase()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ab47bc; background: rgba(171, 71, 188, 0.25); color: #fff; cursor: pointer; font-size: 0.82rem;">🔍 Probar Conexión</button>
-        <div style="display: flex; gap: 8px;">
-          <button onclick="cerrarModalConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cerrar</button>
-          <button onclick="guardarConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: none; background: var(--accent); color: var(--accent-oncolor); cursor: pointer; font-weight: bold;">Guardar</button>
-        </div>
       </div>
     </div>
   </div>
