@@ -1179,7 +1179,7 @@
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <input type="text" id="filtroSheet" placeholder="🔍 Buscar cédula, agente..." style="width: 200px; margin: 0; padding: 7px 10px; font-size: 0.85rem;" oninput="renderizarTablaSheet()">
-          <button onclick="exportarLimpiezasCSV()" style="padding: 7px 12px; border-radius: 6px; border: none; background: #2e7d32; color: #fff; cursor: pointer; font-weight: bold; font-size: 0.85rem;">📥 Exportar CSV</button>
+          <button onclick="abrirModalExportarCSV()" style="padding: 7px 12px; border-radius: 6px; border: none; background: #2e7d32; color: #fff; cursor: pointer; font-weight: bold; font-size: 0.85rem;">📥 Exportar CSV</button>
           <button onclick="sincronizarConSupabase()" style="padding: 7px 12px; border-radius: 6px; border: 1px solid #9c27b0; background: rgba(156, 39, 176, 0.3); color: #fff; cursor: pointer; font-weight: bold; font-size: 0.85rem;" title="Recargar datos de Supabase">🔄 Sincronizar</button>
         </div>
       </div>
@@ -1331,6 +1331,47 @@
           <button onclick="cerrarModalConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cerrar</button>
           <button onclick="guardarConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: none; background: var(--accent); color: var(--accent-oncolor); cursor: pointer; font-weight: bold;">Guardar</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Exportar a CSV con Filtro de Fechas -->
+  <div id="modalExportarCSV" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 480px;">
+      <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <span>📊 Exportar Control de Limpiezas a CSV</span>
+      </h3>
+      <p style="font-size: 0.84rem; color: #ccc; margin-bottom: 14px;">
+        Selecciona un rango de fechas para filtrar la descarga o exporta el historial completo:
+      </p>
+
+      <div style="background: rgba(0,0,0,0.32); padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 12px;">
+        <!-- Botones de Rango Rápido -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" style="padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #fff; cursor: pointer;" onclick="setRangoRapidoCSV('hoy')">📅 Hoy</button>
+          <button type="button" style="padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #fff; cursor: pointer;" onclick="setRangoRapidoCSV('mes')">📅 Este Mes</button>
+          <button type="button" style="padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #fff; cursor: pointer;" onclick="setRangoRapidoCSV('todo')">📁 Todo el Historial</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px;">📅 Fecha Desde:</label>
+            <input type="date" id="csvFechaDesde" style="width: 100%; margin: 0; padding: 7px; font-size: 0.85rem;" oninput="actualizarContadorCSV()">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px;">📅 Fecha Hasta:</label>
+            <input type="date" id="csvFechaHasta" style="width: 100%; margin: 0; padding: 7px; font-size: 0.85rem;" oninput="actualizarContadorCSV()">
+          </div>
+        </div>
+
+        <div id="csvInfoRegistros" style="font-size: 0.82rem; color: #90caf9; background: rgba(13, 71, 161, 0.25); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(33, 150, 243, 0.3); text-align: center;">
+          Calculando registros...
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+        <button class="btn-secondary" onclick="cerrarModalExportarCSV()">Cancelar</button>
+        <button class="btn-primary" style="background: #2e7d32;" onclick="ejecutarDescargaCSV()">📥 Descargar CSV</button>
       </div>
     </div>
   </div>
@@ -1563,10 +1604,10 @@
       { usuario: "admin", nombre: "Administrador", password: "admin123", rol: "editor", activo: true },
       { usuario: "cristofer.mora", nombre: "Cristofer Mora", password: "mora123", rol: "editor", activo: true },
       { usuario: "cristofer", nombre: "Cristofer Mora", password: "mora123", rol: "editor", activo: true },
-      { usuario: "antuan", nombre: "Antuan", password: "antuan123", rol: "editor", activo: true },
       { usuario: "adriel", nombre: "Adriel", password: "adriel123", rol: "editor", activo: true },
       { usuario: "fabricio", nombre: "Fabricio", password: "fabricio123", rol: "editor", activo: true },
       { usuario: "enoc", nombre: "Enoc", password: "enoc123", rol: "editor", activo: true },
+      { usuario: "antuan", nombre: "Antuan", password: "antuan123", rol: "editor", activo: true },
 
       // Agentes Solicitantes (Contraseña: apellido + 123)
       { usuario: "susan.badilla", nombre: "Susan Badilla", password: "badilla123", rol: "solicitante", activo: true },
@@ -2283,10 +2324,10 @@
     // ==========================================
     const OPCIONES_SOPORTE = [
       { valor: "", texto: "-- (En blanco)", clase: "pill-soporte-empty" },
-      { valor: "Antuan", texto: "Antuan", clase: "pill-soporte-antuan" },
       { valor: "Adriel", texto: "Adriel", clase: "pill-soporte-adriel" },
       { valor: "Fabricio", texto: "Fabricio", clase: "pill-soporte-fabricio" },
-      { valor: "Enoc", texto: "Enoc", clase: "pill-soporte-enoc" }
+      { valor: "Enoc", texto: "Enoc", clase: "pill-soporte-enoc" },
+      { valor: "Antuan", texto: "Antuan", clase: "pill-soporte-antuan" }
     ];
 
     const OPCIONES_CATEGORIA = [
@@ -2629,22 +2670,152 @@
       notificar("info", "Fila Eliminada", "Registro borrado de la hoja de control.");
     }
 
-    function exportarLimpiezasCSV() {
-      if (listaLimpiezas.length === 0) {
-        notificar("warning", "Hoja Vacía", "No hay registros para exportar.");
+    function abrirModalExportarCSV() {
+      const modal = document.getElementById("modalExportarCSV");
+      if (!modal) {
+        ejecutarDescargaCSV();
         return;
       }
-      let csv = "Marca temporal,Monto,Agente,Cedula,Cero Pagos,Soporte,Categoria,Motivo\n";
-      listaLimpiezas.forEach(r => {
-        csv += `"${normalizarFechaMarcaTemporal(r.marcaTemporal)}","${r.monto}","${r.agente}","${r.cedula}","${r.ceroPagos?'✓':''}","${r.soporte}","${r.categoria}","${r.motivo}"\n`;
+      document.getElementById("csvFechaDesde").value = "";
+      document.getElementById("csvFechaHasta").value = "";
+      actualizarContadorCSV();
+      modal.style.display = "flex";
+    }
+
+    function cerrarModalExportarCSV() {
+      const modal = document.getElementById("modalExportarCSV");
+      if (modal) modal.style.display = "none";
+    }
+
+    function setRangoRapidoCSV(tipo) {
+      const hoyObj = new Date();
+      const hoyStr = `${hoyObj.getFullYear()}-${pad2(hoyObj.getMonth() + 1)}-${pad2(hoyObj.getDate())}`;
+      
+      if (tipo === 'hoy') {
+        document.getElementById("csvFechaDesde").value = hoyStr;
+        document.getElementById("csvFechaHasta").value = hoyStr;
+      } else if (tipo === 'mes') {
+        const primerDia = `${hoyObj.getFullYear()}-${pad2(hoyObj.getMonth() + 1)}-01`;
+        document.getElementById("csvFechaDesde").value = primerDia;
+        document.getElementById("csvFechaHasta").value = hoyStr;
+      } else if (tipo === 'todo') {
+        document.getElementById("csvFechaDesde").value = "";
+        document.getElementById("csvFechaHasta").value = "";
+      }
+      actualizarContadorCSV();
+    }
+
+    function extraerFechaDeRegistro(marcaTemporalStr) {
+      if (!marcaTemporalStr) return null;
+      const s = String(marcaTemporalStr).trim();
+      if (!s || s === "-") return null;
+
+      // Formato ISO
+      if (s.includes("T") && s.includes("-")) {
+        const d = new Date(s);
+        if (!isNaN(d.getTime())) return d;
+      }
+
+      // Formato normalizado "DD/MM/YYYY HH:mm:ss" o similar
+      const norm = normalizarFechaMarcaTemporal(s);
+      const m = norm.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (m) {
+        const dia = parseInt(m[1], 10);
+        const mes = parseInt(m[2], 10) - 1;
+        const anio = parseInt(m[3], 10);
+        return new Date(anio, mes, dia);
+      }
+
+      const fall = new Date(s);
+      return isNaN(fall.getTime()) ? null : fall;
+    }
+
+    function obtenerRegistrosFiltradosPorFecha(desdeStr, hastaStr) {
+      if (!Array.isArray(listaLimpiezas) || listaLimpiezas.length === 0) return [];
+
+      let dDesde = null;
+      let dHasta = null;
+
+      if (desdeStr) {
+        const partes = desdeStr.split("-");
+        if (partes.length === 3) {
+          dDesde = new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10), 0, 0, 0, 0);
+        }
+      }
+
+      if (hastaStr) {
+        const partes = hastaStr.split("-");
+        if (partes.length === 3) {
+          dHasta = new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10), 23, 59, 59, 999);
+        }
+      }
+
+      return listaLimpiezas.filter(r => {
+        if (!dDesde && !dHasta) return true;
+        const dReg = extraerFechaDeRegistro(r.marcaTemporal);
+        if (!dReg) return true;
+
+        if (dDesde && dReg < dDesde) return false;
+        if (dHasta && dReg > dHasta) return false;
+        return true;
       });
+    }
+
+    function actualizarContadorCSV() {
+      const desde = document.getElementById("csvFechaDesde")?.value || "";
+      const hasta = document.getElementById("csvFechaHasta")?.value || "";
+      const filtrados = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+      const total = listaLimpiezas.length;
+      const infoElem = document.getElementById("csvInfoRegistros");
+      if (infoElem) {
+        if (!desde && !hasta) {
+          infoElem.innerHTML = `📁 Se exportarán <strong>${total} de ${total}</strong> registros (Todo el historial).`;
+        } else {
+          infoElem.innerHTML = `📅 Se exportarán <strong>${filtrados.length} de ${total}</strong> registros coincidentes con el rango.`;
+        }
+      }
+    }
+
+    function ejecutarDescargaCSV() {
+      const desde = document.getElementById("csvFechaDesde")?.value || "";
+      const hasta = document.getElementById("csvFechaHasta")?.value || "";
+      const filtrados = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+
+      if (filtrados.length === 0) {
+        notificar("warning", "Sin Registros", "No hay registros en el rango de fechas seleccionado.");
+        return;
+      }
+
+      let csv = "\uFEFFMarca temporal,Monto,Agente,Cedula,Cero Pagos,Soporte,Categoria,Motivo\n";
+      filtrados.forEach(r => {
+        csv += `"${normalizarFechaMarcaTemporal(r.marcaTemporal)}","${r.monto || ''}","${r.agente || ''}","${r.cedula || ''}","${r.ceroPagos ? '✓' : ''}","${r.soporte || ''}","${r.categoria || ''}","${r.motivo || ''}"\n`;
+      });
+
+      let nombreArchivo = "Control_Limpiezas";
+      if (desde && hasta) {
+        nombreArchivo += `_${desde}_a_${hasta}.csv`;
+      } else if (desde) {
+        nombreArchivo += `_desde_${desde}.csv`;
+      } else if (hasta) {
+        nombreArchivo += `_hasta_${hasta}.csv`;
+      } else {
+        nombreArchivo += `_completo_${new Date().toISOString().slice(0, 10)}.csv`;
+      }
+
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Control_Limpiezas_${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = nombreArchivo;
       a.click();
-      notificar("success", "Descarga Completa", "El archivo CSV se ha descargado correctamente.");
+      URL.revokeObjectURL(url);
+
+      cerrarModalExportarCSV();
+      notificar("success", "Descarga Completa", `Se descargó el archivo CSV con <strong>${filtrados.length}</strong> registro(s).`);
+    }
+
+    function exportarLimpiezasCSV() {
+      abrirModalExportarCSV();
     }
 
     // ==========================================
@@ -2662,14 +2833,14 @@
 
     const plantillas = {
       "CON ACTUALIZACIÓN DE SEGMENTACIÓN": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Adicional les comento, que las referencias crediticias, así como la segmentación del cliente se actualizaron correctamente\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
+      "NC APLICADA": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para la venta nueva cédula {cedula}, a nombre del cliente {nombre}, con base a la política de excepción para la apertura de ventas el mismo se le aplicó una nota de crédito el pasado {fechaNC}, por el monto de ¢ {monto}.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
       "NO SE PUEDE ACTUALIZAR SEGMENTACIÓN": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para venta nueva, cédula {cedula}, a nombre de {nombre}, base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Adicional les comento, que las referencias crediticias del cliente se actualizaron correctamente. En cuanto a la modificación de segmentación del cliente, debe de solicitarse por medio de caso Qflow, a control de altas\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-      "VISTO BUENO CARTA DE DESCARGO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para carta de descargo, cédula {cedula}, a nombre del cliente {nombre}, con base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Las referencias crediticias fueron actualizadas correctamente.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
       "VISTO BUENO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, con base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Las referencias crediticias fueron actualizadas correctamente.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
       "VISTO BUENO ACTIVO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, con base a las evidencias adjuntas, el cliente evidencia servicio activo y a la fecha de revisión no cuenta con facturas vencidas.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
-      "NC APLICADA": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para la venta nueva cédula {cedula}, a nombre del cliente {nombre}, con base a la política de excepción para la apertura de ventas el mismo se le aplicó una nota de crédito el pasado {fechaNC}, por el monto de ¢ {monto}.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
+      "VISTO BUENO CARTA DE DESCARGO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para carta de descargo, cédula {cedula}, a nombre del cliente {nombre}, con base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Las referencias crediticias fueron actualizadas correctamente.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+      "LIMPIEZA DE SALDOS": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nEstimados Sres.\n\nSe procede con visto bueno para la venta nueva, cédula {cedula}, a nombre del cliente {nombre}, con base a la política de excepción para la apertura de ventas se le aplicó una nota de crédito {limpiezaSaldosFrase}. Las referencias crediticias y la segmentación del cliente se actualizaron correctamente.{notaLS}\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
       "CERO PAGOS": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre},ya que registra saldos bajo el Código NOTA DE CREDITO POR CLIENTE CERO PAGOS{ceroPagosIncubadoraTexto} CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR, el monto pendiente es de ¢{monto}.{ceroPagosAdicionalTexto}\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
       "CERO PAGOS(CON TERMINAL)": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre},ya que registra saldos bajo el Código NOTA DE CREDITO POR CLIENTE CERO PAGOS CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR, el monto pendiente es de  ¢{monto}.\n\nEl cliente tiene penalidad por retiro anticipado, no se encuentra evidencia del pago en ONBASE o interacciones anteriores que los respalden.\n\n    I. Fecha de activación: {fecha_activacion}\n    II. Fecha de expiración: {fecha_expiracion}\n    III. Fecha de desactivación: {fecha_desactivacion}\n    IV. Terminal ligado: {terminal}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-      "LIMPIEZA DE SALDOS": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nEstimados Sres.\n\nSe procede con visto bueno para la venta nueva, cédula {cedula}, a nombre del cliente {nombre}, con base a la política de excepción para la apertura de ventas se le aplicó una nota de crédito {limpiezaSaldosFrase}. Las referencias crediticias y la segmentación del cliente se actualizaron correctamente.{notaLS}\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
       "WRITTE OFF(CON TERMINAL)": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, ya que cuenta con saldos bajo el Código NOTA DE CRÉDITO POR CLIENTE WRITTE OFF, CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR, el monto pendiente es de ¢{monto}.\n\nEl cliente tiene penalidad por retiro anticipado, no se encuentra evidencia del pago en ONBASE o interacciones anteriores que los respalden.\n\n    I. Fecha de activación: {fecha_activacion}\n    II. Fecha de expiración: {fecha_expiracion}\n    III. Fecha de desactivación: {fecha_desactivacion}\n    IV. Terminal ligado: {terminal}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
       "WRITTE OFF(SIN TERMINAL)": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, del cliente {nombre}, cédula {cedula}, ya que cuenta con saldos bajo el Código NOTA DE CREDITO POR CLIENTE WRITTE OFF, CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR, el monto pendiente es de ¢{monto}.{writteOffAdicionalTexto}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
       "SIN FORMALIZACION": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, del cliente {nombre}, cédula {cedula}, ya que no hay evidencia en ONBASE de la baja de los equipos DTH, ni gestión o caso Qflow. Adicional, registra saldos bajo el Código NOTA DE CREDITO POR CLIENTE WRITTE OFF, CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR,el monto pendiente es de ¢ {monto}.\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
@@ -3208,12 +3379,12 @@
     // ==========================================
     const plantillasProcede = [
       "CON ACTUALIZACIÓN DE SEGMENTACIÓN",
-      "LIMPIEZA DE SALDOS",
       "NC APLICADA",
       "NO SE PUEDE ACTUALIZAR SEGMENTACIÓN",
       "VISTO BUENO",
       "VISTO BUENO ACTIVO",
-      "VISTO BUENO CARTA DE DESCARGO"
+      "VISTO BUENO CARTA DE DESCARGO",
+      "LIMPIEZA DE SALDOS"
     ];
 
     const plantillasNoProcede = [
