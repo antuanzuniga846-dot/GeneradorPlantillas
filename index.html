@@ -637,6 +637,66 @@
     .pill-mot-servicio-activo { background: #38761d !important; color: #ffffff !important; }
     .pill-mot-wf-supera-63000 { background: #42a5f5 !important; color: #ffffff !important; }
 
+    /* ========================================= */
+    /* GOOGLE SHEETS LIVE PRESENCE STYLES        */
+    /* ========================================= */
+    .sheet-presence-cell {
+      position: relative !important;
+      transition: outline 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .sheets-presence-tag {
+      position: absolute;
+      top: -11px;
+      right: 2px;
+      padding: 2px 7px;
+      border-radius: 4px 4px 4px 0;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      z-index: 20;
+      pointer-events: none;
+      white-space: nowrap;
+      animation: popInPresence 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    @keyframes popInPresence {
+      from { transform: scale(0.6) translateY(4px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .sheet-online-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: rgba(0,0,0,0.35);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .sheet-user-avatar {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 0.72rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.3);
+      user-select: none;
+    }
+
     /* Theme widget & Background Panel */
     .theme-widget {
       position: fixed;
@@ -1127,9 +1187,18 @@
   <div id="vistaHoja">
     <div class="sheet-wrapper">
       <div class="sheet-header-bar">
-        <div style="font-size: 1.15rem; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+        <div style="font-size: 1.15rem; font-weight: bold; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
           <span>📊 Hoja de Control de Limpiezas</span>
           <button onclick="cambiarVista('generador')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer; font-size: 0.82rem;">⬅ Volver al Generador</button>
+          
+          <!-- Barra de usuarios activos en vivo (Google Sheets Style) -->
+          <div id="sheetOnlineUsers" class="sheet-online-bar" title="Usuarios activos viendo o editando la hoja">
+            <span style="color: #4caf50; font-size: 0.82rem;">🟢</span>
+            <span style="font-weight: bold; color: #ddd; font-size: 0.76rem;">En vivo:</span>
+            <div id="sheetAvatarsList" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+              <span class="sheet-user-avatar" style="background: #444;">Conectando...</span>
+            </div>
+          </div>
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <input type="text" id="filtroSheet" placeholder="🔍 Buscar cédula, agente..." style="width: 200px; margin: 0; padding: 7px 10px; font-size: 0.85rem;" oninput="renderizarTablaSheet()">
@@ -1347,6 +1416,7 @@
         btnGen.classList.remove("active");
         btnHoj.classList.add("active");
         renderizarTablaSheet();
+        renderizarIndicadoresPresencia();
       }
     }
 
@@ -1373,6 +1443,9 @@
           suscribirRealtimeSupabase();
           cargarUsuariosDesdeSupabase();
           cargarDatosDesdeSupabase();
+          if (usuarioLogueado) {
+            inicializarPresenciaSupabase();
+          }
         } catch (e) {
           console.warn("Supabase init error:", e);
           if (dot) dot.className = "db-dot offline";
@@ -1702,6 +1775,13 @@
     }
 
     function cerrarSesionUsuario() {
+      if (canalPresencia) {
+        try {
+          canalPresencia.untrack();
+          if (supabaseClient) supabaseClient.removeChannel(canalPresencia);
+        } catch (e) {}
+        canalPresencia = null;
+      }
       usuarioLogueado = null;
       localStorage.removeItem(STORAGE_KEY_AUTH);
       sessionStorage.removeItem(STORAGE_KEY_AUTH);
@@ -1739,6 +1819,9 @@
           lblRol.textContent = "Solicitante";
           lblRol.className = "role-badge role-reader";
           btnAdmin.style.display = "none";
+        }
+        if (supabaseClient) {
+          inicializarPresenciaSupabase();
         }
       }
       renderizarTablaSheet();
@@ -1975,6 +2058,189 @@
     }
 
     // ==========================================
+    // SISTEMA DE PRESENCIA EN VIVO (ESTILO GOOGLE SHEETS)
+    // ==========================================
+    let canalPresencia = null;
+    let presenciaEstadoActual = {};
+    let celdaActivaLocal = { rowId: null, campo: null };
+
+    const COLORES_USUARIOS_FIJOS = {
+      "antuan": "#e91e63",        // Rosa
+      "adriel": "#1e88e5",        // Azul
+      "fabricio": "#7cb342",      // Verde lima
+      "enoc": "#fbc02d",          // Amarillo dorado
+      "cristofer.mora": "#9c27b0", // Púrpura
+      "cristofer": "#9c27b0",
+      "admin": "#00bcd4",         // Cyan
+      "susan.badilla": "#ff7043",
+      "kenneth.morera": "#26a69a",
+      "sharon.barquero": "#ec407a",
+      "isaac.barrera": "#5c6bc0",
+      "luis.marin": "#8d6e63"
+    };
+
+    function obtenerColorUsuario(usuario) {
+      const u = (usuario || "").toLowerCase().trim();
+      if (COLORES_USUARIOS_FIJOS[u]) return COLORES_USUARIOS_FIJOS[u];
+
+      let hash = 0;
+      for (let i = 0; i < u.length; i++) {
+        hash = u.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const h = Math.abs(hash) % 360;
+      return `hsl(${h}, 78%, 46%)`;
+    }
+
+    function inicializarPresenciaSupabase() {
+      if (!supabaseClient || !usuarioLogueado) return;
+
+      try {
+        if (canalPresencia) {
+          supabaseClient.removeChannel(canalPresencia);
+        }
+
+        const presenciaKey = (usuarioLogueado.usuario || "user") + "_" + Math.random().toString(36).substring(2, 6);
+
+        canalPresencia = supabaseClient.channel("hoja-control-presencia", {
+          config: {
+            presence: { key: presenciaKey }
+          }
+        });
+
+        canalPresencia
+          .on("presence", { event: "sync" }, () => {
+            presenciaEstadoActual = canalPresencia.presenceState();
+            renderizarIndicadoresPresencia();
+          })
+          .on("presence", { event: "join" }, () => {
+            renderizarIndicadoresPresencia();
+          })
+          .on("presence", { event: "leave" }, () => {
+            renderizarIndicadoresPresencia();
+          })
+          .subscribe(async (status) => {
+            if (status === "SUBSCRIBED") {
+              await canalPresencia.track({
+                usuario: usuarioLogueado.usuario,
+                nombre: usuarioLogueado.nombre,
+                rol: usuarioLogueado.rol,
+                color: obtenerColorUsuario(usuarioLogueado.usuario),
+                rowId: celdaActivaLocal.rowId,
+                campo: celdaActivaLocal.campo,
+                timestamp: Date.now()
+              });
+            }
+          });
+      } catch (err) {
+        console.warn("Error conectando presencia Supabase:", err);
+      }
+    }
+
+    async function marcarCeldaPresencia(rowId, campo) {
+      celdaActivaLocal = { rowId, campo };
+      if (canalPresencia && usuarioLogueado) {
+        try {
+          await canalPresencia.track({
+            usuario: usuarioLogueado.usuario,
+            nombre: usuarioLogueado.nombre,
+            rol: usuarioLogueado.rol,
+            color: obtenerColorUsuario(usuarioLogueado.usuario),
+            rowId: rowId,
+            campo: campo,
+            timestamp: Date.now()
+          });
+        } catch (e) {}
+      }
+    }
+
+    async function limpiarCeldaPresencia() {
+      celdaActivaLocal = { rowId: null, campo: null };
+      if (canalPresencia && usuarioLogueado) {
+        try {
+          await canalPresencia.track({
+            usuario: usuarioLogueado.usuario,
+            nombre: usuarioLogueado.nombre,
+            rol: usuarioLogueado.rol,
+            color: obtenerColorUsuario(usuarioLogueado.usuario),
+            rowId: null,
+            campo: null,
+            timestamp: Date.now()
+          });
+        } catch (e) {}
+      }
+    }
+
+    function renderizarIndicadoresPresencia() {
+      // 1. Limpiar marcas y tags previos
+      document.querySelectorAll(".sheets-presence-tag").forEach(el => el.remove());
+      document.querySelectorAll(".sheet-presence-cell").forEach(td => {
+        td.style.outline = "none";
+        td.style.boxShadow = "none";
+      });
+
+      const usuariosOnline = [];
+      const celdasOcupadas = {};
+
+      for (const key in presenciaEstadoActual) {
+        const presencias = presenciaEstadoActual[key] || [];
+        presencias.forEach(p => {
+          if (!p || !p.usuario) return;
+
+          if (!usuariosOnline.some(u => u.usuario.toLowerCase() === p.usuario.toLowerCase())) {
+            usuariosOnline.push(p);
+          }
+
+          // Si otro usuario está enfocado en una celda
+          if (p.rowId && p.campo && p.usuario.toLowerCase() !== (usuarioLogueado?.usuario || "").toLowerCase()) {
+            const idCelda = `cell_${p.rowId}_${p.campo}`;
+            if (!celdasOcupadas[idCelda]) celdasOcupadas[idCelda] = [];
+            celdasOcupadas[idCelda].push(p);
+          }
+        });
+      }
+
+      // 2. Renderizar avatares en la barra superior
+      const avatarsContainer = document.getElementById("sheetAvatarsList");
+      if (avatarsContainer) {
+        avatarsContainer.innerHTML = "";
+        if (usuariosOnline.length === 0) {
+          avatarsContainer.innerHTML = `<span style="color:#aaa; font-size:0.75rem;">Solo tú</span>`;
+        } else {
+          usuariosOnline.forEach(u => {
+            const color = u.color || obtenerColorUsuario(u.usuario);
+            const esTu = (u.usuario.toLowerCase() === (usuarioLogueado?.usuario || "").toLowerCase());
+            const badge = document.createElement("span");
+            badge.className = "sheet-user-avatar";
+            badge.style.background = color;
+            badge.title = `${u.nombre} (@${u.usuario}) ${esTu ? '- (Tú)' : ''}`;
+            badge.innerHTML = `👤 ${u.nombre.split(' ')[0]} ${esTu ? '<small style="opacity:0.8;">(Tú)</small>' : ''}`;
+            avatarsContainer.appendChild(badge);
+          });
+        }
+      }
+
+      // 3. Resaltar celdas activas en la tabla estilo Google Sheets
+      for (const idCelda in celdasOcupadas) {
+        const td = document.getElementById(idCelda);
+        if (td) {
+          const presencias = celdasOcupadas[idCelda];
+          const p = presencias[0];
+          const color = p.color || obtenerColorUsuario(p.usuario);
+
+          td.style.outline = `2px solid ${color}`;
+          td.style.boxShadow = `inset 0 0 8px ${color}44, 0 0 12px ${color}88`;
+          td.style.position = "relative";
+
+          const tag = document.createElement("div");
+          tag.className = "sheets-presence-tag";
+          tag.style.background = color;
+          tag.innerHTML = `<span>✏️</span> ${p.nombre.split(' ')[0]}`;
+          td.appendChild(tag);
+        }
+      }
+    }
+
+    // ==========================================
     // DROPDOWNS: SOPORTE, CATEGORÍA Y MOTIVO
     // ==========================================
     const OPCIONES_SOPORTE = [
@@ -2147,7 +2413,8 @@
               value="${row.monto || ''}" 
               placeholder="0.00"
               title="Haz clic para modificar el monto (Presiona Enter o desenfoca para guardar)"
-              onblur="actualizarMontoFila('${row.id}', this.value, this)" 
+              onfocus="marcarCeldaPresencia('${row.id}', 'monto')"
+              onblur="limpiarCeldaPresencia(); actualizarMontoFila('${row.id}', this.value, this)" 
               onkeydown="if(event.key==='Enter') this.blur()"
               style="width: 120px; padding: 4px 8px; margin: 0; font-weight: bold; font-size: 0.88rem; background: rgba(0,0,0,0.45); border: 1.5px solid var(--accent); border-radius: 6px; color: #fff; text-align: right;"
             >
@@ -2157,35 +2424,35 @@
         }
 
         // 2. Select Soporte (Antuan, Adriel, Fabricio, Enoc)
-        let selectSoporte = `<select class="sheet-select ${obtenerClaseSoporte(row.soporte)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'soporte', this.value, this)">`;
+        let selectSoporte = `<select class="sheet-select ${obtenerClaseSoporte(row.soporte)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onfocus="marcarCeldaPresencia('${row.id}', 'soporte')" onblur="limpiarCeldaPresencia()" onchange="limpiarCeldaPresencia(); actualizarColumna('${row.id}', 'soporte', this.value, this)">`;
         OPCIONES_SOPORTE.forEach(op => {
           selectSoporte += `<option value="${op.valor}" ${row.soporte === op.valor ? 'selected' : ''}>${op.texto}</option>`;
         });
         selectSoporte += `</select>`;
 
         // 3. Select Categoría (Columna 7)
-        let selectCategoria = `<select class="sheet-select ${obtenerClaseCategoria(row.categoria)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'categoria', this.value, this)">`;
+        let selectCategoria = `<select class="sheet-select ${obtenerClaseCategoria(row.categoria)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onfocus="marcarCeldaPresencia('${row.id}', 'categoria')" onblur="limpiarCeldaPresencia()" onchange="limpiarCeldaPresencia(); actualizarColumna('${row.id}', 'categoria', this.value, this)">`;
         OPCIONES_CATEGORIA.forEach(op => {
           selectCategoria += `<option value="${op.valor}" ${row.categoria === op.valor ? 'selected' : ''}>${op.texto}</option>`;
         });
         selectCategoria += `</select>`;
 
         // 4. Select Motivo (Columna 8)
-        let selectMotivo = `<select class="sheet-select ${obtenerClaseMotivo(row.motivo)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'motivo', this.value, this)">`;
+        let selectMotivo = `<select class="sheet-select ${obtenerClaseMotivo(row.motivo)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onfocus="marcarCeldaPresencia('${row.id}', 'motivo')" onblur="limpiarCeldaPresencia()" onchange="limpiarCeldaPresencia(); actualizarColumna('${row.id}', 'motivo', this.value, this)">`;
         OPCIONES_MOTIVO.forEach(op => {
           selectMotivo += `<option value="${op.valor}" ${row.motivo === op.valor ? 'selected' : ''}>${op.texto}</option>`;
         });
         selectMotivo += `</select>`;
 
         tr.innerHTML = `
-          <td>${row.marcaTemporal || '-'}</td>
-          <td>${celdaMonto}</td>
-          <td>${row.agente || '-'}</td>
-          <td><strong>${row.cedula || '-'}</strong></td>
-          <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
-          <td style="text-align: center;">${selectSoporte}</td>
-          <td style="text-align: center;">${selectCategoria}</td>
-          <td style="text-align: center;">${selectMotivo}</td>
+          <td id="cell_${row.id}_marca" class="sheet-presence-cell">${row.marcaTemporal || '-'}</td>
+          <td id="cell_${row.id}_monto" class="sheet-presence-cell">${celdaMonto}</td>
+          <td id="cell_${row.id}_agente" class="sheet-presence-cell">${row.agente || '-'}</td>
+          <td id="cell_${row.id}_cedula" class="sheet-presence-cell"><strong>${row.cedula || '-'}</strong></td>
+          <td id="cell_${row.id}_cero" class="sheet-presence-cell" style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
+          <td id="cell_${row.id}_soporte" class="sheet-presence-cell" style="text-align: center;">${selectSoporte}</td>
+          <td id="cell_${row.id}_categoria" class="sheet-presence-cell" style="text-align: center;">${selectCategoria}</td>
+          <td id="cell_${row.id}_motivo" class="sheet-presence-cell" style="text-align: center;">${selectMotivo}</td>
           <td style="text-align: center;">
             ${puedeEditar ? `<button style="background: #d32f2f; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.75rem;" onclick="eliminarRegistro('${row.id}')" title="Eliminar fila">🗑️</button>` : `<span style="color:#999;" title="Solo lectura">🔒</span>`}
           </td>
@@ -2193,6 +2460,9 @@
 
         tbody.appendChild(tr);
       });
+
+      // Renderizar badges de presencia activa
+      renderizarIndicadoresPresencia();
     }
 
     async function actualizarMontoFila(id, nuevoMontoRaw, inputElem) {
