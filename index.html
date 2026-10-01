@@ -638,7 +638,7 @@
     .pill-mot-wf-supera-63000 { background: #42a5f5 !important; color: #ffffff !important; }
 
     /* ========================================= */
-    /* ESTILOS PARA MARCAR CÉDULA AL TOCAR       */
+    /* ESTILOS PARA CÉDULA EN PROCESO            */
     /* ========================================= */
     .cell-cedula-click {
       cursor: pointer;
@@ -647,33 +647,27 @@
       padding: 7px 10px !important;
     }
     .cell-cedula-click:hover {
-      background: rgba(0, 120, 215, 0.22) !important;
+      background: rgba(0, 120, 215, 0.18) !important;
     }
-    .badge-cedula-tomada {
+    .badge-en-proceso {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: linear-gradient(135deg, #1976d2, #0d47a1);
+      background: linear-gradient(135deg, #e65100, #f57c00);
       color: #ffffff;
-      font-size: 0.73rem;
+      font-size: 0.72rem;
       font-weight: bold;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.3);
+      border: 1px solid rgba(255,255,255,0.35);
       box-shadow: 0 2px 6px rgba(0,0,0,0.35);
       margin-top: 3px;
       letter-spacing: 0.2px;
+      animation: popInBadge 0.2s ease;
     }
-    .badge-cedula-libre {
-      display: inline-block;
-      color: rgba(255,255,255,0.4);
-      font-size: 0.68rem;
-      margin-top: 3px;
-      transition: color 0.15s ease;
-    }
-    .cell-cedula-click:hover .badge-cedula-libre {
-      color: #4fc3f7;
-      font-weight: bold;
+    @keyframes popInBadge {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     /* Theme widget & Background Panel */
@@ -2004,7 +1998,8 @@
             ceroPagos: !!item.cero_pagos,
             soporte: item.soporte || "",
             categoria: item.categoria || "",
-            motivo: item.motivo || ""
+            motivo: item.motivo || "",
+            enProceso: item.en_proceso || ""
           }));
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
           renderizarTablaSheet();
@@ -2058,7 +2053,8 @@
             ceroPagos: !!nuevaFila.cero_pagos,
             soporte: nuevaFila.soporte || "",
             categoria: nuevaFila.categoria || "",
-            motivo: nuevaFila.motivo || ""
+            motivo: nuevaFila.motivo || "",
+            enProceso: nuevaFila.en_proceso || ""
           };
           listaLimpiezas.unshift(itemNuevo);
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
@@ -2094,7 +2090,8 @@
             ceroPagos: !!nuevaFila.cero_pagos,
             soporte: nuevoSoporte,
             categoria: nuevaCat,
-            motivo: nuevaFila.motivo || ""
+            motivo: nuevaFila.motivo || "",
+            enProceso: nuevaFila.en_proceso || ""
           };
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
           renderizarTablaSheet();
@@ -2108,7 +2105,7 @@
 
     // ==========================================
     // ==========================================
-    // MARCAR CÉDULA AL TOCAR / ASIGNAR SOPORTE
+    // MARCAR CÉDULA EN PROCESO AL TOCAR
     // ==========================================
     async function toggleTomarCedula(rowId) {
       if (!usuarioLogueado) {
@@ -2122,13 +2119,19 @@
 
       const miNombre = usuarioLogueado.nombre || usuarioLogueado.usuario;
 
-      // Si ya estaba marcada por el usuario actual, la desmarca al volver a tocar
-      if (item.soporte && item.soporte.toLowerCase() === miNombre.toLowerCase()) {
-        item.soporte = "";
-        notificar("info", "Cédula Liberada", `Has desmarcado la cédula <strong>${item.cedula}</strong>.`);
+      // Si ya tiene un nombre asignado en la columna Soporte, no requiere marcarse en proceso
+      if (item.soporte) {
+        notificar("info", "Limpieza Atendida", `Esta cédula ya tiene asignado a <strong>${item.soporte}</strong> en la columna de Soporte.`);
+        return;
+      }
+
+      // Si ya estaba en proceso por este usuario, se desmarca
+      if (item.enProceso && item.enProceso.toLowerCase() === miNombre.toLowerCase()) {
+        item.enProceso = "";
+        notificar("info", "Cédula Liberada", `Has retirado la marca de en proceso en la cédula <strong>${item.cedula}</strong>.`);
       } else {
-        item.soporte = miNombre;
-        notificar("success", "Cédula Marcada", `Cédula <strong>${item.cedula}</strong> asignada a <strong>${miNombre}</strong>.`);
+        item.enProceso = miNombre;
+        notificar("success", "En Proceso", `Cédula <strong>${item.cedula}</strong> marcada como en proceso por <strong>${miNombre}</strong>.`);
       }
 
       localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
@@ -2138,10 +2141,10 @@
         try {
           await supabaseClient
             .from("control_limpiezas")
-            .update({ soporte: item.soporte })
+            .update({ en_proceso: item.enProceso })
             .eq("id", rowId);
         } catch (err) {
-          console.warn("Error guardando soporte en Supabase:", err);
+          console.warn("Error guardando en_proceso en Supabase:", err);
         }
       }
     }
@@ -2355,19 +2358,23 @@
         });
         selectMotivo += `</select>`;
 
-        const quienSoporte = row.soporte || "";
-        const badgeSoporte = quienSoporte
-          ? `<span class="badge-cedula-tomada" title="Atendido por ${quienSoporte} (Toca para liberar o cambiar)">👤 ${quienSoporte}</span>`
-          : `<span class="badge-cedula-libre" title="Toca para marcar con tu nombre">👆 Tocar para tomar</span>`;
+        // Badge "En proceso": Solo se muestra si alguien la tomó y la columna Soporte aún NO tiene nombre
+        const enProc = (row.enProceso || "").trim();
+        const tieneSoporte = !!(row.soporte || "").trim();
+        const mostrarBadgeEnProceso = enProc && !tieneSoporte;
+
+        const badgeHTML = mostrarBadgeEnProceso
+          ? `<span class="badge-en-proceso" title="En proceso por ${enProc} (Toca para desmarcar)">⏳ ${enProc}</span>`
+          : ``;
 
         tr.innerHTML = `
           <td>${row.marcaTemporal || '-'}</td>
           <td>${celdaMonto}</td>
           <td>${row.agente || '-'}</td>
-          <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" title="Haz clic en esta cédula para marcarla con tu nombre">
-            <div style="display: flex; flex-direction: column; align-items: flex-start;">
+          <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" title="Haz clic en la cédula para marcarla en proceso">
+            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
               <strong style="font-size: 0.95rem; letter-spacing: 0.3px;">${row.cedula || '-'}</strong>
-              ${badgeSoporte}
+              ${badgeHTML}
             </div>
           </td>
           <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
@@ -2426,6 +2433,12 @@
       const item = listaLimpiezas.find(x => x.id === id);
       if (item) {
         item[campo] = valor;
+
+        // Si ya tiene soporte asignado, se limpia el badge de en proceso
+        if (campo === "soporte" && valor) {
+          item.enProceso = "";
+        }
+
         localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
 
         if (selectElem) {
@@ -2437,10 +2450,15 @@
           else if (campo === "motivo") selectElem.className = `sheet-select ${obtenerClaseMotivo(valor)}`;
         }
 
+        renderizarTablaSheet();
+
         if (supabaseClient) {
           const updateObj = {};
           if (campo === "monto") updateObj.monto = valor;
-          if (campo === "soporte") updateObj.soporte = valor;
+          if (campo === "soporte") {
+            updateObj.soporte = valor;
+            if (valor) updateObj.en_proceso = "";
+          }
           if (campo === "categoria") updateObj.categoria = valor;
           if (campo === "motivo") updateObj.motivo = valor;
           await supabaseClient.from("control_limpiezas").update(updateObj).eq("id", id);
