@@ -603,6 +603,12 @@
       text-align: center;
       text-align-last: center;
     }
+    .sheet-select-soporte {
+      min-width: 125px;
+      padding: 6px 14px;
+      font-size: 0.86rem;
+      letter-spacing: 0.3px;
+    }
     .sheet-select:disabled {
       opacity: 0.9;
       cursor: not-allowed;
@@ -1187,7 +1193,7 @@
         <div style="font-size: 1.15rem; font-weight: bold; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
           <span>📊 Hoja de Control de Limpiezas</span>
           <button onclick="cambiarVista('generador')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer; font-size: 0.82rem;">⬅ Volver al Generador</button>
-          <span style="font-size: 0.78rem; font-weight: normal; color: #90caf9; background: rgba(13, 71, 161, 0.35); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(33, 150, 243, 0.4);">📋 Toca cualquier cédula para copiarla y marcarla en proceso</span>
+          <span style="font-size: 0.78rem; font-weight: normal; color: #90caf9; background: rgba(13, 71, 161, 0.35); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(33, 150, 243, 0.4);">📋 Toca cualquier cédula para copiarla (Editores: marcar en proceso)</span>
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <input type="text" id="filtroSheet" placeholder="🔍 Buscar cédula, agente..." style="width: 200px; margin: 0; padding: 7px 10px; font-size: 0.85rem;" oninput="renderizarTablaSheet()">
@@ -1205,7 +1211,7 @@
               <th>Agente ˅</th>
               <th>Cédula ˅</th>
               <th style="text-align: center;">Cero Pagos ˅</th>
-              <th style="text-align: center;">Soporte ˅</th>
+              <th style="text-align: center; min-width: 130px;">Soporte ˅</th>
               <th style="text-align: center;">Categoría ˅</th>
               <th style="text-align: center;">Motivo ˅</th>
               <th style="text-align: center;">Acciones</th>
@@ -2359,13 +2365,14 @@
 
       const cedulaTexto = String(item.cedula || "").trim();
 
-      // 1. Copiar cédula inmediatamente al portapapeles
+      // 1. Copiar cédula inmediatamente al portapapeles para cualquier usuario
       if (cedulaTexto) {
         copiarTextoAlPortapapeles(cedulaTexto);
       }
 
-      if (!usuarioLogueado) {
-        notificar("warning", "Cédula Copiada", `Cédula <strong>${cedulaTexto}</strong> copiada al portapapeles.<br><em>Inicia sesión para marcar que la estás realizando.</em>`);
+      // 2. Solo los editores autorizados pueden marcarse en proceso
+      if (!esEditor()) {
+        notificar("success", "Cédula Copiada", `Cédula <strong>${cedulaTexto}</strong> copiada al portapapeles.`);
         return;
       }
 
@@ -2632,7 +2639,7 @@
         }
 
         // 3. Select Soporte
-        let selectSoporte = `<select class="sheet-select ${obtenerClaseSoporte(row.soporte)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'soporte', this.value, this)">`;
+        let selectSoporte = `<select class="sheet-select sheet-select-soporte ${obtenerClaseSoporte(row.soporte)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'soporte', this.value, this)">`;
         
         let soporteEncontrado = OPCIONES_SOPORTE.some(op => op.valor.toLowerCase() === (row.soporte || "").toLowerCase());
         if (row.soporte && !soporteEncontrado) {
@@ -2671,14 +2678,14 @@
           <td style="text-align: center;">${normalizarFechaMarcaTemporal(row.marcaTemporal)}</td>
           <td style="text-align: center;">${celdaMonto}</td>
           <td style="text-align: center;">${row.agente || '-'}</td>
-          <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Toca para copiar la cédula y marcarla en proceso">
+          <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Toca para copiar la cédula (Editores: marcar en proceso)">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;">
               ${celdaCedula}
               ${badgeHTML}
             </div>
           </td>
           <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
-          <td style="text-align: center;">${selectSoporte}</td>
+          <td style="text-align: center; min-width: 130px;">${selectSoporte}</td>
           <td style="text-align: center;">${selectCategoria}</td>
           <td style="text-align: center;">${selectMotivo}</td>
           <td style="text-align: center;">
@@ -2806,7 +2813,7 @@
 
         if (selectElem) {
           if (campo === "soporte") {
-            selectElem.className = `sheet-select ${obtenerClaseSoporte(valor)}`;
+            selectElem.className = `sheet-select sheet-select-soporte ${obtenerClaseSoporte(valor)}`;
             renderizarTablaSheet();
           }
           else if (campo === "categoria") selectElem.className = `sheet-select ${obtenerClaseCategoria(valor)}`;
