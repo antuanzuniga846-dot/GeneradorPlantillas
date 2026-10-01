@@ -2106,18 +2106,33 @@
           .order("created_at", { ascending: false });
 
         if (!error && data) {
-          const nuevosDatos = data.map(item => ({
-            id: item.id,
-            marcaTemporal: normalizarFechaMarcaTemporal(item.marca_temporal),
-            monto: item.monto,
-            agente: item.agente,
-            cedula: item.cedula,
-            ceroPagos: !!item.cero_pagos,
-            soporte: item.soporte || "",
-            categoria: item.categoria || "",
-            motivo: item.motivo || "",
-            enProceso: item.en_proceso || ""
-          }));
+          const nuevosDatos = data.map(item => {
+            const anteriorLocal = listaLimpiezas.find(x => x.id === item.id);
+            
+            let enProc = "";
+            if (item.en_proceso !== undefined && item.en_proceso !== null && String(item.en_proceso).trim() !== "") {
+              enProc = String(item.en_proceso).trim();
+            } else if (anteriorLocal && anteriorLocal.enProceso) {
+              enProc = anteriorLocal.enProceso;
+            }
+
+            if (item.soporte && String(item.soporte).trim()) {
+              enProc = "";
+            }
+
+            return {
+              id: item.id,
+              marcaTemporal: normalizarFechaMarcaTemporal(item.marca_temporal),
+              monto: item.monto,
+              agente: item.agente,
+              cedula: item.cedula,
+              ceroPagos: !!item.cero_pagos,
+              soporte: item.soporte || "",
+              categoria: item.categoria || "",
+              motivo: item.motivo || "",
+              enProceso: enProc
+            };
+          });
 
           const jsonNuevo = JSON.stringify(nuevosDatos);
           const jsonViejo = JSON.stringify(listaLimpiezas);
@@ -2151,9 +2166,13 @@
           try { supabaseClient.removeChannel(canalRealtime); } catch(e){}
         }
 
-        const channelId = "rt-limpiezas-" + Math.random().toString(36).substring(2, 8);
+        const channelId = "global_control_limpiezas_realtime";
         canalRealtime = supabaseClient
-          .channel(channelId)
+          .channel(channelId, {
+            config: {
+              broadcast: { self: false }
+            }
+          })
           .on(
             "postgres_changes",
             { event: "*", schema: "public", table: "control_limpiezas" },
@@ -2161,15 +2180,60 @@
               manejarEventoRealtime(payload);
             }
           )
+          .on(
+            "broadcast",
+            { event: "en_proceso_sync" },
+            (payload) => {
+              const data = payload.payload || {};
+              if (data && data.id) {
+                const itm = listaLimpiezas.find(x => x.id === data.id);
+                if (itm) {
+                  itm.enProceso = (data.enProceso || "").trim();
+                  localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+                  renderizarTablaSheet();
+                }
+              }
+            }
+          )
+          .on(
+            "broadcast",
+            { event: "solicitar_estados_en_proceso" },
+            () => {
+              if (usuarioLogueado) {
+                const miNombre = usuarioLogueado.nombre || usuarioLogueado.usuario;
+                const misActivas = listaLimpiezas.filter(x => x.enProceso && x.enProceso.toLowerCase() === miNombre.toLowerCase() && !x.soporte);
+                misActivas.forEach(act => {
+                  try {
+                    canalRealtime.send({
+                      type: 'broadcast',
+                      event: 'en_proceso_sync',
+                      payload: { id: act.id, enProceso: act.enProceso }
+                    });
+                  } catch(e){}
+                });
+              }
+            }
+          )
           .subscribe((status, err) => {
             console.log("📡 Estado conexión Realtime Supabase:", status);
+            if (status === "SUBSCRIBED") {
+              setTimeout(() => {
+                try {
+                  canalRealtime.send({
+                    type: 'broadcast',
+                    event: 'solicitar_estados_en_proceso',
+                    payload: {}
+                  });
+                } catch(e){}
+              }, 400);
+            }
             if (err) console.warn("Realtime error:", err);
           });
       } catch (e) {
         console.warn("Error suscribiendo realtime:", e);
       }
 
-      // Auto-polling cada 3.5 segundos para garantizar que todos estén 100% sincronizados
+      // Auto-polling cada 3.5 segundos para garantizar sincronización de datos
       iniciarPollingSincronizacion();
     }
 
@@ -2225,6 +2289,16 @@
             notificar("success", "🔔 ¡Limpieza Realizada!", msg, true);
           }
 
+          let enProc = "";
+          if (nuevaFila.en_proceso !== undefined && nuevaFila.en_proceso !== null && String(nuevaFila.en_proceso).trim() !== "") {
+            enProc = String(nuevaFila.en_proceso).trim();
+          } else if (anterior.enProceso) {
+            enProc = anterior.enProceso;
+          }
+          if (nuevoSoporte && String(nuevoSoporte).trim()) {
+            enProc = "";
+          }
+
           listaLimpiezas[idx] = {
             id: nuevaFila.id,
             marcaTemporal: normalizarFechaMarcaTemporal(nuevaFila.marca_temporal),
@@ -2235,7 +2309,7 @@
             soporte: nuevoSoporte,
             categoria: nuevaCat,
             motivo: nuevaFila.motivo || "",
-            enProceso: nuevaFila.en_proceso || ""
+            enProceso: enProc
           };
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
           renderizarTablaSheet();
@@ -2291,15 +2365,15 @@
       }
 
       if (!usuarioLogueado) {
-        notificar("success", "Cédula Copiada", `Cédula <strong>${cedulaTexto}</strong> copiada al portapapeles.`);
+        notificar("warning", "Cédula Copiada", `Cédula <strong>${cedulaTexto}</strong> copiada al portapapeles.<br><em>Inicia sesión para marcar que la estás realizando.</em>`);
         return;
       }
 
       const miNombre = usuarioLogueado.nombre || usuarioLogueado.usuario;
 
       // Si ya tiene un nombre asignado en la columna Soporte, solo se copia y no requiere marcarse
-      if (item.soporte) {
-        notificar("success", "Cédula Copiada", `Cédula <strong>${cedulaTexto}</strong> copiada al portapapeles. (Atendida por ${item.soporte}).`);
+      if (item.soporte && item.soporte.trim()) {
+        notificar("info", "Cédula Copiada", `Cédula <strong>${cedulaTexto}</strong> copiada al portapapeles. (Atendida por ${item.soporte}).`);
         return;
       }
 
@@ -2314,6 +2388,22 @@
 
       localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
       renderizarTablaSheet();
+
+      // Emitir broadcast en tiempo real a todos los compañeros conectados
+      if (canalRealtime) {
+        try {
+          canalRealtime.send({
+            type: 'broadcast',
+            event: 'en_proceso_sync',
+            payload: {
+              id: rowId,
+              enProceso: item.enProceso
+            }
+          });
+        } catch (e) {
+          console.warn("Error broadcast en_proceso:", e);
+        }
+      }
 
       if (supabaseClient) {
         try {
@@ -2514,25 +2604,13 @@
       filtrados.forEach(row => {
         const tr = document.createElement("tr");
 
-        // 1. Cédula editable para editores
-        let celdaCedula = "";
-        if (puedeEditar) {
-          celdaCedula = `
-            <input 
-              type="text" 
-              class="sheet-cedula-input" 
-              value="${row.cedula || ''}" 
-              placeholder="Cédula"
-              title="Haz clic para modificar la cédula (Presiona Enter o desenfoca para guardar)"
-              onclick="event.stopPropagation()"
-              onblur="actualizarCedulaFila('${row.id}', this.value, this)" 
-              onkeydown="if(event.key==='Enter') this.blur()"
-              style="width: 135px; padding: 4px 8px; margin: 0 auto; font-weight: bold; font-size: 0.88rem; background: rgba(0,0,0,0.45); border: 1.5px solid var(--accent); border-radius: 6px; color: #fff; text-align: center;"
-            >
-          `;
-        } else {
-          celdaCedula = `<strong style="font-size: 0.95rem; letter-spacing: 0.3px;">${row.cedula || '-'}</strong>`;
-        }
+        // 1. Cédula y botón de edición para editores
+        let celdaCedula = `
+          <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <strong style="font-size: 0.95rem; letter-spacing: 0.3px;">${row.cedula || '-'}</strong>
+            ${puedeEditar ? `<button type="button" class="btn-edit-cedula" onclick="event.stopPropagation(); editarCedulaDirecta('${row.id}')" title="Modificar número de cédula (Editor)" style="background: transparent; border: none; cursor: pointer; font-size: 0.82rem; padding: 0 3px; color: #90caf9; opacity: 0.75; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">✏️</button>` : ''}
+          </div>
+        `;
 
         // 2. Monto editable para editores
         let celdaMonto = "";
@@ -2593,7 +2671,7 @@
           <td style="text-align: center;">${normalizarFechaMarcaTemporal(row.marcaTemporal)}</td>
           <td style="text-align: center;">${celdaMonto}</td>
           <td style="text-align: center;">${row.agente || '-'}</td>
-          <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Toca la casilla para copiar la cédula y marcarla en proceso">
+          <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Toca para copiar la cédula y marcarla en proceso">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;">
               ${celdaCedula}
               ${badgeHTML}
@@ -2612,7 +2690,27 @@
       });
     }
 
-    async function actualizarCedulaFila(id, nuevaCedulaRaw, inputElem) {
+    async function editarCedulaDirecta(rowId) {
+      if (!esEditor()) {
+        notificar("error", "Acceso Denegado", "Solo los editores pueden modificar cédulas.");
+        return;
+      }
+      const item = listaLimpiezas.find(x => x.id === rowId);
+      if (!item) return;
+
+      const nueva = prompt("Modificar número de cédula:", item.cedula || "");
+      if (nueva === null) return;
+
+      const valorFinal = nueva.trim();
+      if (!valorFinal) {
+        notificar("warning", "Cédula Requerida", "El número de cédula no puede estar vacío.");
+        return;
+      }
+
+      await actualizarCedulaFila(rowId, valorFinal);
+    }
+
+    async function actualizarCedulaFila(id, nuevaCedulaRaw) {
       if (!esEditor()) {
         notificar("error", "Acceso Denegado", "Solo los editores pueden modificar cédulas.");
         renderizarTablaSheet();
@@ -2625,15 +2723,14 @@
       const valorFinal = (nuevaCedulaRaw || "").trim();
       if (!valorFinal) {
         notificar("warning", "Cédula Requerida", "La cédula no puede quedar vacía.");
-        if (inputElem) inputElem.value = item.cedula;
         return;
       }
 
       if (item.cedula !== valorFinal) {
         const cedulaAnterior = item.cedula;
         item.cedula = valorFinal;
-        if (inputElem) inputElem.value = valorFinal;
         localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+        renderizarTablaSheet();
 
         if (supabaseClient) {
           try {
@@ -2694,6 +2791,15 @@
         // Si ya tiene soporte asignado, se limpia el badge de en proceso
         if (campo === "soporte" && valor) {
           item.enProceso = "";
+          if (canalRealtime) {
+            try {
+              canalRealtime.send({
+                type: 'broadcast',
+                event: 'en_proceso_sync',
+                payload: { id: id, enProceso: "" }
+              });
+            } catch(e){}
+          }
         }
 
         localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
