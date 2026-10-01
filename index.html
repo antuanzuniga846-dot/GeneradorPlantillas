@@ -901,6 +901,7 @@
       <span>👤 <strong id="lblUsuarioNombre">Usuario</strong> (<span id="lblUsuarioUser" style="color:#aaa;">-</span>)</span>
       <span id="lblRolActual" class="role-badge role-reader">Lector</span>
       <button id="btnAdminUsuarios" class="btn-nav-action" onclick="abrirModalAdminUsuarios()" style="display:none; background: rgba(156, 39, 176, 0.4); border-color: #ba68c8;">👥 Gestionar Usuarios</button>
+      <button class="btn-nav-action" onclick="abrirModalConfigSupabase()" style="background: rgba(103, 58, 183, 0.4); border-color: #ab47bc;">⚙️ Supabase</button>
       <button class="btn-nav-action btn-nav-logout" onclick="cerrarSesionUsuario()">🚪 Salir</button>
     </div>
   </div>
@@ -1167,7 +1168,7 @@
   <div id="modalLogin" class="modal-overlay" style="display: flex; position: fixed; inset: 0; background: rgba(10, 10, 18, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 999999; justify-content: center; align-items: center;">
     <div class="modal-content login-box" style="box-shadow: 0 0 35px rgba(0, 120, 215, 0.35); border: 2px solid var(--accent); max-width: 440px; width: 92%;">
       <div style="font-size: 2.4rem; margin-bottom: 6px;">🔐</div>
-      <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Generador de plantillas</h2>
+      <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Sistema de Control BURO</h2>
       <p style="font-size: 0.85rem; color: #bbb; margin-bottom: 16px;">Ingresa tus credenciales para acceder al generador y a la hoja de control.</p>
 
       <div class="login-tabs">
@@ -1201,6 +1202,12 @@
 
         <button class="btn-action" style="margin-top: 10px; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarLogin()">🚀 Entrar al Sistema</button>
 
+        <div style="margin-top: 14px; font-size: 0.76rem; color: #aaa; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; text-align: left; line-height: 1.4;">
+          💡 <strong>Contraseña de agentes:</strong> Tu apellido + <code>123</code> (ej: <code>badilla123</code>, <code>barquero123</code>, <code>zuñiga123</code>).<br>
+          🔑 <strong>Editores / Soporte:</strong> <code>mora123</code>, <code>antuan123</code>, <code>adriel123</code>, <code>fabricio123</code>, <code>enoc123</code>, <code>admin123</code>.
+        </div>
+      </div>
+
       <!-- FORMULARIO DE REGISTRO -->
       <div id="formRegistro" style="display: none;">
         <div class="campo-wrapper" style="text-align: left;">
@@ -1223,8 +1230,6 @@
 
         <button class="btn-action" style="margin-top: 14px; background: #2e7d32; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarRegistro()">✨ Crear Cuenta</button>
       </div>
-    </div>
-  </div>
     </div>
   </div>
 
@@ -1262,8 +1267,30 @@
     </div>
   </div>
 
+  <!-- Modal Configuración Supabase -->
+  <div id="modalConfigSupabase" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="margin-top: 0;">⚙️ Configuración de Supabase</h3>
+      <p style="font-size: 0.84rem; color: #bbb;">Conecta tu base de datos de Supabase para sincronización en tiempo real y gestión segura de permisos:</p>
+      
+      <label style="font-size: 0.82rem; margin-top: 8px;">Supabase Project URL:</label>
+      <input type="text" id="txtSupabaseUrl" placeholder="https://xyzcompany.supabase.co" style="font-size: 0.85rem;">
+
+      <label style="font-size: 0.82rem; margin-top: 8px;">Supabase Anon Key:</label>
+      <input type="text" id="txtSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-size: 0.85rem;">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+        <button onclick="probarConexionSupabase()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ab47bc; background: rgba(171, 71, 188, 0.25); color: #fff; cursor: pointer; font-size: 0.82rem;">🔍 Probar Conexión</button>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="cerrarModalConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cerrar</button>
+          <button onclick="guardarConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: none; background: var(--accent); color: var(--accent-oncolor); cursor: pointer; font-weight: bold;">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer style="text-align: center; margin-top: 30px; font-size: 0.85rem; color: #888;">
-    <p>&copy; 2026 Sebastian Rodriguez. Hecho en Costa Rica.</p>
+    <p>&copy; 2026 Generador de Plantillas BURO & Control de Limpiezas. Hecho en Costa Rica.</p>
   </footer>
 
   <script>
@@ -1444,7 +1471,8 @@
       { usuario: "olga.rodriguez", nombre: "Olga Rodriguez", password: "rodriguez123", rol: "solicitante", activo: true },
       { usuario: "jazmin.jimenez", nombre: "Jazmin Jimenez", password: "jimenez123", rol: "solicitante", activo: true },
       { usuario: "carlos.selva", nombre: "Carlos Selva", password: "selva123", rol: "solicitante", activo: true },
-      { usuario: "roberto.chacon", nombre: "Roberto Chacon", password: "chacon123", rol: "solicitante", activo: true }
+      { usuario: "roberto.chacon", nombre: "Roberto Chacon", password: "chacon123", rol: "solicitante", activo: true },
+      { usuario: "luis.marin", nombre: "Luis Marin", password: "marin123", rol: "solicitante", activo: true }
     ];
 
     const STORAGE_KEY_USERS_V6 = "dbUsuariosBuro_v6";
@@ -2033,61 +2061,14 @@
 
       const agenteActual = usuarioLogueado.usuario || usuarioLogueado.nombre;
 
-      // Validar duplicados según reglas
-      const existenteIndex = listaLimpiezas.findIndex(item => item.cedula && item.cedula.toLowerCase() === cedula.toLowerCase());
-
-      if (existenteIndex !== -1) {
-        const existente = listaLimpiezas[existenteIndex];
-        const soporteActual = existente.soporte || "";
-        const categoriaActual = existente.categoria || "";
-        const tieneSoporte = soporteActual.trim() !== "";
-        const esPermitidaPorEstado = (categoriaActual === "No procede" || categoriaActual === "Control de altas");
-
-        if (tieneSoporte && !esReversion && !esPermitidaPorEstado) {
-          notificar("error", "Limpieza Ya Realizada", `Esta cédula ya fue procesada por <strong>${soporteActual}</strong>. Si es una reversión, marca la casilla <strong>'¿Es una Reversión?'</strong>.`);
-          return;
-        }
-
-        if (esReversion) {
-          const ahora = new Date();
-          const marcaNueva = `${ahora.toLocaleDateString()} ${ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
-          
-          existente.marcaTemporal = marcaNueva;
-          existente.monto = montoTexto;
-          existente.agente = agenteActual;
-          existente.ceroPagos = tieneCeroPagos;
-          existente.categoria = "Reversión";
-          existente.soporte = ""; // Se libera para que un agente la tome de nuevo
-          
-          localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
-
-          if (supabaseClient) {
-            await supabaseClient.from("control_limpiezas").update({
-              marca_temporal: marcaNueva,
-              monto: montoTexto,
-              agente: agenteActual,
-              cero_pagos: tieneCeroPagos,
-              categoria: "Reversión",
-              soporte: ""
-            }).eq("id", existente.id);
-          }
-
-          renderizarTablaSheet();
-          notificar("success", "Reversión Subida", `Se actualizó la limpieza de la cédula <strong>${cedula}</strong> como Reversión.`);
-          return;
-        }
-
-        if (!esPermitidaPorEstado && !esReversion) {
-          notificar("warning", "Ya Registrada", `Ya existe una solicitud activa para la cédula <strong>${cedula}</strong>.`);
-          return;
-        }
-      }
-
-      // Nuevo registro
+      // Siempre registrar como una NUEVA fila en el historial (sin sobreescribir ni borrar registros anteriores)
       const ahora = new Date();
+      const nuevoId = "id_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+      const marcaNueva = `${ahora.toLocaleDateString()} ${ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
+
       const nuevo = {
-        id: "id_" + Date.now(),
-        marcaTemporal: `${ahora.toLocaleDateString()} ${ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`,
+        id: nuevoId,
+        marcaTemporal: marcaNueva,
         monto: montoTexto,
         agente: agenteActual,
         cedula: cedula,
@@ -2119,7 +2100,11 @@
       }
 
       renderizarTablaSheet();
-      notificar("success", "Subido con Éxito", `Limpieza para cédula <strong>${cedula}</strong> registrada en la hoja de control.`);
+      if (esReversion) {
+        notificar("success", "Reversión Subida", `Se registró una nueva fila de Reversión para la cédula <strong>${cedula}</strong> en la hoja.`);
+      } else {
+        notificar("success", "Subido con Éxito", `Limpieza para cédula <strong>${cedula}</strong> registrada en la hoja de control.`);
+      }
     }
 
     // ==========================================
@@ -2140,7 +2125,8 @@
                (row.agente || "").toLowerCase().includes(filtro) ||
                (row.soporte || "").toLowerCase().includes(filtro) ||
                (row.categoria || "").toLowerCase().includes(filtro) ||
-               (row.motivo || "").toLowerCase().includes(filtro);
+               (row.motivo || "").toLowerCase().includes(filtro) ||
+               (row.monto || "").toLowerCase().includes(filtro);
       });
 
       if (filtrados.length === 0) {
@@ -2151,21 +2137,40 @@
       filtrados.forEach(row => {
         const tr = document.createElement("tr");
 
-        // 1. Select Soporte (Antuan, Adriel, Fabricio, Enoc)
+        // 1. Monto editable para editores
+        let celdaMonto = "";
+        if (puedeEditar) {
+          celdaMonto = `
+            <input 
+              type="text" 
+              class="sheet-monto-input" 
+              value="${row.monto || ''}" 
+              placeholder="0.00"
+              title="Haz clic para modificar el monto (Presiona Enter o desenfoca para guardar)"
+              onblur="actualizarMontoFila('${row.id}', this.value, this)" 
+              onkeydown="if(event.key==='Enter') this.blur()"
+              style="width: 120px; padding: 4px 8px; margin: 0; font-weight: bold; font-size: 0.88rem; background: rgba(0,0,0,0.45); border: 1.5px solid var(--accent); border-radius: 6px; color: #fff; text-align: right;"
+            >
+          `;
+        } else {
+          celdaMonto = `<strong>${row.monto || '-'}</strong>`;
+        }
+
+        // 2. Select Soporte (Antuan, Adriel, Fabricio, Enoc)
         let selectSoporte = `<select class="sheet-select ${obtenerClaseSoporte(row.soporte)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'soporte', this.value, this)">`;
         OPCIONES_SOPORTE.forEach(op => {
           selectSoporte += `<option value="${op.valor}" ${row.soporte === op.valor ? 'selected' : ''}>${op.texto}</option>`;
         });
         selectSoporte += `</select>`;
 
-        // 2. Select Categoría (Columna 7)
+        // 3. Select Categoría (Columna 7)
         let selectCategoria = `<select class="sheet-select ${obtenerClaseCategoria(row.categoria)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'categoria', this.value, this)">`;
         OPCIONES_CATEGORIA.forEach(op => {
           selectCategoria += `<option value="${op.valor}" ${row.categoria === op.valor ? 'selected' : ''}>${op.texto}</option>`;
         });
         selectCategoria += `</select>`;
 
-        // 3. Select Motivo (Columna 8)
+        // 4. Select Motivo (Columna 8)
         let selectMotivo = `<select class="sheet-select ${obtenerClaseMotivo(row.motivo)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'motivo', this.value, this)">`;
         OPCIONES_MOTIVO.forEach(op => {
           selectMotivo += `<option value="${op.valor}" ${row.motivo === op.valor ? 'selected' : ''}>${op.texto}</option>`;
@@ -2174,7 +2179,7 @@
 
         tr.innerHTML = `
           <td>${row.marcaTemporal || '-'}</td>
-          <td><strong>${row.monto || '-'}</strong></td>
+          <td>${celdaMonto}</td>
           <td>${row.agente || '-'}</td>
           <td><strong>${row.cedula || '-'}</strong></td>
           <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
@@ -2188,6 +2193,39 @@
 
         tbody.appendChild(tr);
       });
+    }
+
+    async function actualizarMontoFila(id, nuevoMontoRaw, inputElem) {
+      if (!esEditor()) {
+        notificar("error", "Acceso Denegado", "Solo los editores pueden modificar montos.");
+        renderizarTablaSheet();
+        return;
+      }
+
+      const item = listaLimpiezas.find(x => x.id === id);
+      if (!item) return;
+
+      const valorLimpio = (nuevoMontoRaw || "").trim();
+      let valorFinal = formatMonto(valorLimpio);
+      if (!valorFinal) valorFinal = valorLimpio;
+      if (!valorFinal) valorFinal = "0.00";
+
+      if (item.monto !== valorFinal) {
+        const montoAnterior = item.monto;
+        item.monto = valorFinal;
+        if (inputElem) inputElem.value = valorFinal;
+        localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from("control_limpiezas").update({ monto: valorFinal }).eq("id", id);
+          } catch (err) {
+            console.error("Error actualizando monto en Supabase:", err);
+          }
+        }
+
+        notificar("success", "Monto Modificado", `Monto de cédula <strong>${item.cedula}</strong> actualizado a <strong>¢${valorFinal}</strong>.`);
+      }
     }
 
     async function actualizarColumna(id, campo, valor, selectElem) {
@@ -2210,6 +2248,7 @@
 
         if (supabaseClient) {
           const updateObj = {};
+          if (campo === "monto") updateObj.monto = valor;
           if (campo === "soporte") updateObj.soporte = valor;
           if (campo === "categoria") updateObj.categoria = valor;
           if (campo === "motivo") updateObj.motivo = valor;
@@ -2815,18 +2854,18 @@
     // ==========================================
     const plantillasProcede = [
       "CON ACTUALIZACIÓN DE SEGMENTACIÓN",
+      "LIMPIEZA DE SALDOS",
+      "NC APLICADA",
       "NO SE PUEDE ACTUALIZAR SEGMENTACIÓN",
-      "VISTO BUENO CARTA DE DESCARGO",
       "VISTO BUENO",
       "VISTO BUENO ACTIVO",
-      "NC APLICADA",
-      "LIMPIEZA DE SALDOS"
+      "VISTO BUENO CARTA DE DESCARGO"
     ];
 
     const plantillasNoProcede = [
-      "FACTURAS PENDIENTES",
       "CERO PAGOS",
       "CERO PAGOS(CON TERMINAL)",
+      "FACTURAS PENDIENTES",
       "SALDO PENDIENTE SERVICIO ACTIVO",
       "SIN FORMALIZACION",
       "TERMINAL LIGADO (FINANCIAMIENTO Y FACTURAS PENDIENTES)",
