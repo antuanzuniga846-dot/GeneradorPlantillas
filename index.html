@@ -2022,6 +2022,9 @@
         notificar("error", "Acción Bloqueada", "No puedes eliminar tu propio usuario activo.");
         return;
       }
+      const confirmar = confirm(`¿Estás seguro de que deseas eliminar al usuario @${u.usuario} (${u.nombre})?`);
+      if (!confirmar) return;
+
       if (supabaseClient) {
         await supabaseClient.from("usuarios_permisos").delete().eq("usuario", u.usuario);
       }
@@ -2853,6 +2856,11 @@
         notificar("error", "Acceso Denegado", "Solo los editores autorizados pueden eliminar filas.");
         return;
       }
+      const item = listaLimpiezas.find(x => x.id === id);
+      const cedulaInfo = item && item.cedula ? ` para la cédula ${item.cedula}` : "";
+      const confirmar = confirm(`¿Estás seguro de que deseas eliminar este registro${cedulaInfo}? Esta acción no se puede deshacer.`);
+      if (!confirmar) return;
+
       listaLimpiezas = listaLimpiezas.filter(x => x.id !== id);
       localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
 
@@ -2861,7 +2869,7 @@
       }
 
       renderizarTablaSheet();
-      notificar("info", "Fila Eliminada", "Registro borrado de la hoja de control.");
+      notificar("info", "Fila Eliminada", `Registro${cedulaInfo} borrado de la hoja de control.`);
     }
 
     function abrirModalExportarCSV() {
