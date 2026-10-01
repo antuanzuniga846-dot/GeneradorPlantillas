@@ -1977,9 +1977,77 @@
     }
 
     // ==========================================
+    // ESTANDARIZACIÓN DE FECHAS (DD/MM/YYYY HH:mm:ss)
+    // ==========================================
+    function pad2(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function formatearFechaHoraEstandar(dateObj = new Date()) {
+      const d = (dateObj instanceof Date && !isNaN(dateObj.getTime())) ? dateObj : new Date(dateObj);
+      if (isNaN(d.getTime())) return "";
+      const dia = pad2(d.getDate());
+      const mes = pad2(d.getMonth() + 1);
+      const anio = d.getFullYear();
+      const hora = pad2(d.getHours());
+      const min = pad2(d.getMinutes());
+      const seg = pad2(d.getSeconds());
+      return `${dia}/${mes}/${anio} ${hora}:${min}:${seg}`;
+    }
+
+    function normalizarFechaMarcaTemporal(str) {
+      if (!str) return "-";
+      const s = String(str).trim();
+      if (!s || s === "-") return "-";
+
+      // Si es formato ISO como "2026-10-01T08:30:00Z"
+      if (s.includes("T") && s.includes("-")) {
+        const d = new Date(s);
+        if (!isNaN(d.getTime())) return formatearFechaHoraEstandar(d);
+      }
+
+      const partes = s.split(" ");
+      const fechaParte = partes[0];
+      const horaParte = partes.slice(1).join(" ");
+
+      if (fechaParte && fechaParte.includes("/")) {
+        const segs = fechaParte.split("/");
+        if (segs.length === 3) {
+          let p1 = parseInt(segs[0], 10);
+          let p2 = parseInt(segs[1], 10);
+          let anio = parseInt(segs[2], 10);
+
+          let dia = p1;
+          let mes = p2;
+          // Si el segundo número es > 12 y el primero <= 12, el formato era US MM/DD/YYYY
+          if (p2 > 12 && p1 <= 12) {
+            dia = p2;
+            mes = p1;
+          }
+
+          const diaStr = pad2(dia);
+          const mesStr = pad2(mes);
+          const anioStr = String(anio);
+
+          return horaParte ? `${diaStr}/${mesStr}/${anioStr} ${horaParte}` : `${diaStr}/${mesStr}/${anioStr}`;
+        }
+      } else if (fechaParte && fechaParte.includes("-")) {
+        const segs = fechaParte.split("-");
+        if (segs.length === 3 && segs[0].length === 4) {
+          return `${pad2(segs[2])}/${pad2(segs[1])}/${segs[0]}${horaParte ? ' ' + horaParte : ''}`;
+        }
+      }
+
+      return s;
+    }
+
+    // ==========================================
     // CARGAR Y SINCRONIZAR DATOS CON SUPABASE
     // ==========================================
-    async function cargarDatosDesdeSupabase() {
+    let canalRealtime = null;
+    let intervalSincronizacion = null;
+
+    async function cargarDatosDesdeSupabase(silencioso = false) {
       if (!supabaseClient) return;
 
       try {
@@ -1989,9 +2057,9 @@
           .order("created_at", { ascending: false });
 
         if (!error && data) {
-          listaLimpiezas = data.map(item => ({
+          const nuevosDatos = data.map(item => ({
             id: item.id,
-            marcaTemporal: item.marca_temporal,
+            marcaTemporal: normalizarFechaMarcaTemporal(item.marca_temporal),
             monto: item.monto,
             agente: item.agente,
             cedula: item.cedula,
@@ -2001,18 +2069,25 @@
             motivo: item.motivo || "",
             enProceso: item.en_proceso || ""
           }));
-          localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
-          renderizarTablaSheet();
+
+          const jsonNuevo = JSON.stringify(nuevosDatos);
+          const jsonViejo = JSON.stringify(listaLimpiezas);
+
+          if (jsonNuevo !== jsonViejo) {
+            listaLimpiezas = nuevosDatos;
+            localStorage.setItem(STORAGE_KEY_SHEET, jsonNuevo);
+            renderizarTablaSheet();
+          }
         }
       } catch (err) {
-        console.error("Error al cargar limpiezas de Supabase:", err);
+        if (!silencioso) console.error("Error al cargar limpiezas de Supabase:", err);
       }
     }
 
     async function sincronizarConSupabase() {
       if (supabaseClient) {
         await cargarUsuariosDesdeSupabase();
-        await cargarDatosDesdeSupabase();
+        await cargarDatosDesdeSupabase(false);
         notificar("success", "Sincronizado", "Datos actualizados desde Supabase.");
       } else {
         renderizarTablaSheet();
@@ -2023,8 +2098,13 @@
     function suscribirRealtimeSupabase() {
       if (!supabaseClient) return;
       try {
-        supabaseClient
-          .channel("realtime-limpiezas")
+        if (canalRealtime) {
+          try { supabaseClient.removeChannel(canalRealtime); } catch(e){}
+        }
+
+        const channelId = "rt-limpiezas-" + Math.random().toString(36).substring(2, 8);
+        canalRealtime = supabaseClient
+          .channel(channelId)
           .on(
             "postgres_changes",
             { event: "*", schema: "public", table: "control_limpiezas" },
@@ -2032,10 +2112,25 @@
               manejarEventoRealtime(payload);
             }
           )
-          .subscribe();
+          .subscribe((status, err) => {
+            console.log("📡 Estado conexión Realtime Supabase:", status);
+            if (err) console.warn("Realtime error:", err);
+          });
       } catch (e) {
         console.warn("Error suscribiendo realtime:", e);
       }
+
+      // Auto-polling cada 3.5 segundos para garantizar que todos estén 100% sincronizados
+      iniciarPollingSincronizacion();
+    }
+
+    function iniciarPollingSincronizacion() {
+      if (intervalSincronizacion) clearInterval(intervalSincronizacion);
+      intervalSincronizacion = setInterval(async () => {
+        if (supabaseClient && document.visibilityState === "visible") {
+          await cargarDatosDesdeSupabase(true);
+        }
+      }, 3500);
     }
 
     function manejarEventoRealtime(payload) {
@@ -2046,7 +2141,7 @@
         if (!existe) {
           const itemNuevo = {
             id: nuevaFila.id,
-            marcaTemporal: nuevaFila.marca_temporal,
+            marcaTemporal: normalizarFechaMarcaTemporal(nuevaFila.marca_temporal),
             monto: nuevaFila.monto,
             agente: nuevaFila.agente,
             cedula: nuevaFila.cedula,
@@ -2083,7 +2178,7 @@
 
           listaLimpiezas[idx] = {
             id: nuevaFila.id,
-            marcaTemporal: nuevaFila.marca_temporal,
+            marcaTemporal: normalizarFechaMarcaTemporal(nuevaFila.marca_temporal),
             monto: nuevaFila.monto,
             agente: nuevaFila.agente,
             cedula: nuevaFila.cedula,
@@ -2273,7 +2368,7 @@
       // Siempre registrar como una NUEVA fila en el historial (sin sobreescribir ni borrar registros anteriores)
       const ahora = new Date();
       const nuevoId = "id_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
-      const marcaNueva = `${ahora.toLocaleDateString()} ${ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
+      const marcaNueva = formatearFechaHoraEstandar(ahora);
 
       const nuevo = {
         id: nuevoId,
@@ -2284,7 +2379,8 @@
         ceroPagos: tieneCeroPagos,
         soporte: "",
         categoria: esReversion ? "Reversión" : "",
-        motivo: ""
+        motivo: "",
+        enProceso: ""
       };
 
       listaLimpiezas.unshift(nuevo);
@@ -2292,7 +2388,7 @@
 
       if (supabaseClient) {
         try {
-          await supabaseClient.from("control_limpiezas").insert({
+          const insertObj = {
             id: nuevo.id,
             marca_temporal: nuevo.marcaTemporal,
             monto: nuevo.monto,
@@ -2302,7 +2398,12 @@
             soporte: nuevo.soporte,
             categoria: nuevo.categoria,
             motivo: nuevo.motivo
-          });
+          };
+          const { error } = await supabaseClient.from("control_limpiezas").insert({ ...insertObj, en_proceso: "" });
+          if (error) {
+            console.warn("Reintentando insert sin en_proceso:", error.message);
+            await supabaseClient.from("control_limpiezas").insert(insertObj);
+          }
         } catch (err) {
           console.error("Error insertando en Supabase:", err);
         }
@@ -2402,7 +2503,7 @@
           : ``;
 
         tr.innerHTML = `
-          <td>${row.marcaTemporal || '-'}</td>
+          <td>${normalizarFechaMarcaTemporal(row.marcaTemporal)}</td>
           <td>${celdaMonto}</td>
           <td>${row.agente || '-'}</td>
           <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" title="Toca para copiar la cédula y marcarla en proceso">
@@ -2495,7 +2596,17 @@
           }
           if (campo === "categoria") updateObj.categoria = valor;
           if (campo === "motivo") updateObj.motivo = valor;
-          await supabaseClient.from("control_limpiezas").update(updateObj).eq("id", id);
+
+          try {
+            const { error } = await supabaseClient.from("control_limpiezas").update(updateObj).eq("id", id);
+            if (error) {
+              console.warn("Reintentando update sin en_proceso:", error.message);
+              delete updateObj.en_proceso;
+              await supabaseClient.from("control_limpiezas").update(updateObj).eq("id", id);
+            }
+          } catch(e) {
+            console.warn("Update Supabase error:", e);
+          }
         }
 
         notificar("success", "Actualizado", `Se guardó el cambio en <strong>${campo}</strong>.`);
@@ -2525,7 +2636,7 @@
       }
       let csv = "Marca temporal,Monto,Agente,Cedula,Cero Pagos,Soporte,Categoria,Motivo\n";
       listaLimpiezas.forEach(r => {
-        csv += `"${r.marcaTemporal}","${r.monto}","${r.agente}","${r.cedula}","${r.ceroPagos?'✓':''}","${r.soporte}","${r.categoria}","${r.motivo}"\n`;
+        csv += `"${normalizarFechaMarcaTemporal(r.marcaTemporal)}","${r.monto}","${r.agente}","${r.cedula}","${r.ceroPagos?'✓':''}","${r.soporte}","${r.categoria}","${r.motivo}"\n`;
       });
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
