@@ -1386,63 +1386,61 @@
     // ==========================================
     let ultimasCedulasNotificadas = new Set();
 
-    function notificar(tipo, titulo, mensaje, persistente = null) {
+    function notificar(tipo, titulo, mensaje, duracionManual = null) {
       const container = document.getElementById("toastContainer");
       if (!container) return;
 
       const toast = document.createElement("div");
 
-      // Auto-detección: Solo las alertas de limpieza realizada/atendida o marcadas explícitamente NO se borran
-      let esPersistente = false;
-      if (persistente === true) {
-        esPersistente = true;
-      } else if (persistente === false) {
-        esPersistente = false;
-      } else {
-        const tLower = (titulo || "").toLowerCase();
-        const mLower = (mensaje || "").toLowerCase();
-        if (
-          tLower.includes("atendida") ||
-          tLower.includes("realizada") ||
-          tLower.includes("ya se realizó") ||
-          tLower.includes("ya fue realizada") ||
-          tLower.includes("limpieza realizada") ||
-          tLower.includes("limpieza atendida") ||
-          tLower.includes("ya realizada") ||
-          mLower.includes("ya se realizó") ||
-          mLower.includes("fue actualizada") ||
-          mLower.includes("atendida por")
-        ) {
-          esPersistente = true;
-        }
+      // Detección: Alertas de limpieza realizada o atendida duran más tiempo
+      const tLower = (titulo || "").toLowerCase();
+      const mLower = (mensaje || "").toLowerCase();
+      const esLimpiezaRealizada = 
+        tLower.includes("atendida") ||
+        tLower.includes("realizada") ||
+        tLower.includes("ya se realizó") ||
+        tLower.includes("ya fue realizada") ||
+        tLower.includes("limpieza realizada") ||
+        tLower.includes("limpieza atendida") ||
+        tLower.includes("ya realizada") ||
+        mLower.includes("ya se realizó") ||
+        mLower.includes("fue actualizada") ||
+        mLower.includes("atendida por") ||
+        mLower.includes("ya fue atendida");
+
+      // Tiempo de permanencia: Limpiezas realizadas duran 9.5s, las demás duran 3.2s
+      let tiempoVisibleMs = 3200;
+      if (typeof duracionManual === "number") {
+        tiempoVisibleMs = duracionManual;
+      } else if (esLimpiezaRealizada) {
+        tiempoVisibleMs = 9500; // Dura más tiempo en pantalla antes de borrarse
       }
 
-      toast.className = `toast-item ${tipo} ${esPersistente ? 'toast-persistent' : ''}`;
+      toast.className = `toast-item ${tipo} ${esLimpiezaRealizada ? 'toast-persistent' : ''}`;
 
       let icono = "ℹ️";
       if (tipo === "success") icono = "✅";
       if (tipo === "error") icono = "❌";
       if (tipo === "warning") icono = "⚠️";
-      if (esPersistente) icono = "🔔";
+      if (esLimpiezaRealizada) icono = "🔔";
 
       const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+      let timeoutId = null;
+
       function cerrarEsteToast() {
+        if (timeoutId) clearTimeout(timeoutId);
         toast.classList.add("toast-hiding");
         setTimeout(() => {
           if (toast.parentElement) toast.remove();
         }, 320);
       }
 
-      const badgePermanente = esPersistente
-        ? `<span style="font-size: 0.65rem; background: #2e7d32; color: #fff; padding: 2px 6px; border-radius: 6px; margin-left: 6px; font-weight: bold;">FIJA</span>`
-        : ``;
-
       toast.innerHTML = `
         <div class="toast-icon">${icono}</div>
         <div class="toast-body">
-          <div class="toast-title" style="display: flex; align-items: center; flex-wrap: wrap;">
-            ${titulo} ${badgePermanente}
+          <div class="toast-title">
+            ${titulo}
           </div>
           <div style="margin-top: 2px; line-height: 1.35;">${mensaje}</div>
           <div class="toast-time">${hora}</div>
@@ -1456,12 +1454,10 @@
 
       container.appendChild(toast);
 
-      // Si NO es persistente (ej: "Plantilla copiada", "Sincronizado", etc.), se borra automáticamente
-      if (!esPersistente) {
-        setTimeout(() => {
-          cerrarEsteToast();
-        }, 3200);
-      }
+      // TODAS las notificaciones se borran automáticamente tras su tiempo
+      timeoutId = setTimeout(() => {
+        cerrarEsteToast();
+      }, tiempoVisibleMs);
     }
 
     function verificarCedulaEnLimpiezas(cedulaVal) {
@@ -2323,7 +2319,7 @@
     // DROPDOWNS: SOPORTE, CATEGORÍA Y MOTIVO
     // ==========================================
     const OPCIONES_SOPORTE = [
-      { valor: "", texto: "-- (En blanco)", clase: "pill-soporte-empty" },
+      { valor: "", texto: "", clase: "pill-soporte-empty" },
       { valor: "Adriel", texto: "Adriel", clase: "pill-soporte-adriel" },
       { valor: "Fabricio", texto: "Fabricio", clase: "pill-soporte-fabricio" },
       { valor: "Enoc", texto: "Enoc", clase: "pill-soporte-enoc" },
@@ -2331,7 +2327,7 @@
     ];
 
     const OPCIONES_CATEGORIA = [
-      { valor: "", texto: "-- (En blanco)", clase: "pill-cat-empty" },
+      { valor: "", texto: "", clase: "pill-cat-empty" },
       { valor: "No procede", texto: "No procede", clase: "pill-cat-noprocede" },
       { valor: "Repetida", texto: "Repetida", clase: "pill-cat-repetida" },
       { valor: "Control de altas", texto: "Control de altas", clase: "pill-cat-controlaltas" },
@@ -2345,7 +2341,7 @@
     ];
 
     const OPCIONES_MOTIVO = [
-      { valor: "", texto: "-- (En blanco)", clase: "pill-mot-empty" },
+      { valor: "", texto: "", clase: "pill-mot-empty" },
       { valor: "WF+ Facturas", texto: "WF+ Facturas", clase: "pill-mot-wf-facturas" },
       { valor: "Facturas supera 63000", texto: "Facturas supera 63000", clase: "pill-mot-facturas-supera-63000" },
       { valor: "Facturas menos de un año", texto: "Facturas menos de un año", clase: "pill-mot-facturas-menos-ano" },
