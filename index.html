@@ -767,7 +767,7 @@
     .btn-fondo-quitar { border-color: #d9363e; color: #d9363e; }
     .btn-fondo-quitar:hover { background: #d9363e; color: #ffffff; }
 
-    /* NOTIFICACIONES PERSISTENTES FLOTANTES (BOTTOM-RIGHT) */
+    /* NOTIFICACIONES PERSISTENTES / FLOTANTES (BOTTOM-RIGHT) */
     #toastContainer {
       position: fixed;
       bottom: 20px;
@@ -776,7 +776,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      max-width: 380px;
+      max-width: 400px;
       width: calc(100vw - 40px);
       pointer-events: none;
     }
@@ -795,6 +795,18 @@
       align-items: flex-start;
       gap: 12px;
       animation: slideInToast 0.3s ease forwards;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      position: relative;
+    }
+    .toast-item.toast-hiding {
+      opacity: 0 !important;
+      transform: translateX(110%) !important;
+      pointer-events: none;
+    }
+    .toast-item.toast-persistent {
+      border-left: 6px solid #4caf50 !important;
+      background: rgba(18, 28, 22, 0.97) !important;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.7), 0 0 16px rgba(76, 175, 80, 0.3) !important;
     }
     @keyframes slideInToast {
       from { transform: translateX(100%); opacity: 0; }
@@ -1013,7 +1025,7 @@
 
           <label for="cedula">Cédula:</label>
           <div class="campo-wrapper">
-            <input type="text" id="cedula" placeholder="Ej: 123456789">
+            <input type="text" id="cedula" placeholder="Ej: 123456789" onblur="verificarCedulaEnLimpiezas(this.value)">
             <span id="cedulaError" class="error-msg">*Información Obligatoria*</span>
           </div>
             
@@ -1364,33 +1376,112 @@
 
   <script>
     // ==========================================
-    // NOTIFICACIONES FLOTANTES PERSISTENTES
+    // NOTIFICACIONES FLOTANTES (INTELIGENTES)
     // ==========================================
-    function notificar(tipo, titulo, mensaje) {
+    let ultimasCedulasNotificadas = new Set();
+
+    function notificar(tipo, titulo, mensaje, persistente = null) {
       const container = document.getElementById("toastContainer");
       if (!container) return;
 
       const toast = document.createElement("div");
-      toast.className = `toast-item ${tipo}`;
+
+      // Auto-detección: Solo las alertas de limpieza realizada/atendida o marcadas explícitamente NO se borran
+      let esPersistente = false;
+      if (persistente === true) {
+        esPersistente = true;
+      } else if (persistente === false) {
+        esPersistente = false;
+      } else {
+        const tLower = (titulo || "").toLowerCase();
+        const mLower = (mensaje || "").toLowerCase();
+        if (
+          tLower.includes("atendida") ||
+          tLower.includes("realizada") ||
+          tLower.includes("ya se realizó") ||
+          tLower.includes("ya fue realizada") ||
+          tLower.includes("limpieza realizada") ||
+          tLower.includes("limpieza atendida") ||
+          tLower.includes("ya realizada") ||
+          mLower.includes("ya se realizó") ||
+          mLower.includes("fue actualizada") ||
+          mLower.includes("atendida por")
+        ) {
+          esPersistente = true;
+        }
+      }
+
+      toast.className = `toast-item ${tipo} ${esPersistente ? 'toast-persistent' : ''}`;
 
       let icono = "ℹ️";
       if (tipo === "success") icono = "✅";
       if (tipo === "error") icono = "❌";
       if (tipo === "warning") icono = "⚠️";
+      if (esPersistente) icono = "🔔";
 
       const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      function cerrarEsteToast() {
+        toast.classList.add("toast-hiding");
+        setTimeout(() => {
+          if (toast.parentElement) toast.remove();
+        }, 320);
+      }
+
+      const badgePermanente = esPersistente
+        ? `<span style="font-size: 0.65rem; background: #2e7d32; color: #fff; padding: 2px 6px; border-radius: 6px; margin-left: 6px; font-weight: bold;">FIJA</span>`
+        : ``;
 
       toast.innerHTML = `
         <div class="toast-icon">${icono}</div>
         <div class="toast-body">
-          <div class="toast-title">${titulo}</div>
-          <div>${mensaje}</div>
+          <div class="toast-title" style="display: flex; align-items: center; flex-wrap: wrap;">
+            ${titulo} ${badgePermanente}
+          </div>
+          <div style="margin-top: 2px; line-height: 1.35;">${mensaje}</div>
           <div class="toast-time">${hora}</div>
         </div>
-        <button class="toast-close" title="Cerrar" onclick="this.parentElement.remove()">✕</button>
+        <button class="toast-close" title="Cerrar notificación">✕</button>
       `;
 
+      toast.querySelector(".toast-close").addEventListener("click", () => {
+        cerrarEsteToast();
+      });
+
       container.appendChild(toast);
+
+      // Si NO es persistente (ej: "Plantilla copiada", "Sincronizado", etc.), se borra automáticamente
+      if (!esPersistente) {
+        setTimeout(() => {
+          cerrarEsteToast();
+        }, 3200);
+      }
+    }
+
+    function verificarCedulaEnLimpiezas(cedulaVal) {
+      if (!cedulaVal) return;
+      const cLimpia = String(cedulaVal).trim().replace(/[-\s]/g, '');
+      if (cLimpia.length < 5) return;
+      if (ultimasCedulasNotificadas.has(cLimpia)) return;
+
+      const encontrada = listaLimpiezas.find(r => {
+        const rCedula = String(r.cedula || '').trim().replace(/[-\s]/g, '');
+        return rCedula === cLimpia && r.categoria;
+      });
+
+      if (encontrada) {
+        ultimasCedulasNotificadas.add(cLimpia);
+        let info = `La cédula <strong>${encontrada.cedula}</strong> ya tiene una limpieza atendida.`;
+        if (encontrada.soporte) info += `<br>👤 Atendido por: <strong>${encontrada.soporte}</strong>`;
+        if (encontrada.categoria) info += `<br>🏷️ Categoría: <strong>${encontrada.categoria}</strong>`;
+        if (encontrada.marcaTemporal) info += `<br>🕒 Fecha: <strong>${encontrada.marcaTemporal}</strong>`;
+        notificar(
+          "warning",
+          "⚠️ Limpieza Ya Realizada",
+          info,
+          true // PERSISTENTE (NO se borra sola)
+        );
+      }
     }
 
     // ==========================================
@@ -2030,10 +2121,11 @@
             (anterior.agente.toLowerCase() === usuarioLogueado.usuario.toLowerCase() || anterior.agente.toLowerCase() === usuarioLogueado.nombre.toLowerCase()) &&
             (anterior.soporte !== nuevoSoporte || anterior.categoria !== nuevaCat)
           ) {
-            let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> fue actualizada.`;
-            if (nuevoSoporte) msg += `<br>Agente Soporte: <strong>${nuevoSoporte}</strong>`;
-            if (nuevaCat) msg += `<br>Categoría: <strong>${nuevaCat}</strong>`;
-            notificar("info", "🔔 Limpieza Atendida", msg);
+            let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> ya fue atendida / realizada.`;
+            if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
+            if (nuevaCat) msg += `<br>🏷️ Categoría: <strong>${nuevaCat}</strong>`;
+            if (nuevaFila.motivo) msg += `<br>📝 Motivo: <strong>${nuevaFila.motivo}</strong>`;
+            notificar("success", "🔔 ¡Limpieza Realizada!", msg, true);
           }
 
           listaLimpiezas[idx] = {
