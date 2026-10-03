@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generador de Plantillas BURO & Control de Limpiezas</title>
   
-  <!-- Supabase JS Client desde CDN -->
+  <!-- Supabase JS Client & Chart.js desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     :root {
@@ -679,6 +680,196 @@
       to { transform: scale(1); opacity: 1; }
     }
 
+    /* ========================================= */
+    /* ESTILOS: TABLA DINÁMICA & MÉTRICAS        */
+    /* ========================================= */
+    .stats-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+    .stats-kpi-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-left: 4px solid var(--accent);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      backdrop-filter: blur(8px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stats-kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    }
+    .stats-kpi-icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .stats-kpi-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .stats-kpi-title {
+      font-size: 0.78rem;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: bold;
+    }
+    .stats-kpi-val {
+      font-size: 1.6rem;
+      color: #fff;
+      font-weight: 800;
+      margin: 2px 0;
+    }
+    .stats-kpi-sub {
+      font-size: 0.74rem;
+      color: #888;
+    }
+
+    .btn-rango-stats {
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-rango-stats:hover, .btn-rango-stats.active {
+      background: var(--accent);
+      color: var(--accent-oncolor);
+      border-color: var(--accent);
+    }
+
+    .btn-chart-type {
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-chart-type.active {
+      background: #00897b;
+      border-color: #00bfa5;
+      font-weight: bold;
+    }
+
+    .pivot-table-container {
+      max-height: 560px;
+      overflow: auto;
+      border-radius: 8px;
+      border: 1.5px solid rgba(0, 150, 136, 0.45);
+      background: rgba(10, 20, 25, 0.88);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+
+    .pivot-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: center;
+    }
+
+    .pivot-table thead th {
+      background: #004d40;
+      color: #e0f2f1;
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .pivot-table thead th:first-child {
+      text-align: left;
+      min-width: 170px;
+      background: #00332c;
+    }
+
+    .pivot-table thead th:last-child {
+      background: #00332c;
+      color: #80cbc4;
+      font-weight: 900;
+    }
+
+    .pivot-table tbody tr {
+      transition: background 0.15s ease;
+    }
+
+    .pivot-table tbody tr:nth-child(even) {
+      background: rgba(0, 77, 64, 0.18);
+    }
+
+    .pivot-table tbody tr:nth-child(odd) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .pivot-table tbody tr:hover {
+      background: rgba(0, 150, 136, 0.35) !important;
+    }
+
+    .pivot-table td {
+      padding: 7px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      white-space: nowrap;
+      text-align: center;
+      font-size: 0.88rem;
+    }
+
+    .pivot-table td:first-child {
+      text-align: left;
+      font-weight: bold;
+      color: #e0f2f1;
+      letter-spacing: 0.2px;
+    }
+
+    .pivot-table td:last-child {
+      font-weight: 800;
+      color: #80cbc4;
+      background: rgba(0, 77, 64, 0.25);
+    }
+
+    .pivot-table tfoot th {
+      background: #00332c;
+      color: #ffffff;
+      padding: 10px 14px;
+      border: 1.5px solid rgba(0, 150, 136, 0.5);
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      font-weight: 900;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .pivot-table tfoot th:first-child {
+      text-align: left;
+      color: #80cbc4;
+    }
+    .pivot-table tfoot th:last-child {
+      color: #00e676;
+      font-size: 1.05rem;
+    }
+
+    @media (max-width: 900px) {
+      #gridGraficaSoporte {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
     /* Theme widget & Background Panel */
     .theme-widget {
       position: relative;
@@ -895,7 +1086,10 @@
         <span>📄</span> Generador de Plantillas
       </button>
       <button id="tabBtnHoja" class="nav-tab-btn" onclick="cambiarVista('hoja')">
-        <span>📊</span> Hoja de Control de Limpiezas
+        <span>📊</span> Hoja de Control
+      </button>
+      <button id="tabBtnEstadisticas" class="nav-tab-btn" onclick="cambiarVista('estadisticas')">
+        <span>📈</span> Métricas & Tabla Dinámica
       </button>
     </div>
 
@@ -1226,6 +1420,132 @@
   </div>
 
   <!-- ======================================================= -->
+  <!-- VISTA 3: MÉTRICAS, GRÁFICAS & TABLA DINÁMICA           -->
+  <!-- ======================================================= -->
+  <div id="vistaEstadisticas" style="display: none;">
+    <div class="sheet-wrapper" style="margin-bottom: 25px;">
+      <!-- Barra superior de Métricas -->
+      <div class="sheet-header-bar" style="background: linear-gradient(135deg, #004d40, #00695c);">
+        <div style="font-size: 1.15rem; font-weight: bold; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <span>📈 Métricas, Gráfica de Soporte & Tabla Dinámica</span>
+          <button onclick="cambiarVista('generador')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer; font-size: 0.82rem;">⬅ Generador</button>
+          <button onclick="cambiarVista('hoja')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer; font-size: 0.82rem;">📊 Hoja de Control</button>
+        </div>
+
+        <!-- Filtros de Fecha para Métricas y Tabla Dinámica -->
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoStats('hoy')">📅 Hoy</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoStats('mes')">📅 Este Mes</button>
+          <button type="button" class="btn-rango-stats active" id="btnStatsTodo" onclick="setRangoRapidoStats('todo')">📁 Todo el Historial</button>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <input type="date" id="statsFechaDesde" style="width: 130px; margin: 0; padding: 6px 8px; font-size: 0.82rem;" onchange="actualizarEstadisticasYTablaDinamica()" title="Fecha Desde">
+            <span style="color:#aaa; font-size:0.8rem;">a</span>
+            <input type="date" id="statsFechaHasta" style="width: 130px; margin: 0; padding: 6px 8px; font-size: 0.82rem;" onchange="actualizarEstadisticasYTablaDinamica()" title="Fecha Hasta">
+          </div>
+          <button onclick="actualizarEstadisticasYTablaDinamica()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #00bfa5; background: rgba(0, 191, 165, 0.25); color: #fff; cursor: pointer; font-weight: bold; font-size: 0.82rem;" title="Recalcular métricas">🔄 Actualizar</button>
+        </div>
+      </div>
+
+      <div style="padding: 18px 20px;">
+        <!-- Tarjetas KPI -->
+        <div class="stats-kpi-grid">
+          <div class="stats-kpi-card" style="border-left-color: #00bfa5;">
+            <div class="stats-kpi-icon">🎧</div>
+            <div class="stats-kpi-info">
+              <span class="stats-kpi-title">Limpiezas Atendidas</span>
+              <strong class="stats-kpi-val" id="kpiTotalSoporte">0</strong>
+              <span class="stats-kpi-sub">Total con soporte asignado</span>
+            </div>
+          </div>
+
+          <div class="stats-kpi-card" style="border-left-color: #e53935;">
+            <div class="stats-kpi-icon">⛔</div>
+            <div class="stats-kpi-info">
+              <span class="stats-kpi-title">Total "No Procede"</span>
+              <strong class="stats-kpi-val" id="kpiTotalNoProcede" style="color: #ff5252;">0</strong>
+              <span class="stats-kpi-sub">Casos catalogados no procede</span>
+            </div>
+          </div>
+
+          <div class="stats-kpi-card" style="border-left-color: #ffd600;">
+            <div class="stats-kpi-icon">🏆</div>
+            <div class="stats-kpi-info">
+              <span class="stats-kpi-title">Soporte Líder</span>
+              <strong class="stats-kpi-val" id="kpiSoporteTop" style="color: #ffd600; font-size: 1.3rem;">-</strong>
+              <span class="stats-kpi-sub" id="kpiSoporteTopSub">0 limpiezas</span>
+            </div>
+          </div>
+
+          <div class="stats-kpi-card" style="border-left-color: #64b5f6;">
+            <div class="stats-kpi-icon">👥</div>
+            <div class="stats-kpi-info">
+              <span class="stats-kpi-title">Agentes Evaluados</span>
+              <strong class="stats-kpi-val" id="kpiTotalAgentes">0</strong>
+              <span class="stats-kpi-sub">Agentes con casos No Procede</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 1: GRÁFICA DE CONTEO DE LIMPIEZAS HECHAS POR SOPORTE -->
+        <div style="margin-top: 22px; background: rgba(0,0,0,0.35); padding: 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <span>📊 Conteo de Limpiezas Hechas por Soporte</span>
+              </h3>
+              <span style="font-size: 0.8rem; color: #aaa;">Conteo total de trámites atendidos por cada resolutor de soporte</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-chart-type active" id="btnChartBar" onclick="setChartType('bar')">📊 Barras</button>
+              <button class="btn-chart-type" id="btnChartDoughnut" onclick="setChartType('doughnut')">🍩 Dona</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: center;" id="gridGraficaSoporte">
+            <div style="position: relative; height: 320px; width: 100%;">
+              <canvas id="chartSoporteLimpiezas"></canvas>
+            </div>
+            <div id="listaResumenSoporte" style="max-height: 320px; overflow-y: auto; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.08);">
+              <!-- Resumen numérico por soporte -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: TABLA DINÁMICA DE NO PROCEDE POR AGENTE Y SOPORTE -->
+        <div style="margin-top: 26px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+                <span>📋 Tabla Dinámica: Casos "No Procede" por Agente y Soporte</span>
+              </h3>
+              <span style="font-size: 0.82rem; color: #80cbc4;">Distribución de qué agente de soporte otorgó el "No Procede" a cada solicitante</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <input type="text" id="filtroTablaDinamica" placeholder="🔍 Buscar agente en tabla..." style="width: 200px; margin: 0; padding: 6px 10px; font-size: 0.85rem;" oninput="renderizarTablaDinamicaHTML()">
+              <button onclick="exportarTablaDinamicaCSV()" style="padding: 6px 12px; border-radius: 6px; border: none; background: #00695c; color: #fff; cursor: pointer; font-weight: bold; font-size: 0.82rem;">📥 Exportar Tabla Dinámica CSV</button>
+            </div>
+          </div>
+
+          <div class="pivot-table-container">
+            <table class="pivot-table" id="tablaDinamica">
+              <thead id="tablaDinamicaThead">
+                <!-- Encabezados dinámicos (Agente, Adriel, Antuan, Enoc, Fabricio, ..., Suma total) -->
+              </thead>
+              <tbody id="tablaDinamicaTbody">
+                <!-- Filas dinámicas -->
+              </tbody>
+              <tfoot id="tablaDinamicaTfoot">
+                <!-- Fila de totales -->
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================= -->
   <!-- ======================================================= -->
   <!-- MODAL DE INICIO DE SESIÓN / REGISTRO (AUTH GATE)        -->
   <!-- ======================================================= -->
@@ -1513,20 +1833,34 @@
       vistaActual = vista;
       const vGenerador = document.getElementById("vistaGenerador");
       const vHoja = document.getElementById("vistaHoja");
+      const vEstadisticas = document.getElementById("vistaEstadisticas");
       const btnGen = document.getElementById("tabBtnGenerador");
       const btnHoj = document.getElementById("tabBtnHoja");
+      const btnEst = document.getElementById("tabBtnEstadisticas");
 
       if (vista === "generador") {
-        vGenerador.style.display = "block";
-        vHoja.style.display = "none";
-        btnGen.classList.add("active");
-        btnHoj.classList.remove("active");
-      } else {
-        vGenerador.style.display = "none";
-        vHoja.style.display = "block";
-        btnGen.classList.remove("active");
-        btnHoj.classList.add("active");
+        if (vGenerador) vGenerador.style.display = "block";
+        if (vHoja) vHoja.style.display = "none";
+        if (vEstadisticas) vEstadisticas.style.display = "none";
+        if (btnGen) btnGen.classList.add("active");
+        if (btnHoj) btnHoj.classList.remove("active");
+        if (btnEst) btnEst.classList.remove("active");
+      } else if (vista === "hoja") {
+        if (vGenerador) vGenerador.style.display = "none";
+        if (vHoja) vHoja.style.display = "block";
+        if (vEstadisticas) vEstadisticas.style.display = "none";
+        if (btnGen) btnGen.classList.remove("active");
+        if (btnHoj) btnHoj.classList.add("active");
+        if (btnEst) btnEst.classList.remove("active");
         renderizarTablaSheet();
+      } else if (vista === "estadisticas") {
+        if (vGenerador) vGenerador.style.display = "none";
+        if (vHoja) vHoja.style.display = "none";
+        if (vEstadisticas) vEstadisticas.style.display = "block";
+        if (btnGen) btnGen.classList.remove("active");
+        if (btnHoj) btnHoj.classList.remove("active");
+        if (btnEst) btnEst.classList.add("active");
+        actualizarEstadisticasYTablaDinamica();
       }
     }
 
@@ -2150,6 +2484,9 @@
             listaLimpiezas = nuevosDatos;
             localStorage.setItem(STORAGE_KEY_SHEET, jsonNuevo);
             renderizarTablaSheet();
+            if (vistaActual === "estadisticas") {
+              actualizarEstadisticasYTablaDinamica();
+            }
           }
         }
       } catch (err) {
@@ -2161,9 +2498,15 @@
       if (supabaseClient) {
         await cargarUsuariosDesdeSupabase();
         await cargarDatosDesdeSupabase(false);
+        if (vistaActual === "estadisticas") {
+          actualizarEstadisticasYTablaDinamica();
+        }
         notificar("success", "Sincronizado", "Datos actualizados desde Supabase.");
       } else {
         renderizarTablaSheet();
+        if (vistaActual === "estadisticas") {
+          actualizarEstadisticasYTablaDinamica();
+        }
         notificar("info", "Modo Local", "Datos cargados desde almacenamiento local.");
       }
     }
@@ -2200,6 +2543,9 @@
                   itm.enProceso = (data.enProceso || "").trim();
                   localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
                   renderizarTablaSheet();
+                  if (vistaActual === "estadisticas") {
+                    actualizarEstadisticasYTablaDinamica();
+                  }
                 }
               }
             }
@@ -2276,6 +2622,9 @@
           listaLimpiezas.unshift(itemNuevo);
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
           renderizarTablaSheet();
+          if (vistaActual === "estadisticas") {
+            actualizarEstadisticasYTablaDinamica();
+          }
         }
       } else if (eventType === "UPDATE") {
         const idx = listaLimpiezas.findIndex(x => x.id === nuevaFila.id);
@@ -2322,11 +2671,17 @@
           };
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
           renderizarTablaSheet();
+          if (vistaActual === "estadisticas") {
+            actualizarEstadisticasYTablaDinamica();
+          }
         }
       } else if (eventType === "DELETE") {
         listaLimpiezas = listaLimpiezas.filter(x => x.id !== viejaFila.id);
         localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
         renderizarTablaSheet();
+        if (vistaActual === "estadisticas") {
+          actualizarEstadisticasYTablaDinamica();
+        }
       }
     }
 
@@ -3018,6 +3373,387 @@
 
     function exportarLimpiezasCSV() {
       abrirModalExportarCSV();
+    }
+
+    // ==========================================
+    // ==========================================
+    // SECCIÓN: MÉTRICAS, GRÁFICAS & TABLA DINÁMICA
+    // ==========================================
+    let chartSoporteInstance = null;
+    let tipoGraficaActual = "bar"; // "bar" | "doughnut"
+    let matrizPivotActual = null; // Para renderizado y exportación CSV
+
+    const COLORES_SOPORTE_MAP = {
+      "adriel": { bg: "rgba(30, 136, 229, 0.85)", border: "#1e88e5", text: "#ffffff" },
+      "fabricio": { bg: "rgba(156, 204, 101, 0.85)", border: "#9ccc65", text: "#1a3300" },
+      "enoc": { bg: "rgba(251, 192, 45, 0.85)", border: "#fbc02d", text: "#202124" },
+      "antuan": { bg: "rgba(233, 30, 99, 0.85)", border: "#e91e63", text: "#ffffff" },
+      "jorshan": { bg: "rgba(171, 71, 188, 0.85)", border: "#ab47bc", text: "#ffffff" },
+      "sebas": { bg: "rgba(38, 166, 154, 0.85)", border: "#26a69a", text: "#ffffff" }
+    };
+
+    const PALETA_FALLBACK_STATS = [
+      { bg: "rgba(0, 188, 212, 0.85)", border: "#00bcd4" },
+      { bg: "rgba(255, 152, 0, 0.85)", border: "#ff9800" },
+      { bg: "rgba(103, 58, 183, 0.85)", border: "#673ab7" },
+      { bg: "rgba(233, 30, 99, 0.85)", border: "#e91e63" },
+      { bg: "rgba(76, 175, 80, 0.85)", border: "#4caf50" },
+      { bg: "rgba(255, 87, 34, 0.85)", border: "#ff5722" }
+    ];
+
+    function obtenerColorSoporteStats(nombreSoporte, idx = 0) {
+      const norm = (nombreSoporte || "").toLowerCase().trim();
+      if (COLORES_SOPORTE_MAP[norm]) {
+        return COLORES_SOPORTE_MAP[norm];
+      }
+      return PALETA_FALLBACK_STATS[idx % PALETA_FALLBACK_STATS.length];
+    }
+
+    function setRangoRapidoStats(tipo) {
+      const hoyObj = new Date();
+      const hoyStr = `${hoyObj.getFullYear()}-${pad2(hoyObj.getMonth() + 1)}-${pad2(hoyObj.getDate())}`;
+      
+      document.querySelectorAll(".btn-rango-stats").forEach(b => b.classList.remove("active"));
+
+      if (tipo === 'hoy') {
+        document.getElementById("statsFechaDesde").value = hoyStr;
+        document.getElementById("statsFechaHasta").value = hoyStr;
+        if (event && event.target) event.target.classList.add("active");
+      } else if (tipo === 'mes') {
+        const primerDia = `${hoyObj.getFullYear()}-${pad2(hoyObj.getMonth() + 1)}-01`;
+        document.getElementById("statsFechaDesde").value = primerDia;
+        document.getElementById("statsFechaHasta").value = hoyStr;
+        if (event && event.target) event.target.classList.add("active");
+      } else if (tipo === 'todo') {
+        document.getElementById("statsFechaDesde").value = "";
+        document.getElementById("statsFechaHasta").value = "";
+        document.getElementById("btnStatsTodo")?.classList.add("active");
+      }
+      actualizarEstadisticasYTablaDinamica();
+    }
+
+    function setChartType(type) {
+      tipoGraficaActual = type;
+      document.getElementById("btnChartBar")?.classList.toggle("active", type === "bar");
+      document.getElementById("btnChartDoughnut")?.classList.toggle("active", type === "doughnut");
+      actualizarEstadisticasYTablaDinamica();
+    }
+
+    function actualizarEstadisticasYTablaDinamica() {
+      const desde = document.getElementById("statsFechaDesde")?.value || "";
+      const hasta = document.getElementById("statsFechaHasta")?.value || "";
+      const registros = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+
+      // 1. Conteo de Limpiezas Hechas por Soporte
+      const conteoSoporte = {};
+      let totalLimpiezasSoporte = 0;
+
+      // 2. Conteo y matriz de "No Procede" por Agente y Soporte
+      const noProcedeRegistros = [];
+      const agentesSet = new Set();
+      const soportesNoProcedeSet = new Set();
+      const matrizNoProcede = {}; // { [agente]: { [soporte]: count } }
+
+      registros.forEach(r => {
+        const sop = (r.soporte || "").trim();
+        const ag = (r.agente || "").trim() || "Sin Agente";
+        const cat = (r.categoria || "").trim().toLowerCase();
+
+        // Contabilizar limpiezas hechas por soporte
+        if (sop) {
+          conteoSoporte[sop] = (conteoSoporte[sop] || 0) + 1;
+          totalLimpiezasSoporte++;
+        }
+
+        // Identificar casos No Procede
+        if (cat === "no procede") {
+          noProcedeRegistros.push(r);
+          agentesSet.add(ag);
+          if (sop) {
+            soportesNoProcedeSet.add(sop);
+          }
+          if (!matrizNoProcede[ag]) {
+            matrizNoProcede[ag] = {};
+          }
+          const sopKey = sop || "Sin Soporte";
+          matrizNoProcede[ag][sopKey] = (matrizNoProcede[ag][sopKey] || 0) + 1;
+        }
+      });
+
+      // Actualizar KPIs
+      const totalNoProcede = noProcedeRegistros.length;
+      const kpiSopElem = document.getElementById("kpiTotalSoporte");
+      const kpiNoProcElem = document.getElementById("kpiTotalNoProcede");
+      const kpiAgElem = document.getElementById("kpiTotalAgentes");
+      if (kpiSopElem) kpiSopElem.textContent = totalLimpiezasSoporte.toLocaleString();
+      if (kpiNoProcElem) kpiNoProcElem.textContent = totalNoProcede.toLocaleString();
+      if (kpiAgElem) kpiAgElem.textContent = agentesSet.size.toLocaleString();
+
+      // Soporte Líder
+      let topSoporteNombre = "-";
+      let topSoporteMax = 0;
+      Object.entries(conteoSoporte).forEach(([sop, count]) => {
+        if (count > topSoporteMax) {
+          topSoporteMax = count;
+          topSoporteNombre = sop;
+        }
+      });
+      const kpiTopElem = document.getElementById("kpiSoporteTop");
+      const kpiTopSubElem = document.getElementById("kpiSoporteTopSub");
+      if (kpiTopElem) kpiTopElem.textContent = topSoporteNombre;
+      if (kpiTopSubElem) kpiTopSubElem.textContent = `${topSoporteMax} limpiezas`;
+
+      // 3. Renderizar Gráfica de Conteo de Limpiezas por Soporte
+      renderizarGraficaSoporte(conteoSoporte, totalLimpiezasSoporte);
+
+      // 4. Preparar datos para Tabla Dinámica
+      const soportesEstandar = ["Adriel", "Antuan", "Enoc", "Fabricio"];
+      const todosSoportesSet = new Set([...soportesEstandar, ...Object.keys(conteoSoporte), ...soportesNoProcedeSet]);
+      const columnasSoporte = Array.from(todosSoportesSet).filter(Boolean);
+
+      matrizPivotActual = {
+        agentes: Array.from(agentesSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })),
+        soportes: columnasSoporte,
+        matriz: matrizNoProcede,
+        totalRegistros: totalNoProcede
+      };
+
+      renderizarTablaDinamicaHTML();
+    }
+
+    function renderizarGraficaSoporte(conteoSoporte, totalTotal) {
+      const canvas = document.getElementById("chartSoporteLimpiezas");
+      const contenedorResumen = document.getElementById("listaResumenSoporte");
+      if (!canvas) return;
+
+      const soportes = Object.keys(conteoSoporte).sort((a, b) => conteoSoporte[b] - conteoSoporte[a]);
+      const cantidades = soportes.map(s => conteoSoporte[s]);
+
+      const bgColors = soportes.map((s, idx) => obtenerColorSoporteStats(s, idx).bg);
+      const borderColors = soportes.map((s, idx) => obtenerColorSoporteStats(s, idx).border);
+
+      // Renderizar lista de resumen lateral
+      if (contenedorResumen) {
+        if (soportes.length === 0) {
+          contenedorResumen.innerHTML = `<div style="text-align:center; padding: 25px 10px; color:#aaa; font-style:italic;">No hay limpiezas atendidas por soporte en este período.</div>`;
+        } else {
+          let htmlResumen = `<h4 style="margin: 0 0 10px 0; font-size: 0.85rem; text-transform: uppercase; color: #80cbc4; letter-spacing: 0.5px;">📋 Conteo por Resolutor</h4>`;
+          soportes.forEach((sop, idx) => {
+            const cant = conteoSoporte[sop];
+            const pct = totalTotal > 0 ? ((cant / totalTotal) * 100).toFixed(1) : 0;
+            const color = obtenerColorSoporteStats(sop, idx).border;
+            htmlResumen += `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.84rem;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: ${color};"></span>
+                  <strong>${sop}</strong>
+                </div>
+                <div>
+                  <strong style="color: #fff; font-size: 0.92rem;">${cant}</strong>
+                  <span style="color: #aaa; font-size: 0.75rem; margin-left: 4px;">(${pct}%)</span>
+                </div>
+              </div>
+            `;
+          });
+          contenedorResumen.innerHTML = htmlResumen;
+        }
+      }
+
+      // Renderizar o actualizar con Chart.js
+      if (chartSoporteInstance) {
+        try { chartSoporteInstance.destroy(); } catch(e){}
+      }
+
+      if (soportes.length === 0 || typeof Chart === "undefined") {
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      const isDoughnut = tipoGraficaActual === "doughnut";
+
+      chartSoporteInstance = new Chart(canvas, {
+        type: isDoughnut ? "doughnut" : "bar",
+        data: {
+          labels: soportes,
+          datasets: [{
+            label: "Limpiezas Realizadas",
+            data: cantidades,
+            backgroundColor: bgColors,
+            borderColor: borderColors,
+            borderWidth: 1.5,
+            borderRadius: isDoughnut ? 0 : 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: isDoughnut,
+              position: "right",
+              labels: {
+                color: "#ffffff",
+                font: { size: 12, weight: "bold" },
+                padding: 12
+              }
+            },
+            tooltip: {
+              backgroundColor: "rgba(10, 15, 25, 0.94)",
+              titleColor: "#ffffff",
+              bodyColor: "#80cbc4",
+              borderColor: "#00bfa5",
+              borderWidth: 1,
+              padding: 10,
+              callbacks: {
+                label: function(context) {
+                  const val = context.parsed.y !== undefined ? context.parsed.y : context.parsed;
+                  const pct = totalTotal > 0 ? ((val / totalTotal) * 100).toFixed(1) : 0;
+                  return ` Limpiezas realizadas: ${val} (${pct}%)`;
+                }
+              }
+            }
+          },
+          scales: isDoughnut ? {} : {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: "#cccccc",
+                precision: 0,
+                font: { size: 11 }
+              },
+              grid: {
+                color: "rgba(255, 255, 255, 0.08)"
+              }
+            },
+            x: {
+              ticks: {
+                color: "#ffffff",
+                font: { size: 12, weight: "bold" }
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderizarTablaDinamicaHTML() {
+      if (!matrizPivotActual) return;
+
+      const thead = document.getElementById("tablaDinamicaThead");
+      const tbody = document.getElementById("tablaDinamicaTbody");
+      const tfoot = document.getElementById("tablaDinamicaTfoot");
+      const filtro = (document.getElementById("filtroTablaDinamica")?.value || "").toLowerCase().trim();
+
+      if (!thead || !tbody || !tfoot) return;
+
+      const { agentes, soportes, matriz } = matrizPivotActual;
+
+      // Filtrar agentes según el buscador
+      const agentesFiltrados = agentes.filter(ag => !filtro || ag.toLowerCase().includes(filtro));
+
+      // 1. Construir Thead
+      let theadHTML = `<tr><th>Agente</th>`;
+      soportes.forEach(sop => {
+        theadHTML += `<th>${sop}</th>`;
+      });
+      theadHTML += `<th>Suma total</th></tr>`;
+      thead.innerHTML = theadHTML;
+
+      // Si no hay datos
+      if (agentesFiltrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${soportes.length + 2}" style="text-align:center; padding: 24px; color:#aaa; font-style:italic;">No se encontraron casos de "No Procede" para el período o filtro seleccionado.</td></tr>`;
+        tfoot.innerHTML = "";
+        return;
+      }
+
+      // 2. Construir Tbody y calcular Totales por Columna
+      const totalesColumna = {};
+      soportes.forEach(s => totalesColumna[s] = 0);
+      let granTotalGeneral = 0;
+
+      let tbodyHTML = "";
+      agentesFiltrados.forEach(agente => {
+        let sumaFila = 0;
+        let filaCeldas = "";
+
+        soportes.forEach(sop => {
+          const cant = (matriz[agente] && matriz[agente][sop]) ? matriz[agente][sop] : 0;
+          if (cant > 0) {
+            filaCeldas += `<td><strong>${cant}</strong></td>`;
+            sumaFila += cant;
+            totalesColumna[sop] += cant;
+          } else {
+            filaCeldas += `<td></td>`;
+          }
+        });
+
+        granTotalGeneral += sumaFila;
+
+        tbodyHTML += `
+          <tr>
+            <td>${agente}</td>
+            ${filaCeldas}
+            <td><strong>${sumaFila > 0 ? sumaFila : ''}</strong></td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = tbodyHTML;
+
+      // 3. Construir Tfoot (Fila de Totales)
+      let tfootHTML = `<tr><th>Total general</th>`;
+      soportes.forEach(sop => {
+        const totCol = totalesColumna[sop];
+        tfootHTML += `<th>${totCol > 0 ? totCol : ''}</th>`;
+      });
+      tfootHTML += `<th>${granTotalGeneral}</th></tr>`;
+      tfoot.innerHTML = tfootHTML;
+    }
+
+    function exportarTablaDinamicaCSV() {
+      if (!matrizPivotActual || !matrizPivotActual.agentes || matrizPivotActual.agentes.length === 0) {
+        notificar("warning", "Sin Datos", "No hay datos de tabla dinámica para exportar en este período.");
+        return;
+      }
+
+      const { agentes, soportes, matriz } = matrizPivotActual;
+
+      let csv = "\uFEFFAgente," + soportes.map(s => `"${s}"`).join(",") + ',"Suma total"\n';
+
+      const totalesColumna = {};
+      soportes.forEach(s => totalesColumna[s] = 0);
+      let granTotal = 0;
+
+      agentes.forEach(ag => {
+        let sumaFila = 0;
+        const celdas = soportes.map(s => {
+          const c = (matriz[ag] && matriz[ag][s]) ? matriz[ag][s] : 0;
+          if (c > 0) {
+            sumaFila += c;
+            totalesColumna[s] += c;
+            return `"${c}"`;
+          }
+          return '""';
+        });
+        granTotal += sumaFila;
+        csv += `"${ag}",` + celdas.join(",") + `,"${sumaFila}"\n`;
+      });
+
+      // Fila Total General
+      csv += `"Total general",` + soportes.map(s => `"${totalesColumna[s] || 0}"`).join(",") + `,"${granTotal}"\n`;
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Tabla_Dinamica_No_Procede_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      notificar("success", "Exportación Exitosa", "Se descargó la tabla dinámica en formato CSV.");
     }
 
     // ==========================================
