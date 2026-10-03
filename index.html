@@ -605,10 +605,20 @@
       text-align-last: center;
     }
     .sheet-select-soporte {
-      min-width: 125px;
-      padding: 6px 14px;
+      min-width: 130px;
+      padding: 6px 12px;
       font-size: 0.86rem;
       letter-spacing: 0.3px;
+    }
+    .sheet-select-categoria {
+      min-width: 160px;
+      padding: 5px 10px;
+      font-size: 0.84rem;
+    }
+    .sheet-select-motivo {
+      min-width: 195px;
+      padding: 5px 10px;
+      font-size: 0.84rem;
     }
     .sheet-select:disabled {
       opacity: 0.9;
@@ -1340,9 +1350,7 @@
           </div>
         </div>
 
-        <button class="btn-action" onclick="if (generarPlantilla()) { copiarTexto(); }">🧾 Generar Plantilla / 📋 Copiar texto</button>
-
-        <button id="btnSubirLimpiezaLS" class="btn-action btn-subir-hoja" onclick="subirLimpiezaDesdePlantilla()">📤 Subir a Hoja de Limpiezas</button>
+        <button class="btn-action" onclick="generarYProcesarPlantilla()">🧾 Generar Plantilla / 📋 Copiar texto</button>
 
         <label for="resultado">Texto Generado:</label>
         <textarea id="resultado"></textarea>
@@ -1406,8 +1414,8 @@
               <th>Cédula ˅</th>
               <th style="text-align: center;">Cero Pagos ˅</th>
               <th style="text-align: center; min-width: 130px;">Soporte ˅</th>
-              <th style="text-align: center;">Categoría ˅</th>
-              <th style="text-align: center;">Motivo ˅</th>
+              <th style="text-align: center; min-width: 160px;">Categoría ˅</th>
+              <th style="text-align: center; min-width: 195px;">Motivo ˅</th>
               <th style="text-align: center;">Acciones</th>
             </tr>
           </thead>
@@ -2838,18 +2846,18 @@
     }
 
     // ==========================================
-    // SUBIDA DESDE LA PLANTILLA A LA HOJA
+    // SUBIDA DESDE LA PLANTILLA A LA HOJA Y PROCESAMIENTO UNIFICADO
     // ==========================================
     async function subirLimpiezaDesdePlantilla() {
       if (!usuarioLogueado) {
         notificar("warning", "Sesión Requerida", "Debes iniciar sesión para subir una limpieza.");
         document.getElementById("modalLogin").style.display = "flex";
-        return;
+        return false;
       }
 
       if (!validarCampos()) {
         notificar("error", "Campos Incompletos", "Por favor completa los campos obligatorios antes de subir.");
-        return;
+        return false;
       }
 
       const cedula = document.getElementById("cedula").value.trim();
@@ -2870,13 +2878,13 @@
         if (cedulaExistente.categoria) detalle += `<br>🏷️ Categoría: <strong>${cedulaExistente.categoria}</strong>`;
 
         notificar("warning", "⚠️ Cédula Ya Subida", detalle, 9500);
-        return;
+        return false;
       }
 
       // Montos
-      const montoFP = document.getElementById('montoFacturasPendientesLS').value.trim();
-      const montoWO = document.getElementById('montoWritteOffLS').value.trim();
-      const montoCP = document.getElementById('montoCeroPagosLS').value.trim();
+      const montoFP = document.getElementById('montoFacturasPendientesLS')?.value.trim() || "";
+      const montoWO = document.getElementById('montoWritteOffLS')?.value.trim() || "";
+      const montoCP = document.getElementById('montoCeroPagosLS')?.value.trim() || "";
       
       let terminosMonto = [];
       if (montoFP) terminosMonto.push(montoFP);
@@ -2936,6 +2944,66 @@
         notificar("success", "Reversión Subida", `Se registró una nueva fila de Reversión para la cédula <strong>${cedula}</strong> en la hoja.`);
       } else {
         notificar("success", "Subido con Éxito", `Limpieza para cédula <strong>${cedula}</strong> registrada en la hoja de control.`);
+      }
+      return true;
+    }
+
+    // ==========================================
+    // ACCIÓN PRINCIPAL: GENERAR PLANTILLA Y SUBIR (UNIFICADO)
+    // ==========================================
+    async function generarYProcesarPlantilla() {
+      if (!validarCampos()) return;
+
+      const seleccion = document.getElementById("plantilla").value;
+      const cedula = (document.getElementById("cedula")?.value || "").trim();
+      const cLimpia = cedula.replace(/[-\s]/g, '').toLowerCase();
+
+      const montoFP = document.getElementById("montoFacturasPendientesLS") ? document.getElementById("montoFacturasPendientesLS").value.trim() : "";
+      const montoCP = document.getElementById("montoCeroPagosLS") ? document.getElementById("montoCeroPagosLS").value.trim() : "";
+
+      // Solo califica para subida automática si es LIMPIEZA DE SALDOS y se coloca saldo en Facturas Pendientes o en Cero Pagos
+      const tieneSaldoFPoCP = (seleccion === "LIMPIEZA DE SALDOS") && (montoFP !== "" || montoCP !== "");
+
+      if (tieneSaldoFPoCP) {
+        // Comprobar si la cédula ya existe en la hoja de cálculo
+        const cedulaExistente = listaLimpiezas.find(r => {
+          const rCed = String(r.cedula || '').trim().replace(/[-\s]/g, '').toLowerCase();
+          return rCed === cLimpia;
+        });
+
+        if (cedulaExistente) {
+          let detalleAviso = `⚠️ La cédula ${cedula} ya se encuentra registrada en la hoja de cálculo.`;
+          if (cedulaExistente.agente) detalleAviso += `\n👤 Solicitada por: ${cedulaExistente.agente}`;
+          if (cedulaExistente.soporte) detalleAviso += `\n🎧 Atendida por: ${cedulaExistente.soporte}`;
+          if (cedulaExistente.categoria) detalleAviso += `\n🏷️ Categoría: ${cedulaExistente.categoria}`;
+          detalleAviso += `\n\n¿Deseas generar la plantilla pero SIN subirla a la hoja de limpiezas?`;
+
+          const deseaGenerar = confirm(detalleAviso);
+
+          if (!deseaGenerar) {
+            return; // El usuario cancela la acción
+          }
+
+          // Si el usuario acepta: generar y copiar la plantilla sin subirla a la hoja
+          if (generarPlantilla()) {
+            copiarTexto();
+            notificar("warning", "Plantilla Generada (Sin Subir)", `Plantilla copiada al portapapeles. La cédula <strong>${cedula}</strong> ya estaba en la hoja de cálculo.`);
+          }
+          return;
+        }
+
+        // Si no está duplicada, subir primero a la hoja y luego generar / copiar plantilla
+        const subido = await subirLimpiezaDesdePlantilla();
+        if (subido) {
+          if (generarPlantilla()) {
+            copiarTexto();
+          }
+        }
+      } else {
+        // En cualquier otra plantilla o sin saldo en FP ni CP: generar y copiar normalmente
+        if (generarPlantilla()) {
+          copiarTexto();
+        }
       }
     }
 
@@ -3010,14 +3078,14 @@
         selectSoporte += `</select>`;
 
         // 4. Select Categoría (Columna 7)
-        let selectCategoria = `<select class="sheet-select ${obtenerClaseCategoria(row.categoria)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'categoria', this.value, this)">`;
+        let selectCategoria = `<select class="sheet-select sheet-select-categoria ${obtenerClaseCategoria(row.categoria)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'categoria', this.value, this)">`;
         OPCIONES_CATEGORIA.forEach(op => {
           selectCategoria += `<option value="${op.valor}" ${row.categoria === op.valor ? 'selected' : ''}>${op.texto}</option>`;
         });
         selectCategoria += `</select>`;
 
         // 5. Select Motivo (Columna 8)
-        let selectMotivo = `<select class="sheet-select ${obtenerClaseMotivo(row.motivo)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'motivo', this.value, this)">`;
+        let selectMotivo = `<select class="sheet-select sheet-select-motivo ${obtenerClaseMotivo(row.motivo)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'motivo', this.value, this)">`;
         OPCIONES_MOTIVO.forEach(op => {
           selectMotivo += `<option value="${op.valor}" ${row.motivo === op.valor ? 'selected' : ''}>${op.texto}</option>`;
         });
@@ -3044,8 +3112,8 @@
           </td>
           <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
           <td style="text-align: center; min-width: 130px;">${selectSoporte}</td>
-          <td style="text-align: center;">${selectCategoria}</td>
-          <td style="text-align: center;">${selectMotivo}</td>
+          <td style="text-align: center; min-width: 160px;">${selectCategoria}</td>
+          <td style="text-align: center; min-width: 195px;">${selectMotivo}</td>
           <td style="text-align: center;">
             ${puedeEditar ? `<button style="background: #d32f2f; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.75rem;" onclick="eliminarRegistro('${row.id}')" title="Eliminar fila">🗑️</button>` : `<span style="color:#999;" title="Solo lectura">🔒</span>`}
           </td>
@@ -3174,8 +3242,8 @@
             selectElem.className = `sheet-select sheet-select-soporte ${obtenerClaseSoporte(valor)}`;
             renderizarTablaSheet();
           }
-          else if (campo === "categoria") selectElem.className = `sheet-select ${obtenerClaseCategoria(valor)}`;
-          else if (campo === "motivo") selectElem.className = `sheet-select ${obtenerClaseMotivo(valor)}`;
+          else if (campo === "categoria") selectElem.className = `sheet-select sheet-select-categoria ${obtenerClaseCategoria(valor)}`;
+          else if (campo === "motivo") selectElem.className = `sheet-select sheet-select-motivo ${obtenerClaseMotivo(valor)}`;
         }
 
         renderizarTablaSheet();
@@ -3831,13 +3899,6 @@
       const formulario = document.getElementById("formulario");
       const campoFecha = document.getElementById("campoFecha");
       const montoInput = document.getElementById("montoInput");
-      const btnSubirLS = document.getElementById("btnSubirLimpiezaLS");
-
-      if (seleccion === "LIMPIEZA DE SALDOS") {
-        btnSubirLS.style.display = "block";
-      } else {
-        btnSubirLS.style.display = "none";
-      }
 
       checkboxes.style.display = (seleccion === "FACTURAS PENDIENTES") ? "block" : "none";
       checkboxesFacturasExtra.style.display = (seleccion === "FACTURAS PENDIENTES") ? "block" : "none";
