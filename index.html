@@ -701,8 +701,10 @@
       border-radius: 6px;
       border: 1px solid rgba(255,255,255,0.35);
       box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-      margin-top: 3px;
+      margin: 0;
       letter-spacing: 0.2px;
+      white-space: nowrap;
+      flex-shrink: 0;
       animation: popInBadge 0.2s ease;
     }
     @keyframes popInBadge {
@@ -1305,6 +1307,14 @@
               <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                 <input type="checkbox" id="chkReversionLS" style="width: auto; margin: 0;"> 
                 <span>¿Es una Reversión? (Marcar si es una limpieza previamente reversada)</span>
+              </label>
+            </div>
+
+            <!-- Casilla REC -->
+            <div style="margin-top: 8px; background: rgba(0,0,0,0.4); padding: 9px 12px; border-radius: 8px; border-left: 3px solid #00bcd4;">
+              <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chkRecLS" style="width: auto; margin: 0;"> 
+                <span>REC (Marcar para generar plantilla sin subir a la hoja de limpiezas)</span>
               </label>
             </div>
           </div>
@@ -2980,9 +2990,10 @@
 
       const montoFP = document.getElementById("montoFacturasPendientesLS") ? document.getElementById("montoFacturasPendientesLS").value.trim() : "";
       const montoCP = document.getElementById("montoCeroPagosLS") ? document.getElementById("montoCeroPagosLS").value.trim() : "";
+      const esRec = document.getElementById("chkRecLS")?.checked || false;
 
-      // Solo califica para subida automática si es LIMPIEZA DE SALDOS y se coloca saldo en Facturas Pendientes o en Cero Pagos
-      const tieneSaldoFPoCP = (seleccion === "LIMPIEZA DE SALDOS") && (montoFP !== "" || montoCP !== "");
+      // Solo califica para subida automática si es LIMPIEZA DE SALDOS, NO está marcado REC, y se coloca saldo en Facturas Pendientes o en Cero Pagos
+      const tieneSaldoFPoCP = (seleccion === "LIMPIEZA DE SALDOS") && !esRec && (montoFP !== "" || montoCP !== "");
 
       if (tieneSaldoFPoCP) {
         // Comprobar si la cédula ya existe en la hoja de cálculo
@@ -3020,9 +3031,12 @@
           }
         }
       } else {
-        // En cualquier otra plantilla o sin saldo en FP ni CP: generar y copiar normalmente
+        // En cualquier otra plantilla, o si está marcado REC, o sin saldo en FP ni CP: generar y copiar normalmente sin subir
         if (generarPlantilla()) {
           copiarTexto();
+          if (esRec) {
+            notificar("info", "REC - Plantilla Generada", `Plantilla copiada al portapapeles. No se subió a la hoja de control por estar marcada la opción <strong>REC</strong>.`);
+          }
         }
       }
     }
@@ -3125,9 +3139,9 @@
           <td style="text-align: center;">${celdaMonto}</td>
           <td style="text-align: center;">${row.agente || '-'}</td>
           <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Toca para copiar la cédula (Editores: marcar en proceso)">
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;">
-              ${celdaCedula}
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
               ${badgeHTML}
+              ${celdaCedula}
             </div>
           </td>
           <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
@@ -4307,6 +4321,7 @@
 
       if (document.getElementById("ceroPagosIncubadora")) document.getElementById("ceroPagosIncubadora").checked = false;
       if (document.getElementById("chkReversionLS")) document.getElementById("chkReversionLS").checked = false;
+      if (document.getElementById("chkRecLS")) document.getElementById("chkRecLS").checked = false;
 
       const montoExtraIds = ["montoCeroPagosFP", "montoWritteOffFP", "montoFacturasPendientesCP", "montoWritteOffCP", "montoFacturasPendientesWO", "montoCeroPagosWO", "montoFacturasPendientesSA", "montoCeroPagosSA", "montoWritteOffSA", "montoFacturasPendientesLS", "montoWritteOffLS", "montoCeroPagosLS"];
       montoExtraIds.forEach(id => {
