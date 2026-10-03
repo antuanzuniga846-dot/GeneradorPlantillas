@@ -530,7 +530,7 @@
     /* ========================================= */
     .sheet-wrapper {
       width: 100%;
-      max-width: 1400px;
+      max-width: 100%;
       margin: 0 auto;
       background: rgba(18, 18, 28, 0.88);
       backdrop-filter: blur(18px);
@@ -543,32 +543,46 @@
 
     .sheet-header-bar {
       background: #4a148c;
-      padding: 12px 18px;
+      padding: 9px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       color: #ffffff;
       font-weight: bold;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
     }
 
     .sheet-table-container {
-      max-height: 580px;
-      overflow: auto;
+      max-height: calc(100vh - 160px);
+      min-height: 480px;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+
+    .sheet-table-container::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .sheet-table-container::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .sheet-table-container::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 4px;
     }
 
     .sheet-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       text-align: center;
     }
 
     .sheet-table th {
       background: #38106a;
       color: #ffffff;
-      padding: 10px 12px;
+      padding: 9px 8px;
       border: 1px solid rgba(255,255,255,0.15);
       position: sticky;
       top: 0;
@@ -577,14 +591,16 @@
       font-weight: bold;
       user-select: none;
       text-align: center;
+      font-size: 0.84rem;
     }
 
     .sheet-table td {
-      padding: 7px 12px;
+      padding: 5px 6px;
       border: 1px solid rgba(255,255,255,0.08);
       color: #ffffff;
       white-space: nowrap;
       text-align: center;
+      font-size: 0.84rem;
     }
 
     .sheet-table tr:hover td {
@@ -592,9 +608,9 @@
     }
 
     .sheet-select {
-      border-radius: 18px;
-      padding: 5px 12px;
-      font-size: 0.82rem;
+      border-radius: 16px;
+      padding: 4px 8px;
+      font-size: 0.80rem;
       font-weight: bold;
       border: 1px solid transparent;
       outline: none;
@@ -603,22 +619,26 @@
       margin: 0 auto;
       text-align: center;
       text-align-last: center;
+      box-sizing: border-box;
     }
     .sheet-select-soporte {
-      min-width: 130px;
-      padding: 6px 12px;
-      font-size: 0.86rem;
-      letter-spacing: 0.3px;
+      min-width: 115px;
+      max-width: 135px;
+      padding: 4px 8px;
+      font-size: 0.82rem;
+      letter-spacing: 0.2px;
     }
     .sheet-select-categoria {
-      min-width: 160px;
-      padding: 5px 10px;
-      font-size: 0.84rem;
+      min-width: 145px;
+      max-width: 175px;
+      padding: 4px 6px;
+      font-size: 0.80rem;
     }
     .sheet-select-motivo {
-      min-width: 195px;
-      padding: 5px 10px;
-      font-size: 0.84rem;
+      min-width: 175px;
+      max-width: 215px;
+      padding: 4px 6px;
+      font-size: 0.80rem;
     }
     .sheet-select:disabled {
       opacity: 0.9;
@@ -1413,9 +1433,9 @@
               <th>Agente ˅</th>
               <th>Cédula ˅</th>
               <th style="text-align: center;">Cero Pagos ˅</th>
-              <th style="text-align: center; min-width: 130px;">Soporte ˅</th>
-              <th style="text-align: center; min-width: 160px;">Categoría ˅</th>
-              <th style="text-align: center; min-width: 195px;">Motivo ˅</th>
+              <th style="text-align: center;">Soporte ˅</th>
+              <th style="text-align: center;">Categoría ˅</th>
+              <th style="text-align: center;">Motivo ˅</th>
               <th style="text-align: center;">Acciones</th>
             </tr>
           </thead>
@@ -3057,7 +3077,7 @@
               title="Haz clic para modificar el monto (Presiona Enter o desenfoca para guardar)"
               onblur="actualizarMontoFila('${row.id}', this.value, this)" 
               onkeydown="if(event.key==='Enter') this.blur()"
-              style="width: 120px; padding: 4px 8px; margin: 0 auto; font-weight: bold; font-size: 0.88rem; background: rgba(0,0,0,0.45); border: 1.5px solid var(--accent); border-radius: 6px; color: #fff; text-align: center;"
+              style="width: 100px; padding: 3px 6px; margin: 0 auto; font-weight: bold; font-size: 0.84rem; background: rgba(0,0,0,0.45); border: 1.5px solid var(--accent); border-radius: 6px; color: #fff; text-align: center;"
             >
           `;
         } else {
@@ -3111,9 +3131,9 @@
             </div>
           </td>
           <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
-          <td style="text-align: center; min-width: 130px;">${selectSoporte}</td>
-          <td style="text-align: center; min-width: 160px;">${selectCategoria}</td>
-          <td style="text-align: center; min-width: 195px;">${selectMotivo}</td>
+          <td style="text-align: center;">${selectSoporte}</td>
+          <td style="text-align: center;">${selectCategoria}</td>
+          <td style="text-align: center;">${selectMotivo}</td>
           <td style="text-align: center;">
             ${puedeEditar ? `<button style="background: #d32f2f; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.75rem;" onclick="eliminarRegistro('${row.id}')" title="Eliminar fila">🗑️</button>` : `<span style="color:#999;" title="Solo lectura">🔒</span>`}
           </td>
