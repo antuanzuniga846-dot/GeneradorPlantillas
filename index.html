@@ -2893,12 +2893,12 @@
       const cedula = document.getElementById("cedula").value.trim();
       const esReversion = document.getElementById("chkReversionLS")?.checked || false;
 
-      // Validación de duplicados: No permitir subir la misma cédula
+      // Validación de duplicados: No permitir subir la misma cédula (excepto si es una Reversión)
       const cLimpia = cedula.replace(/[-\s]/g, '').toLowerCase();
-      const cedulaExistente = listaLimpiezas.find(r => {
+      const cedulaExistente = !esReversion ? listaLimpiezas.find(r => {
         const rCed = String(r.cedula || '').trim().replace(/[-\s]/g, '').toLowerCase();
         return rCed === cLimpia;
-      });
+      }) : null;
 
       if (cedulaExistente) {
         let detalle = `La cédula <strong>${cedula}</strong> ya se encuentra registrada en la hoja de control.`;
@@ -2990,17 +2990,18 @@
 
       const montoFP = document.getElementById("montoFacturasPendientesLS") ? document.getElementById("montoFacturasPendientesLS").value.trim() : "";
       const montoCP = document.getElementById("montoCeroPagosLS") ? document.getElementById("montoCeroPagosLS").value.trim() : "";
+      const esReversion = document.getElementById("chkReversionLS")?.checked || false;
       const esRec = document.getElementById("chkRecLS")?.checked || false;
 
       // Solo califica para subida automática si es LIMPIEZA DE SALDOS, NO está marcado REC, y se coloca saldo en Facturas Pendientes o en Cero Pagos
       const tieneSaldoFPoCP = (seleccion === "LIMPIEZA DE SALDOS") && !esRec && (montoFP !== "" || montoCP !== "");
 
       if (tieneSaldoFPoCP) {
-        // Comprobar si la cédula ya existe en la hoja de cálculo
-        const cedulaExistente = listaLimpiezas.find(r => {
+        // Comprobar si la cédula ya existe en la hoja de cálculo (solo para limpiezas regulares que NO son Reversión)
+        const cedulaExistente = !esReversion ? listaLimpiezas.find(r => {
           const rCed = String(r.cedula || '').trim().replace(/[-\s]/g, '').toLowerCase();
           return rCed === cLimpia;
-        });
+        }) : null;
 
         if (cedulaExistente) {
           let detalleAviso = `⚠️ La cédula ${cedula} ya se encuentra registrada en la hoja de cálculo.`;
@@ -3023,7 +3024,7 @@
           return;
         }
 
-        // Si no está duplicada, subir primero a la hoja y luego generar / copiar plantilla
+        // Si no está duplicada o es una Reversión, subir a la hoja y luego generar / copiar plantilla
         const subido = await subirLimpiezaDesdePlantilla();
         if (subido) {
           if (generarPlantilla()) {
