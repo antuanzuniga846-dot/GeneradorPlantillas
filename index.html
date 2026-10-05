@@ -2580,11 +2580,29 @@
               if (data && data.id) {
                 const itm = listaLimpiezas.find(x => x.id === data.id);
                 if (itm) {
-                  itm.enProceso = normalizarNombreEnProceso(data.enProceso || "");
-                  localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
-                  renderizarTablaSheet();
-                  if (vistaActual === "estadisticas") {
-                    actualizarEstadisticasYTablaDinamica();
+                  const nuevoEnProc = normalizarNombreEnProceso(data.enProceso || "");
+                  if (itm.enProceso !== nuevoEnProc) {
+                    itm.enProceso = nuevoEnProc;
+                    localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+                    
+                    const tr = document.querySelector(`tr[data-row-id="${data.id}"]`);
+                    if (tr) {
+                      const celdaClick = tr.querySelector(".cell-cedula-click > div");
+                      if (celdaClick) {
+                        const badgeExistente = celdaClick.querySelector(".badge-en-proceso");
+                        if (badgeExistente) badgeExistente.remove();
+
+                        if (nuevoEnProc && !(itm.soporte && itm.soporte.trim())) {
+                          const badge = document.createElement("span");
+                          badge.className = "badge-en-proceso";
+                          badge.title = `En proceso por ${nuevoEnProc} (Toca para desmarcar)`;
+                          badge.textContent = `⏳ ${nuevoEnProc}`;
+                          celdaClick.insertBefore(badge, celdaClick.firstChild);
+                        }
+                      }
+                    } else {
+                      renderizarTablaSheet();
+                    }
                   }
                 }
               }
@@ -2672,8 +2690,32 @@
           const anterior = listaLimpiezas[idx];
           const nuevoSoporte = nuevaFila.soporte || "";
           const nuevaCat = nuevaFila.categoria || "";
+          const nuevoMotivo = nuevaFila.motivo || "";
+          const nuevoMonto = nuevaFila.monto || "";
+          const nuevaCedula = nuevaFila.cedula || "";
+          let nuevoEnProc = "";
+          if (nuevaFila.en_proceso !== undefined && nuevaFila.en_proceso !== null && String(nuevaFila.en_proceso).trim() !== "") {
+            nuevoEnProc = normalizarNombreEnProceso(nuevaFila.en_proceso);
+          } else if (anterior.enProceso) {
+            nuevoEnProc = normalizarNombreEnProceso(anterior.enProceso);
+          }
+          if (nuevoSoporte && String(nuevoSoporte).trim()) {
+            nuevoEnProc = "";
+          }
 
-          // Notificar al usuario si su limpieza fue atendida
+          // Si los datos son exactamente idénticos (eco de nuestra propia actualización), no redibujar toda la tabla
+          const sinCambios = (anterior.monto || "") === (nuevoMonto || "") &&
+                             (anterior.soporte || "") === nuevoSoporte &&
+                             (anterior.categoria || "") === nuevaCat &&
+                             (anterior.motivo || "") === nuevoMotivo &&
+                             (anterior.cedula || "") === nuevaCedula &&
+                             normalizarNombreEnProceso(anterior.enProceso || "") === nuevoEnProc;
+
+          if (sinCambios) {
+            return;
+          }
+
+          // Notificar al usuario si su limpieza fue atendida por alguien más
           if (
             usuarioLogueado &&
             anterior.agente &&
@@ -2687,16 +2729,6 @@
             notificar("success", "🔔 ¡Limpieza Realizada!", msg, true);
           }
 
-          let enProc = "";
-          if (nuevaFila.en_proceso !== undefined && nuevaFila.en_proceso !== null && String(nuevaFila.en_proceso).trim() !== "") {
-            enProc = normalizarNombreEnProceso(nuevaFila.en_proceso);
-          } else if (anterior.enProceso) {
-            enProc = normalizarNombreEnProceso(anterior.enProceso);
-          }
-          if (nuevoSoporte && String(nuevoSoporte).trim()) {
-            enProc = "";
-          }
-
           listaLimpiezas[idx] = {
             id: nuevaFila.id,
             marcaTemporal: normalizarFechaMarcaTemporal(nuevaFila.marca_temporal),
@@ -2707,7 +2739,7 @@
             soporte: nuevoSoporte,
             categoria: nuevaCat,
             motivo: nuevaFila.motivo || "",
-            enProceso: enProc
+            enProceso: nuevoEnProc
           };
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
           renderizarTablaSheet();
@@ -2794,16 +2826,38 @@
 
       // Si ya estaba en proceso por este usuario, se desmarca
       const enProcActual = normalizarNombreEnProceso(item.enProceso);
+      let nuevoEnProceso = "";
       if (enProcActual && enProcActual.toLowerCase() === miNombre.toLowerCase()) {
         item.enProceso = "";
+        nuevoEnProceso = "";
         notificar("info", "Cédula Liberada", `Cédula <strong>${cedulaTexto}</strong> copiada y desmarcada.`);
       } else {
         item.enProceso = miNombre;
+        nuevoEnProceso = miNombre;
         notificar("success", "Copiada y En Proceso", `Cédula <strong>${cedulaTexto}</strong> copiada y marcada en proceso por <strong>${miNombre}</strong>.`);
       }
 
       localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
-      renderizarTablaSheet();
+
+      // Actualizar el badge en el DOM directamente sin redibujar toda la tabla (0ms de retraso)
+      const tr = document.querySelector(`tr[data-row-id="${rowId}"]`);
+      if (tr) {
+        const celdaClick = tr.querySelector(".cell-cedula-click > div");
+        if (celdaClick) {
+          const badgeExistente = celdaClick.querySelector(".badge-en-proceso");
+          if (badgeExistente) badgeExistente.remove();
+
+          if (nuevoEnProceso && !(item.soporte && item.soporte.trim())) {
+            const badge = document.createElement("span");
+            badge.className = "badge-en-proceso";
+            badge.title = `En proceso por ${nuevoEnProceso} (Toca para desmarcar)`;
+            badge.textContent = `⏳ ${nuevoEnProceso}`;
+            celdaClick.insertBefore(badge, celdaClick.firstChild);
+          }
+        }
+      } else {
+        renderizarTablaSheet();
+      }
 
       // Emitir broadcast en tiempo real a todos los compañeros conectados
       if (canalRealtime) {
@@ -2822,14 +2876,16 @@
       }
 
       if (supabaseClient) {
-        try {
-          await supabaseClient
-            .from("control_limpiezas")
-            .update({ en_proceso: item.enProceso })
-            .eq("id", rowId);
-        } catch (err) {
-          console.warn("Error guardando en_proceso en Supabase:", err);
-        }
+        (async () => {
+          try {
+            await supabaseClient
+              .from("control_limpiezas")
+              .update({ en_proceso: item.enProceso })
+              .eq("id", rowId);
+          } catch (err) {
+            console.warn("Error guardando en_proceso en Supabase:", err);
+          }
+        })();
       }
     }
 
@@ -3086,6 +3142,7 @@
 
       filtrados.forEach(row => {
         const tr = document.createElement("tr");
+        tr.setAttribute("data-row-id", row.id);
 
         // 1. Cédula y botón de edición para editores
         let celdaCedula = `
@@ -3216,11 +3273,13 @@
         renderizarTablaSheet();
 
         if (supabaseClient) {
-          try {
-            await supabaseClient.from("control_limpiezas").update({ cedula: valorFinal }).eq("id", id);
-          } catch (err) {
-            console.error("Error actualizando cédula en Supabase:", err);
-          }
+          (async () => {
+            try {
+              await supabaseClient.from("control_limpiezas").update({ cedula: valorFinal }).eq("id", id);
+            } catch (err) {
+              console.error("Error actualizando cédula en Supabase:", err);
+            }
+          })();
         }
 
         notificar("success", "Cédula Modificada", `Cédula actualizada de <strong>${cedulaAnterior}</strong> a <strong>${valorFinal}</strong>.`);
@@ -3243,17 +3302,18 @@
       if (!valorFinal) valorFinal = "0.00";
 
       if (item.monto !== valorFinal) {
-        const montoAnterior = item.monto;
         item.monto = valorFinal;
         if (inputElem) inputElem.value = valorFinal;
         localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
 
         if (supabaseClient) {
-          try {
-            await supabaseClient.from("control_limpiezas").update({ monto: valorFinal }).eq("id", id);
-          } catch (err) {
-            console.error("Error actualizando monto en Supabase:", err);
-          }
+          (async () => {
+            try {
+              await supabaseClient.from("control_limpiezas").update({ monto: valorFinal }).eq("id", id);
+            } catch (err) {
+              console.error("Error actualizando monto en Supabase:", err);
+            }
+          })();
         }
 
         notificar("success", "Monto Modificado", `Monto de cédula <strong>${item.cedula}</strong> actualizado a <strong>¢${valorFinal}</strong>.`);
@@ -3268,46 +3328,65 @@
       }
 
       const item = listaLimpiezas.find(x => x.id === id);
-      if (item) {
-        item[campo] = valor;
+      if (!item) return;
 
-        // Si ya tiene soporte asignado, se limpia el badge de en proceso
-        if (campo === "soporte" && valor) {
-          item.enProceso = "";
-          if (canalRealtime) {
-            try {
-              canalRealtime.send({
-                type: 'broadcast',
-                event: 'en_proceso_sync',
-                payload: { id: id, enProceso: "" }
-              });
-            } catch(e){}
+      item[campo] = valor;
+
+      // Si ya tiene soporte asignado, se limpia el badge de en proceso
+      if (campo === "soporte" && valor) {
+        item.enProceso = "";
+        if (canalRealtime) {
+          try {
+            canalRealtime.send({
+              type: 'broadcast',
+              event: 'en_proceso_sync',
+              payload: { id: id, enProceso: "" }
+            });
+          } catch(e){}
+        }
+      }
+
+      // Guardar en memoria y localStorage inmediatamente
+      localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+
+      // Actualización visual directa e instantánea sin destruir el DOM (0ms de retraso)
+      if (selectElem) {
+        if (campo === "soporte") {
+          selectElem.className = `sheet-select sheet-select-soporte ${obtenerClaseSoporte(valor)}`;
+          if (valor) {
+            const tr = selectElem.closest("tr");
+            if (tr) {
+              const badge = tr.querySelector(".badge-en-proceso");
+              if (badge) badge.remove();
+            }
           }
         }
-
-        localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
-
-        if (selectElem) {
-          if (campo === "soporte") {
-            selectElem.className = `sheet-select sheet-select-soporte ${obtenerClaseSoporte(valor)}`;
-            renderizarTablaSheet();
-          }
-          else if (campo === "categoria") selectElem.className = `sheet-select sheet-select-categoria ${obtenerClaseCategoria(valor)}`;
-          else if (campo === "motivo") selectElem.className = `sheet-select sheet-select-motivo ${obtenerClaseMotivo(valor)}`;
+        else if (campo === "categoria") {
+          selectElem.className = `sheet-select sheet-select-categoria ${obtenerClaseCategoria(valor)}`;
         }
-
+        else if (campo === "motivo") {
+          selectElem.className = `sheet-select sheet-select-motivo ${obtenerClaseMotivo(valor)}`;
+        }
+      } else {
         renderizarTablaSheet();
+      }
 
-        if (supabaseClient) {
-          const updateObj = {};
-          if (campo === "monto") updateObj.monto = valor;
-          if (campo === "soporte") {
-            updateObj.soporte = valor;
-            if (valor) updateObj.en_proceso = "";
-          }
-          if (campo === "categoria") updateObj.categoria = valor;
-          if (campo === "motivo") updateObj.motivo = valor;
+      if (vistaActual === "estadisticas") {
+        actualizarEstadisticasYTablaDinamica();
+      }
 
+      // Sincronizar en segundo plano con Supabase de forma no bloqueante (Fire-and-forget)
+      if (supabaseClient) {
+        const updateObj = {};
+        if (campo === "monto") updateObj.monto = valor;
+        if (campo === "soporte") {
+          updateObj.soporte = valor;
+          if (valor) updateObj.en_proceso = "";
+        }
+        if (campo === "categoria") updateObj.categoria = valor;
+        if (campo === "motivo") updateObj.motivo = valor;
+
+        (async () => {
           try {
             const { error } = await supabaseClient.from("control_limpiezas").update(updateObj).eq("id", id);
             if (error) {
@@ -3318,9 +3397,7 @@
           } catch(e) {
             console.warn("Update Supabase error:", e);
           }
-        }
-
-        notificar("success", "Actualizado", `Se guardó el cambio en <strong>${campo}</strong>.`);
+        })();
       }
     }
 
