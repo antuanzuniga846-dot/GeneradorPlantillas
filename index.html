@@ -2494,9 +2494,9 @@
             
             let enProc = "";
             if (item.en_proceso !== undefined && item.en_proceso !== null && String(item.en_proceso).trim() !== "") {
-              enProc = String(item.en_proceso).trim();
+              enProc = normalizarNombreEnProceso(item.en_proceso);
             } else if (anteriorLocal && anteriorLocal.enProceso) {
-              enProc = anteriorLocal.enProceso;
+              enProc = normalizarNombreEnProceso(anteriorLocal.enProceso);
             }
 
             if (item.soporte && String(item.soporte).trim()) {
@@ -2580,7 +2580,7 @@
               if (data && data.id) {
                 const itm = listaLimpiezas.find(x => x.id === data.id);
                 if (itm) {
-                  itm.enProceso = (data.enProceso || "").trim();
+                  itm.enProceso = normalizarNombreEnProceso(data.enProceso || "");
                   localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
                   renderizarTablaSheet();
                   if (vistaActual === "estadisticas") {
@@ -2595,14 +2595,14 @@
             { event: "solicitar_estados_en_proceso" },
             () => {
               if (usuarioLogueado) {
-                const miNombre = usuarioLogueado.nombre || usuarioLogueado.usuario;
-                const misActivas = listaLimpiezas.filter(x => x.enProceso && x.enProceso.toLowerCase() === miNombre.toLowerCase() && !x.soporte);
+                const miNombre = normalizarNombreEnProceso(usuarioLogueado.nombre || usuarioLogueado.usuario);
+                const misActivas = listaLimpiezas.filter(x => normalizarNombreEnProceso(x.enProceso).toLowerCase() === miNombre.toLowerCase() && !x.soporte);
                 misActivas.forEach(act => {
                   try {
                     canalRealtime.send({
                       type: 'broadcast',
                       event: 'en_proceso_sync',
-                      payload: { id: act.id, enProceso: act.enProceso }
+                      payload: { id: act.id, enProceso: normalizarNombreEnProceso(act.enProceso) }
                     });
                   } catch(e){}
                 });
@@ -2657,7 +2657,7 @@
             soporte: nuevaFila.soporte || "",
             categoria: nuevaFila.categoria || "",
             motivo: nuevaFila.motivo || "",
-            enProceso: nuevaFila.en_proceso || ""
+            enProceso: normalizarNombreEnProceso(nuevaFila.en_proceso || "")
           };
           listaLimpiezas.unshift(itemNuevo);
           localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
@@ -2689,9 +2689,9 @@
 
           let enProc = "";
           if (nuevaFila.en_proceso !== undefined && nuevaFila.en_proceso !== null && String(nuevaFila.en_proceso).trim() !== "") {
-            enProc = String(nuevaFila.en_proceso).trim();
+            enProc = normalizarNombreEnProceso(nuevaFila.en_proceso);
           } else if (anterior.enProceso) {
-            enProc = anterior.enProceso;
+            enProc = normalizarNombreEnProceso(anterior.enProceso);
           }
           if (nuevoSoporte && String(nuevoSoporte).trim()) {
             enProc = "";
@@ -2726,9 +2726,18 @@
     }
 
     // ==========================================
-    // ==========================================
     // MARCAR CÉDULA EN PROCESO AL TOCAR
     // ==========================================
+    function normalizarNombreEnProceso(nombre) {
+      if (!nombre) return "";
+      const n = String(nombre).trim();
+      const lower = n.toLowerCase();
+      if (lower.includes("maria") || lower.includes("chavarria") || lower === "adriel") {
+        return "María";
+      }
+      return n;
+    }
+
     function copiarTextoAlPortapapeles(texto) {
       if (!texto) return;
       if (navigator.clipboard && window.isSecureContext) {
@@ -2774,7 +2783,8 @@
         return;
       }
 
-      const miNombre = usuarioLogueado.nombre || usuarioLogueado.usuario;
+      let miNombre = usuarioLogueado.nombre || usuarioLogueado.usuario;
+      miNombre = normalizarNombreEnProceso(miNombre);
 
       // Si ya tiene un nombre asignado en la columna Soporte, solo se copia y no requiere marcarse
       if (item.soporte && item.soporte.trim()) {
@@ -2783,7 +2793,8 @@
       }
 
       // Si ya estaba en proceso por este usuario, se desmarca
-      if (item.enProceso && item.enProceso.toLowerCase() === miNombre.toLowerCase()) {
+      const enProcActual = normalizarNombreEnProceso(item.enProceso);
+      if (enProcActual && enProcActual.toLowerCase() === miNombre.toLowerCase()) {
         item.enProceso = "";
         notificar("info", "Cédula Liberada", `Cédula <strong>${cedulaTexto}</strong> copiada y desmarcada.`);
       } else {
@@ -3131,7 +3142,7 @@
         selectMotivo += `</select>`;
 
         // Badge "En proceso": Solo se muestra si alguien la tomó y la columna Soporte aún NO tiene nombre
-        const enProc = (row.enProceso || "").trim();
+        const enProc = normalizarNombreEnProceso(row.enProceso || "");
         const tieneSoporte = !!(row.soporte || "").trim();
         const mostrarBadgeEnProceso = enProc && !tieneSoporte;
 
