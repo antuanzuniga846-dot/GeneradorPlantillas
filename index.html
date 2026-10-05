@@ -647,9 +647,10 @@
 
     /* Píldoras de colores */
     .pill-soporte-empty { background: rgba(255,255,255,0.12) !important; color: #ffffff !important; border: 1px dashed #888 !important; }
+    .pill-soporte-maria { background: #f8bbd0 !important; color: #880e4f !important; font-weight: bold; }
+    .pill-soporte-adriel { background: #f8bbd0 !important; color: #880e4f !important; font-weight: bold; }
     .pill-soporte-antuan { background: #e91e63 !important; color: #ffffff !important; font-weight: bold; }
     .pill-soporte-fabricio { background: #9ccc65 !important; color: #1a3300 !important; font-weight: bold; }
-    .pill-soporte-adriel { background: #1e88e5 !important; color: #ffffff !important; font-weight: bold; }
     .pill-soporte-enoc { background: #fbc02d !important; color: #202124 !important; font-weight: bold; }
 
     .pill-cat-empty { background: rgba(255,255,255,0.12) !important; color: #ffffff !important; border: 1px dashed #888 !important; }
@@ -1567,7 +1568,7 @@
           <div class="pivot-table-container">
             <table class="pivot-table" id="tablaDinamica">
               <thead id="tablaDinamicaThead">
-                <!-- Encabezados dinámicos (Agente, Adriel, Antuan, Enoc, Fabricio, ..., Suma total) -->
+                <!-- Encabezados dinámicos (Agente, María, Antuan, Enoc, Fabricio, ..., Suma total) -->
               </thead>
               <tbody id="tablaDinamicaTbody">
                 <!-- Filas dinámicas -->
@@ -1626,7 +1627,7 @@
 
         <div style="margin-top: 14px; font-size: 0.76rem; color: #aaa; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; text-align: left; line-height: 1.4;">
           💡 <strong>Contraseña de agentes:</strong> Tu apellido + <code>123</code> (ej: <code>badilla123</code>, <code>barquero123</code>, <code>zuñiga123</code>).<br>
-          🔑 <strong>Editores / Soporte:</strong> <code>mora123</code>, <code>antuan123</code>, <code>adriel123</code>, <code>fabricio123</code>, <code>enoc123</code>, <code>admin123</code>.
+          🔑 <strong>Editores / Soporte:</strong> <code>mora123</code>, <code>antuan123</code>, <code>maria123</code>, <code>fabricio123</code>, <code>enoc123</code>, <code>admin123</code>.
         </div>
       </div>
 
@@ -1668,7 +1669,7 @@
       <div style="background: rgba(0,0,0,0.35); padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.1);">
         <h4 style="margin: 0 0 8px 0; font-size: 0.85rem; color: var(--accent);">➕ Registrar / Modificar Usuario</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <input type="text" id="txtAdminNuevoUser" placeholder="Usuario (ej: adriel)" style="margin:0; font-size:0.85rem;">
+          <input type="text" id="txtAdminNuevoUser" placeholder="Usuario (ej: maria)" style="margin:0; font-size:0.85rem;">
           <input type="text" id="txtAdminNuevoNombre" placeholder="Nombre completo" style="margin:0; font-size:0.85rem;">
           <input type="text" id="txtAdminNuevoPass" placeholder="Nueva Contraseña" style="margin:0; font-size:0.85rem;">
           <select id="selAdminNuevoRol" style="margin:0; font-size:0.85rem;">
@@ -1990,7 +1991,8 @@
       { usuario: "admin", nombre: "Administrador", password: "admin123", rol: "editor", activo: true },
       { usuario: "cristofer.mora", nombre: "Cristofer Mora", password: "mora123", rol: "editor", activo: true },
       { usuario: "cristofer", nombre: "Cristofer Mora", password: "mora123", rol: "editor", activo: true },
-      { usuario: "adriel", nombre: "Adriel", password: "adriel123", rol: "editor", activo: true },
+      { usuario: "maria", nombre: "María", password: "maria123", rol: "editor", activo: true },
+      { usuario: "adriel", nombre: "María", password: "adriel123", rol: "editor", activo: true },
       { usuario: "fabricio", nombre: "Fabricio", password: "fabricio123", rol: "editor", activo: true },
       { usuario: "enoc", nombre: "Enoc", password: "enoc123", rol: "editor", activo: true },
       { usuario: "antuan", nombre: "Antuan", password: "antuan123", rol: "editor", activo: true },
@@ -2825,7 +2827,7 @@
     // ==========================================
     const OPCIONES_SOPORTE = [
       { valor: "", texto: "", clase: "pill-soporte-empty" },
-      { valor: "Adriel", texto: "Adriel", clase: "pill-soporte-adriel" },
+      { valor: "María", texto: "María", clase: "pill-soporte-maria" },
       { valor: "Fabricio", texto: "Fabricio", clase: "pill-soporte-fabricio" },
       { valor: "Enoc", texto: "Enoc", clase: "pill-soporte-enoc" },
       { valor: "Antuan", texto: "Antuan", clase: "pill-soporte-antuan" }
@@ -2861,7 +2863,9 @@
     ];
 
     function obtenerClaseSoporte(val) {
-      const m = OPCIONES_SOPORTE.find(o => o.valor === val);
+      const v = (val || "").trim().toLowerCase();
+      if (v === "maría" || v === "maria" || v === "adriel") return "pill-soporte-maria";
+      const m = OPCIONES_SOPORTE.find(o => o.valor.toLowerCase() === v);
       return m ? m.clase : "pill-soporte-empty";
     }
 
@@ -3487,7 +3491,9 @@
     let matrizPivotActual = null; // Para renderizado y exportación CSV
 
     const COLORES_SOPORTE_MAP = {
-      "adriel": { bg: "rgba(30, 136, 229, 0.85)", border: "#1e88e5", text: "#ffffff" },
+      "maría": { bg: "rgba(248, 187, 208, 0.85)", border: "#f8bbd0", text: "#880e4f" },
+      "maria": { bg: "rgba(248, 187, 208, 0.85)", border: "#f8bbd0", text: "#880e4f" },
+      "adriel": { bg: "rgba(248, 187, 208, 0.85)", border: "#f8bbd0", text: "#880e4f" },
       "fabricio": { bg: "rgba(156, 204, 101, 0.85)", border: "#9ccc65", text: "#1a3300" },
       "enoc": { bg: "rgba(251, 192, 45, 0.85)", border: "#fbc02d", text: "#202124" },
       "antuan": { bg: "rgba(233, 30, 99, 0.85)", border: "#e91e63", text: "#ffffff" },
@@ -3610,7 +3616,7 @@
       renderizarGraficaSoporte(conteoSoporte, totalLimpiezasSoporte);
 
       // 4. Preparar datos para Tabla Dinámica
-      const soportesEstandar = ["Adriel", "Antuan", "Enoc", "Fabricio"];
+      const soportesEstandar = ["María", "Fabricio", "Enoc", "Antuan"];
       const todosSoportesSet = new Set([...soportesEstandar, ...Object.keys(conteoSoporte), ...soportesNoProcedeSet]);
       const columnasSoporte = Array.from(todosSoportesSet).filter(Boolean);
 
