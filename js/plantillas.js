@@ -515,9 +515,12 @@ function crearFilaIndice(valor, etiqueta) {
   const li = document.createElement("li");
   li.dataset.valor = valor;
   const estrella = document.createElement("span");
+  estrella.className = "star-fav";
   estrella.textContent = favoritos[valor] ? "★" : "☆";
+  estrella.title = favoritos[valor] ? "Quitar de favoritos" : "Marcar como favorito";
   const boton = document.createElement("button");
   boton.textContent = etiqueta;
+  boton.title = etiqueta;
   li.append(estrella, boton);
   return li;
 }

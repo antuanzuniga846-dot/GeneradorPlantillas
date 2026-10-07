@@ -112,19 +112,25 @@
       <!-- Índice lateral -->
       <div class="indice-lateral">
         <h3 class="box-titulo">📌 Acceso Rápido</h3>
-        <label><input type="checkbox" id="toggleFavoritos" checked onchange="renderIndice()"> Mostrar solo favoritos</label>
-        <ul>
-          <strong>✅ Procede</strong>
-          <ul style="text-align: center;" id="listaProcede"></ul>
+        <label style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.82rem; margin-bottom: 10px; cursor: pointer;">
+          <input type="checkbox" id="toggleFavoritos" checked onchange="renderIndice()" style="width: auto; margin: 0;"> 
+          <span>Mostrar solo favoritos</span>
+        </label>
+        <div>
+          <strong class="indice-section-title">✅ Procede</strong>
+          <ul id="listaProcede"></ul>
 
-          <strong>⛔ No Procede</strong>
-          <ul style="text-align: center;" id="listaNoProcede"></ul>
+          <strong class="indice-section-title">⛔ No Procede</strong>
+          <ul id="listaNoProcede"></ul>
 
-          <li>
-            <strong>🚫 Rechazos <button onclick="toggleSeccion('rechazosLista')">mostrar\ocultar</button></strong>
-            <ul id="rechazosLista" style="text-align: center;"></ul>
-          </li>
-        </ul>
+          <div style="margin-top: 10px;">
+            <strong class="indice-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>🚫 Rechazos</span>
+              <button type="button" onclick="toggleSeccion('rechazosLista')" style="font-size: 0.72rem; padding: 2px 7px; border-radius: 5px; border: 1px solid var(--card-border); background: var(--calc-btn-bg); color: var(--text-secondary); cursor: pointer;">mostrar / ocultar</button>
+            </strong>
+            <ul id="rechazosLista" style="display: none;"></ul>
+          </div>
+        </div>
       </div>
 
       <!-- Generador de plantillas -->

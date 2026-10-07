@@ -17,20 +17,20 @@
   --text-secondary: #cccccc;
   --text-muted: #8e99a8;
   
-  --input-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.75 + 0.05));
+  --input-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.40 + 0.08));
   --input-text: #ffffff;
-  --input-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.18 + 0.12));
+  --input-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.15 + 0.10));
   
-  --card-bg: rgba(12, 14, 20, var(--input-opacity));
-  --card-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.15 + 0.08));
+  --card-bg: rgba(14, 17, 26, calc(var(--input-opacity) * 0.70 + 0.04));
+  --card-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.14 + 0.08));
   
-  --navbar-bg: rgba(15, 18, 25, calc(var(--input-opacity) * 0.85 + 0.20));
+  --navbar-bg: rgba(15, 18, 25, calc(var(--input-opacity) * 0.65 + 0.15));
   --panel-bg: rgba(18, 20, 30, 0.96);
   --modal-bg: rgba(18, 20, 30, 0.97);
   
-  --calc-btn-bg: rgba(25, 28, 40, calc(var(--input-opacity) * 0.7 + 0.12));
+  --calc-btn-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.12 + 0.05));
   --calc-btn-text: #ffffff;
-  --calc-display-bg: rgba(10, 12, 18, calc(var(--input-opacity) * 0.75 + 0.12));
+  --calc-display-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45 + 0.10));
   --calc-display-text: #ffffff;
   
   --table-bg: transparent;
@@ -377,8 +377,15 @@ label {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
+.flex-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 /* Panel / Card Principal del Formulario (Glassmorphism Transparente) */
@@ -390,9 +397,9 @@ label {
   border-radius: 14px;
   box-shadow: 0 8px 32px var(--shadow-color);
   padding: 22px 24px;
-  flex: 1;
-  min-width: 320px;
-  max-width: 720px;
+  flex: 1 1 520px;
+  min-width: 360px;
+  max-width: 760px;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -418,8 +425,10 @@ label {
   box-shadow: 0 8px 32px var(--shadow-color);
   padding: 18px 16px;
   margin-bottom: 20px;
-  min-width: 220px;
-  max-width: 280px;
+  width: 365px;
+  min-width: 340px;
+  max-width: 420px;
+  flex-shrink: 0;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -665,10 +674,38 @@ textarea {
 }
 
 .indice-lateral li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  margin: 8px 0;
-  font-weight: bold;
-  color: var(--text-primary);
+  margin: 3px 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.indice-lateral li:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="light"] .indice-lateral li:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.indice-lateral li span.star-fav,
+.indice-lateral li span {
+  color: var(--accent);
+  font-size: 1.05rem;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.indice-lateral li span.star-fav:hover,
+.indice-lateral li span:hover {
+  transform: scale(1.25);
 }
 
 .indice-lateral button {
@@ -676,36 +713,35 @@ textarea {
   border: none;
   color: var(--text-primary);
   font-weight: bold;
+  font-size: 0.81rem;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
   text-shadow: var(--text-shadow);
-  transition: color .25s ease;
+  transition: color .2s ease;
 }
+
 .indice-lateral button:hover {
-  text-decoration: underline;
   color: var(--accent);
+  text-decoration: none;
 }
+
+.indice-section-title,
 .indice-lateral strong {
   display: block;
   margin: 14px 0 6px 0;
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid var(--card-border);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--text-primary);
-  text-align: center;
-}
-#listaProcede li, #listaNoProcede li, #rechazosLista li {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  text-align: left;
   padding-left: 6px;
-}
-#listaProcede li span, #listaNoProcede li span, #rechazosLista li span {
-  color: var(--accent);
-  font-size: 1.1rem;
-  cursor: pointer;
 }
 
 /* ========================================================= */
