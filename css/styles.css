@@ -375,10 +375,6 @@ label {
 
 .flex-container {
   display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-.flex-container {
-  display: flex;
   gap: 20px;
   flex-wrap: wrap;
   justify-content: center;
@@ -423,11 +419,11 @@ label {
   border: 1px solid var(--card-border);
   border-radius: 14px;
   box-shadow: 0 8px 32px var(--shadow-color);
-  padding: 18px 16px;
+  padding: 16px 14px;
   margin-bottom: 20px;
-  width: 365px;
-  min-width: 340px;
-  max-width: 420px;
+  width: 390px;
+  min-width: 350px;
+  max-width: 440px;
   flex-shrink: 0;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
@@ -713,13 +709,12 @@ textarea {
   border: none;
   color: var(--text-primary);
   font-weight: bold;
-  font-size: 0.81rem;
+  font-size: 0.77rem;
+  letter-spacing: -0.1px;
   cursor: pointer;
   padding: 0;
   text-align: left;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   flex: 1;
   text-shadow: var(--text-shadow);
   transition: color .2s ease;
