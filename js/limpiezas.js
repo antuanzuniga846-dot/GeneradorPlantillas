@@ -697,7 +697,14 @@ document.addEventListener("click", (e) => {
 
 window.addEventListener("resize", cerrarCustomDropdown);
 document.addEventListener("scroll", (e) => {
-  if (_dropdownActivoInfo) cerrarCustomDropdown();
+  const menu = document.getElementById("sheetDropdownMenu");
+  if (!menu || menu.style.display !== "block") return;
+  // Si el scroll ocurre dentro del propio menú flotante, permitir el scroll sin cerrarlo
+  if (e.target === menu || menu.contains(e.target)) {
+    return;
+  }
+  // Si el scroll fue en la página o en la tabla, cerramos el menú
+  cerrarCustomDropdown();
 }, true);
 
 // ==========================================
