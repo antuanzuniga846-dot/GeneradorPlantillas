@@ -24,18 +24,18 @@
   --card-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.55));
   --card-border: rgba(255, 255, 255, 0.22);
   
-  --navbar-bg: rgba(12, 14, 20, calc(var(--input-opacity) * 0.60 + 0.35));
+  --navbar-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.60));
   --panel-bg: rgba(18, 20, 30, 0.96);
   --modal-bg: rgba(18, 20, 30, 0.97);
   
-  --calc-btn-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.15 + 0.08));
+  --calc-btn-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.15));
   --calc-btn-text: #ffffff;
-  --calc-display-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45 + 0.15));
+  --calc-display-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45));
   --calc-display-text: #ffffff;
   
   --table-bg: transparent;
   --table-td-color: #ffffff;
-  --table-border: rgba(255, 255, 255, 0.08);
+  --table-border: rgba(255, 255, 255, 0.12);
   --table-hover: rgba(255, 255, 255, 0.10);
   
   --text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 1);
@@ -57,25 +57,25 @@
   --text-secondary: #334155;
   --text-muted: #64748b;
   
-  --input-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.85 + 0.1));
+  --input-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.85));
   --input-text: #0f172a;
-  --input-border: rgba(0, 0, 0, 0.15);
+  --input-border: rgba(0, 0, 0, 0.18);
   
   --card-bg: rgba(255, 255, 255, var(--input-opacity));
-  --card-border: rgba(0, 0, 0, 0.12);
+  --card-border: rgba(0, 0, 0, 0.14);
   
-  --navbar-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.85 + 0.15));
+  --navbar-bg: rgba(255, 255, 255, var(--input-opacity));
   --panel-bg: rgba(255, 255, 255, 0.98);
   --modal-bg: rgba(255, 255, 255, 0.98);
   
-  --calc-btn-bg: rgba(241, 245, 249, calc(var(--input-opacity) * 0.85 + 0.1));
+  --calc-btn-bg: rgba(241, 245, 249, calc(var(--input-opacity) * 0.85));
   --calc-btn-text: #0f172a;
-  --calc-display-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.9 + 0.1));
+  --calc-display-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.9));
   --calc-display-text: #0f172a;
   
   --table-bg: transparent;
   --table-td-color: #0f172a;
-  --table-border: rgba(0, 0, 0, 0.08);
+  --table-border: rgba(0, 0, 0, 0.10);
   --table-hover: rgba(0, 120, 215, 0.08);
   
   --text-shadow: none;
@@ -156,12 +156,12 @@ label {
   justify-content: space-between;
   align-items: center;
   background: var(--navbar-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   padding: 10px 18px;
   border-radius: 14px;
   border: 1px solid var(--card-border);
-  box-shadow: 0 6px 20px var(--shadow-color);
+  box-shadow: none;
   margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 12px;
@@ -387,9 +387,11 @@ label {
 /* Panel / Card Principal del Formulario (Totalmente Transparente: solo Contorno y Texto) */
 .container {
   background: var(--card-bg);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid var(--card-border);
   border-radius: 14px;
-  box-shadow: 0 8px 32px var(--shadow-color);
+  box-shadow: none;
   padding: 22px 24px;
   flex: 1 1 520px;
   min-width: 360px;
@@ -399,9 +401,11 @@ label {
 
 .calculadora {
   background: var(--card-bg);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid var(--card-border);
   border-radius: 14px;
-  box-shadow: 0 8px 32px var(--shadow-color);
+  box-shadow: none;
   padding: 18px 16px;
   width: 320px;
   flex-shrink: 0;
@@ -410,9 +414,11 @@ label {
 
 .indice-lateral {
   background: var(--card-bg);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid var(--card-border);
   border-radius: 14px;
-  box-shadow: 0 8px 32px var(--shadow-color);
+  box-shadow: none;
   padding: 16px 14px;
   margin-bottom: 20px;
   width: 390px;
@@ -432,12 +438,14 @@ label {
   margin-top: 14px;
   padding: 14px 16px;
   background: var(--input-bg);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-left: 3px solid var(--accent);
   border-top: 1px solid var(--card-border);
   border-right: 1px solid var(--card-border);
   border-bottom: 1px solid var(--card-border);
   border-radius: 8px;
-  box-shadow: 0 4px 14px var(--shadow-color);
+  box-shadow: none;
   color: var(--text-primary);
 }
 
@@ -598,8 +606,8 @@ textarea {
 
 #calcDisplay {
   background: var(--calc-display-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   color: var(--calc-display-text);
   border: 1px solid var(--input-border);
   font-size: 2rem;
@@ -611,7 +619,7 @@ textarea {
   overflow-x: auto;
   width: 100%;
   box-sizing: border-box;
-  box-shadow: var(--depth);
+  box-shadow: none;
 }
 
 .botones {
@@ -626,11 +634,11 @@ textarea {
   border-radius: 8px;
   border: 1px solid var(--card-border);
   background: var(--calc-btn-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   color: var(--calc-btn-text);
   cursor: pointer;
-  box-shadow: 0 2px 8px var(--shadow-color);
+  box-shadow: none;
   transition: filter 0.2s ease, transform 0.15s ease;
 }
 
@@ -737,16 +745,20 @@ textarea {
   max-width: 100%;
   margin: 0 auto;
   background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-radius: 14px;
   border: 1px solid var(--card-border);
-  box-shadow: 0 8px 32px var(--shadow-color);
+  box-shadow: none;
   overflow: hidden;
   transition: border-color 0.2s ease;
 }
 
 /* Encabezado dinámico y transparente para la hoja de control */
 .sheet-header-bar {
-  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45)) !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   padding: 11px 18px;
   display: flex;
   justify-content: space-between;
@@ -755,14 +767,14 @@ textarea {
   font-weight: bold;
   flex-wrap: wrap;
   gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--card-border);
+  box-shadow: none;
   transition: background 0.25s ease, color 0.25s ease;
 }
 
 :root[data-theme="light"] .sheet-header-bar {
-  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.5 + 0.2)) !important;
-  border-bottom-color: rgba(0, 0, 0, 0.15);
+  background: var(--card-bg) !important;
+  border-bottom-color: var(--card-border);
   color: #0f172a;
 }
 
@@ -777,8 +789,8 @@ textarea {
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.2px;
-  color: var(--accent-oncolor);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
 }
 
 .sheet-header-right {
@@ -795,13 +807,14 @@ textarea {
   gap: 6px;
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--accent-oncolor);
-  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  background: transparent !important;
   padding: 4px 10px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(6px);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--card-border);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: var(--text-shadow);
 }
 
 /* Inputs de búsqueda y fechas dentro de la barra de encabezado */
@@ -812,23 +825,23 @@ textarea {
   font-size: 0.84rem !important;
   font-weight: 600 !important;
   border-radius: 8px !important;
-  border: 1px solid rgba(255, 255, 255, 0.28) !important;
-  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45 + 0.20)) !important;
-  color: #ffffff !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid var(--input-border) !important;
+  background: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
   outline: none !important;
   transition: all 0.2s ease !important;
 }
 
 .sheet-header-input::placeholder {
-  color: rgba(255, 255, 255, 0.65) !important;
+  color: var(--text-muted) !important;
 }
 
 .sheet-header-input:focus {
-  border-color: #ffffff !important;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35), 0 0 12px rgba(255, 255, 255, 0.5) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 12px var(--accent) !important;
 }
 
 .sheet-date-input {
@@ -842,13 +855,13 @@ textarea {
 }
 
 :root[data-theme="light"] .sheet-header-input {
-  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.75 + 0.15)) !important;
+  background: var(--input-bg) !important;
   color: #0f172a !important;
-  border-color: rgba(0, 0, 0, 0.2) !important;
+  border-color: var(--input-border) !important;
 }
 
 :root[data-theme="light"] .sheet-header-input::placeholder {
-  color: rgba(15, 23, 42, 0.6) !important;
+  color: var(--text-muted) !important;
 }
 
 :root[data-theme="light"] .sheet-date-input::-webkit-calendar-picker-indicator {
@@ -862,26 +875,25 @@ textarea {
   gap: 6px;
   padding: 6px 13px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--accent-oncolor);
+  border: 1px solid var(--card-border);
+  background: var(--calc-btn-bg);
+  color: var(--text-primary);
   font-size: 0.83rem;
   font-weight: bold;
   cursor: pointer;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   user-select: none;
   white-space: nowrap;
 }
 
 .btn-header-action:hover {
-  background: rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.55);
+  background: var(--accent);
+  color: var(--accent-oncolor);
+  border-color: var(--accent);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .btn-header-action:active {
@@ -889,15 +901,15 @@ textarea {
 }
 
 .btn-header-action.active {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #ffffff !important;
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.6) !important;
+  background: var(--accent) !important;
+  color: var(--accent-oncolor) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 14px var(--accent) !important;
 }
 
 .btn-header-action.btn-header-success {
-  background: rgba(46, 125, 50, 0.38);
-  border-color: rgba(76, 175, 80, 0.65);
+  background: rgba(46, 125, 50, calc(var(--input-opacity) * 0.5 + 0.2));
+  border-color: #4caf50;
   color: #ffffff;
 }
 .btn-header-action.btn-header-success:hover {
@@ -907,8 +919,8 @@ textarea {
 }
 
 .btn-header-action.btn-header-accent {
-  background: rgba(0, 191, 165, 0.32);
-  border-color: rgba(0, 191, 165, 0.65);
+  background: rgba(0, 191, 165, calc(var(--input-opacity) * 0.5 + 0.2));
+  border-color: #00bfa5;
   color: #ffffff;
 }
 .btn-header-action.btn-header-accent:hover {
@@ -918,18 +930,18 @@ textarea {
 }
 
 :root[data-theme="light"] .btn-header-action {
-  background: rgba(255, 255, 255, 0.45);
-  border-color: rgba(0, 0, 0, 0.18);
-  color: var(--accent-oncolor);
+  background: var(--calc-btn-bg);
+  border-color: var(--card-border);
+  color: var(--text-primary);
 }
 :root[data-theme="light"] .btn-header-action:hover {
-  background: rgba(255, 255, 255, 0.75);
-  color: #0f172a;
+  background: var(--accent);
+  color: var(--accent-oncolor);
 }
 :root[data-theme="light"] .btn-header-action.active {
-  background: #0f172a !important;
-  color: #ffffff !important;
-  border-color: #0f172a !important;
+  background: var(--accent) !important;
+  color: var(--accent-oncolor) !important;
+  border-color: var(--accent) !important;
 }
 
 .sheet-table-container {
@@ -961,10 +973,12 @@ textarea {
 }
 
 .sheet-table th {
-  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45 + 0.35)) !important;
-  color: #ffffff;
+  background: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: var(--text-primary) !important;
   padding: 9px 8px;
-  border: 1px solid rgba(255,255,255,0.18);
+  border: 1px solid var(--card-border) !important;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -978,14 +992,14 @@ textarea {
 }
 
 :root[data-theme="light"] .sheet-table th {
-  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.5 + 0.4)) !important;
-  color: #0f172a;
-  border-color: rgba(0, 0, 0, 0.15);
+  background: var(--card-bg) !important;
+  color: #0f172a !important;
+  border-color: var(--card-border) !important;
 }
 
 .sheet-table td {
   padding: 5px 6px;
-  border: 1px solid var(--table-border);
+  border: 1px solid var(--table-border) !important;
   color: var(--table-td-color);
   white-space: nowrap;
   text-align: center;
@@ -1207,37 +1221,42 @@ textarea {
   font-size: 0.82rem;
   font-weight: bold;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--accent-oncolor);
+  border: 1px solid var(--card-border);
+  background: var(--calc-btn-bg);
+  color: var(--text-primary);
   cursor: pointer;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   transition: all 0.2s ease;
   user-select: none;
   white-space: nowrap;
 }
 .btn-rango-stats:hover {
-  background: rgba(255, 255, 255, 0.28);
-  border-color: rgba(255, 255, 255, 0.55);
+  background: var(--accent);
+  color: var(--accent-oncolor);
+  border-color: var(--accent);
   transform: translateY(-1px);
 }
 .btn-rango-stats.active {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #ffffff !important;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6) !important;
+  background: var(--accent) !important;
+  color: var(--accent-oncolor) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 12px var(--accent) !important;
 }
 
 :root[data-theme="light"] .btn-rango-stats {
-  background: rgba(255, 255, 255, 0.45);
-  border-color: rgba(0, 0, 0, 0.18);
+  background: var(--calc-btn-bg);
+  border-color: var(--card-border);
+  color: var(--text-primary);
+}
+:root[data-theme="light"] .btn-rango-stats:hover {
+  background: var(--accent);
   color: var(--accent-oncolor);
 }
 :root[data-theme="light"] .btn-rango-stats.active {
-  background: #0f172a !important;
-  color: #ffffff !important;
-  border-color: #0f172a !important;
+  background: var(--accent) !important;
+  color: var(--accent-oncolor) !important;
+  border-color: var(--accent) !important;
 }
 
 .btn-chart-type {
@@ -1249,8 +1268,8 @@ textarea {
   background: var(--calc-btn-bg);
   color: var(--text-primary);
   cursor: pointer;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   transition: all 0.2s ease;
 }
 .btn-chart-type:hover {

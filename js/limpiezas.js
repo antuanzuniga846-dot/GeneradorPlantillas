@@ -612,7 +612,7 @@ function renderizarTablaSheet() {
           title="Haz clic para modificar el monto (Presiona Enter o desenfoca para guardar)"
           onblur="actualizarMontoFila('${row.id}', this.value, this)" 
           onkeydown="if(event.key==='Enter') this.blur()"
-          style="width: 100px; padding: 3px 6px; margin: 0 auto; font-weight: bold; font-size: 0.84rem; background: var(--input-bg); border: 1.5px solid var(--accent); border-radius: 6px; color: var(--input-text); text-align: center;"
+          style="width: 100px; padding: 3px 6px; margin: 0 auto; font-weight: bold; font-size: 0.84rem; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 6px; color: var(--input-text); text-align: center;"
         >
       `;
     } else {
