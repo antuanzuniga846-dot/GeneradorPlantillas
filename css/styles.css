@@ -1102,35 +1102,35 @@ textarea {
   border: 1px solid rgba(0, 0, 0, 0.20) !important;
 }
 
-/* Píldoras con valor asignado */
-.pill-soporte-maria { background: #f8bbd0 !important; color: #880e4f !important; font-weight: bold; border-color: transparent !important; }
-.pill-soporte-adriel { background: #f8bbd0 !important; color: #880e4f !important; font-weight: bold; border-color: transparent !important; }
-.pill-soporte-antuan { background: #e91e63 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; }
-.pill-soporte-fabricio { background: #9ccc65 !important; color: #1a3300 !important; font-weight: bold; border-color: transparent !important; }
-.pill-soporte-enoc { background: #fbc02d !important; color: #202124 !important; font-weight: bold; border-color: transparent !important; }
+/* Píldoras con valor asignado (Texto Blanco para todos los Nombres, Categorías y Motivos) */
+.pill-soporte-maria { background: #d81b60 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-soporte-adriel { background: #d81b60 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-soporte-antuan { background: #e91e63 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-soporte-fabricio { background: #558b2f !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-soporte-enoc { background: #f57f17 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
 
-.pill-cat-noprocede { background: #990000 !important; color: #ffffff !important; border-color: transparent !important; }
-.pill-cat-repetida { background: #81c784 !important; color: #0d4214 !important; border-color: transparent !important; }
-.pill-cat-controlaltas { background: #64b5f6 !important; color: #062b50 !important; border-color: transparent !important; }
-.pill-cat-reversion { background: #ffab91 !important; color: #4e190d !important; border-color: transparent !important; }
-.pill-cat-sp { background: #ffd600 !important; color: #202124 !important; border-color: transparent !important; }
-.pill-cat-nofuncionan { background: #fbc02d !important; color: #202124 !important; border-color: transparent !important; }
-.pill-cat-masiva1 { background: #99cc33 !important; color: #ffffff !important; border-color: transparent !important; }
-.pill-cat-masiva2 { background: #ffbb00 !important; color: #ffffff !important; border-color: transparent !important; }
-.pill-cat-masiva3 { background: #0055ff !important; color: #ffffff !important; border-color: transparent !important; }
-.pill-cat-masiva4 { background: #ff0066 !important; color: #ffffff !important; border-color: transparent !important; }
+.pill-cat-noprocede { background: #c62828 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-repetida { background: #2e7d32 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-controlaltas { background: #1976d2 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-reversion { background: #d84315 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-sp { background: #f57f17 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-nofuncionan { background: #d84315 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-masiva1 { background: #689f38 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-masiva2 { background: #f57c00 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-masiva3 { background: #1565c0 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-cat-masiva4 { background: #c2185b !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
 
-.pill-mot-wf-facturas { background: #b7e1cd !important; color: #0d652d !important; border-color: transparent !important; }
-.pill-mot-facturas-supera-63000 { background: #f9cb9c !important; color: #6e3a07 !important; border-color: transparent !important; }
-.pill-mot-facturas-menos-ano { background: #cfe2f3 !important; color: #0b5394 !important; border-color: transparent !important; }
-.pill-mot-cero-supera-63000 { background: #c9daf8 !important; color: #1c4587 !important; border-color: transparent !important; }
-.pill-mot-cero-facturas { background: #d9d2e9 !important; color: #351c75 !important; border-color: transparent !important; }
-.pill-mot-incubadora { background: #f4cccc !important; color: #783f04 !important; border-color: transparent !important; }
-.pill-mot-financiamiento-facturas { background: #ffe599 !important; color: #7f6000 !important; border-color: transparent !important; }
-.pill-mot-factura-menores-2750 { background: #d9ead3 !important; color: #274e13 !important; border-color: transparent !important; }
-.pill-mot-servicio-suspendido { background: #f6b26b !important; color: #4e2904 !important; border-color: transparent !important; }
-.pill-mot-servicio-activo { background: #38761d !important; color: #ffffff !important; border-color: transparent !important; }
-.pill-mot-wf-supera-63000 { background: #42a5f5 !important; color: #ffffff !important; border-color: transparent !important; }
+.pill-mot-wf-facturas { background: #2e7d32 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-facturas-supera-63000 { background: #d84315 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-facturas-menos-ano { background: #0277bd !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-cero-supera-63000 { background: #1565c0 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-cero-facturas { background: #6a1b9a !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-incubadora { background: #ad1457 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-financiamiento-facturas { background: #ef6c00 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-factura-menores-2750 { background: #2e7d32 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-servicio-suspendido { background: #d84315 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-servicio-activo { background: #2e7d32 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
+.pill-mot-wf-supera-63000 { background: #1565c0 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }
 
 /* ========================================= */
 /* ESTILOS PARA CÉDULA EN PROCESO            */
