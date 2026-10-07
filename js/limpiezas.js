@@ -628,21 +628,21 @@ function renderizarTablaSheet() {
     }
 
     OPCIONES_SOPORTE.forEach(op => {
-      selectSoporte += `<option value="${op.valor}" ${row.soporte === op.valor ? 'selected' : ''}>${op.texto}</option>`;
+      selectSoporte += `<option value="${op.valor}" class="${op.clase}" ${row.soporte === op.valor ? 'selected' : ''}>${op.texto}</option>`;
     });
     selectSoporte += `</select>`;
 
     // 4. Select Categoría (Columna 7)
     let selectCategoria = `<select class="sheet-select sheet-select-categoria ${obtenerClaseCategoria(row.categoria)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'categoria', this.value, this)">`;
     OPCIONES_CATEGORIA.forEach(op => {
-      selectCategoria += `<option value="${op.valor}" ${row.categoria === op.valor ? 'selected' : ''}>${op.texto}</option>`;
+      selectCategoria += `<option value="${op.valor}" class="${op.clase}" ${row.categoria === op.valor ? 'selected' : ''}>${op.texto}</option>`;
     });
     selectCategoria += `</select>`;
 
     // 5. Select Motivo (Columna 8)
     let selectMotivo = `<select class="sheet-select sheet-select-motivo ${obtenerClaseMotivo(row.motivo)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'motivo', this.value, this)">`;
     OPCIONES_MOTIVO.forEach(op => {
-      selectMotivo += `<option value="${op.valor}" ${row.motivo === op.valor ? 'selected' : ''}>${op.texto}</option>`;
+      selectMotivo += `<option value="${op.valor}" class="${op.clase}" ${row.motivo === op.valor ? 'selected' : ''}>${op.texto}</option>`;
     });
     selectMotivo += `</select>`;
 
