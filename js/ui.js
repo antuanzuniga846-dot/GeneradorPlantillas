@@ -258,10 +258,13 @@ function ajustarOpacidadCampos(valor) {
 
   const valText = document.getElementById("inputOpacityVal");
   if (valText) valText.textContent = `${valor}%`;
+
+  const slider = document.getElementById("inputOpacitySlider");
+  if (slider && slider.value !== String(valor)) slider.value = valor;
 }
 
 function inicializarOpacidadCampos() {
-  const opacidadGuardada = localStorage.getItem("inputOpacityBuro") || "75";
+  const opacidadGuardada = localStorage.getItem("inputOpacityBuro") || "20";
   ajustarOpacidadCampos(opacidadGuardada);
 }
 
@@ -302,7 +305,7 @@ function manejarSubidaFondo(event) {
 
       try {
         localStorage.setItem("customBgImageBuro", dataUrlOptimizado);
-        const oscuridad = localStorage.getItem("customBgDarknessBuro") || "40";
+        const oscuridad = localStorage.getItem("customBgDarknessBuro") || "15";
         aplicarFondoEnDOM(dataUrlOptimizado, oscuridad);
         notificar("success", "Fondo Aplicado", "Imagen de fondo establecida correctamente.");
       } catch (err) {
@@ -316,7 +319,7 @@ function manejarSubidaFondo(event) {
   event.target.value = "";
 }
 
-function aplicarFondoEnDOM(dataUrl, oscuridad = "40") {
+function aplicarFondoEnDOM(dataUrl, oscuridad = "15") {
   const oscuridadDecimal = (parseInt(oscuridad, 10) / 100).toFixed(2);
   document.documentElement.style.setProperty("--custom-bg-url", `url("${dataUrl}")`);
   document.documentElement.style.setProperty("--bg-darkness", oscuridadDecimal);
@@ -361,7 +364,7 @@ function quitarFondoPersonalizado() {
 
 function inicializarFondoPersonalizado() {
   const bgGuardado = localStorage.getItem("customBgImageBuro");
-  const oscuridadGuardada = localStorage.getItem("customBgDarknessBuro") || "40";
+  const oscuridadGuardada = localStorage.getItem("customBgDarknessBuro") || "15";
 
   if (bgGuardado) {
     aplicarFondoEnDOM(bgGuardado, oscuridadGuardada);

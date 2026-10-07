@@ -7,39 +7,40 @@
   --accent: #0078d7;
   --accent-text: #64b5f6;
   --accent-oncolor: #ffffff;
-  --accent-header: linear-gradient(135deg, #0078d7, #004d8c);
-  --accent-th: #004c8a;
-  --input-opacity: 0.75;
+  --accent-header: linear-gradient(135deg, color-mix(in srgb, #0078d7 80%, transparent), color-mix(in srgb, #0078d7 45%, #000 55%));
+  --accent-th: color-mix(in srgb, #0078d7 70%, #000 30%);
+  --input-opacity: 0.20; /* Transparencia estética por defecto estilo glassmorphism */
+  --bg-darkness: 0.15;
   
-  --bg-body: #121216;
+  --bg-body: #0d0f14;
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
-  --text-muted: #888888;
+  --text-muted: #8e99a8;
   
-  --input-bg: rgba(18, 18, 26, var(--input-opacity));
+  --input-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.5 + 0.05));
   --input-text: #ffffff;
-  --input-border: var(--accent);
+  --input-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.18 + 0.12));
   
-  --card-bg: rgba(18, 18, 28, var(--input-opacity));
-  --card-border: rgba(255, 255, 255, 0.12);
+  --card-bg: rgba(12, 14, 20, calc(var(--input-opacity) * 0.55));
+  --card-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.15 + 0.08));
   
-  --navbar-bg: rgba(20, 20, 30, 0.85);
-  --panel-bg: rgba(20, 20, 32, 0.98);
-  --modal-bg: rgba(22, 22, 34, 0.98);
+  --navbar-bg: rgba(15, 18, 25, calc(var(--input-opacity) * 0.75 + 0.2));
+  --panel-bg: rgba(18, 20, 30, 0.96);
+  --modal-bg: rgba(18, 20, 30, 0.97);
   
-  --calc-btn-bg: rgba(26, 26, 38, var(--input-opacity));
+  --calc-btn-bg: rgba(25, 28, 40, calc(var(--input-opacity) * 0.6 + 0.12));
   --calc-btn-text: #ffffff;
-  --calc-display-bg: rgba(10, 10, 16, var(--input-opacity));
+  --calc-display-bg: rgba(10, 12, 18, calc(var(--input-opacity) * 0.6 + 0.12));
   --calc-display-text: #ffffff;
   
-  --table-bg: rgba(18, 18, 28, var(--input-opacity));
+  --table-bg: transparent;
   --table-td-color: #ffffff;
-  --table-border: rgba(255, 255, 255, 0.08);
+  --table-border: rgba(255, 255, 255, 0.06);
   --table-hover: rgba(255, 255, 255, 0.08);
   
-  --text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85), 0 1px 3px rgba(0, 0, 0, 0.95);
-  --shadow-color: rgba(0, 0, 0, 0.5);
-  --depth: 0 4px 15px rgba(0, 0, 0, 0.4);
+  --text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --depth: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 :root[data-theme="light"] {
@@ -48,32 +49,33 @@
   --accent-oncolor: #ffffff;
   --accent-header: linear-gradient(135deg, #0078d7, #005a9e);
   --accent-th: #005a9e;
-  --input-opacity: 0.85;
+  --input-opacity: 0.45;
+  --bg-darkness: 0.15;
   
   --bg-body: #f1f5f9;
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #64748b;
   
-  --input-bg: rgba(255, 255, 255, var(--input-opacity));
+  --input-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.85 + 0.1));
   --input-text: #0f172a;
-  --input-border: var(--accent);
+  --input-border: rgba(0, 0, 0, 0.15);
   
-  --card-bg: rgba(255, 255, 255, var(--input-opacity));
+  --card-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.85));
   --card-border: rgba(0, 0, 0, 0.12);
   
-  --navbar-bg: rgba(255, 255, 255, 0.92);
+  --navbar-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.85 + 0.15));
   --panel-bg: rgba(255, 255, 255, 0.98);
   --modal-bg: rgba(255, 255, 255, 0.98);
   
-  --calc-btn-bg: rgba(241, 245, 249, var(--input-opacity));
+  --calc-btn-bg: rgba(241, 245, 249, calc(var(--input-opacity) * 0.85 + 0.1));
   --calc-btn-text: #0f172a;
-  --calc-display-bg: rgba(255, 255, 255, var(--input-opacity));
+  --calc-display-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.9 + 0.1));
   --calc-display-text: #0f172a;
   
-  --table-bg: rgba(255, 255, 255, var(--input-opacity));
+  --table-bg: transparent;
   --table-td-color: #0f172a;
-  --table-border: rgba(0, 0, 0, 0.10);
+  --table-border: rgba(0, 0, 0, 0.08);
   --table-hover: rgba(0, 120, 215, 0.08);
   
   --text-shadow: none;
@@ -94,7 +96,11 @@ body {
   transition: background-color .25s ease, color .25s ease;
 }
 
-/* Fondo por defecto con degradados sutiles */
+body.has-custom-bg {
+  background-color: transparent !important;
+}
+
+/* Fondo por defecto */
 body::before {
   content: "";
   position: fixed;
@@ -117,8 +123,8 @@ body::before {
 body.has-custom-bg::before {
   background-image:
     linear-gradient(
-      rgba(0, 0, 0, var(--bg-darkness, 0.40)),
-      rgba(0, 0, 0, var(--bg-darkness, 0.40))
+      rgba(0, 0, 0, var(--bg-darkness, 0.15)),
+      rgba(0, 0, 0, var(--bg-darkness, 0.15))
     ),
     var(--custom-bg-url) !important;
   background-size: cover !important;
@@ -153,13 +159,14 @@ label {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   padding: 10px 18px;
-  border-radius: 12px;
-  border: 1.5px solid var(--accent);
-  box-shadow: 0 4px 16px var(--shadow-color);
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 6px 20px var(--shadow-color);
   margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 12px;
   color: var(--text-primary);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .nav-tabs {
@@ -174,7 +181,7 @@ label {
   gap: 8px;
   padding: 9px 18px;
   border-radius: 10px;
-  border: 1.5px solid var(--card-border);
+  border: 1px solid var(--card-border);
   background: var(--calc-btn-bg);
   color: var(--text-primary);
   font-size: 0.95rem;
@@ -216,18 +223,19 @@ label {
 
 .btn-nav-action {
   padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--accent);
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
   background: var(--calc-btn-bg);
   cursor: pointer;
   color: var(--text-primary);
   font-size: 0.82rem;
   font-weight: bold;
-  transition: background .2s ease, color .2s ease;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
 }
 .btn-nav-action:hover {
   background: var(--accent);
   color: var(--accent-oncolor);
+  border-color: var(--accent);
 }
 
 .btn-nav-logout {
@@ -273,7 +281,7 @@ label {
 
 .theme-toggle-btn {
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--accent);
   background: var(--calc-btn-bg);
   cursor: pointer;
@@ -300,9 +308,9 @@ label {
   -webkit-backdrop-filter: blur(20px);
   color: var(--text-primary);
   border: 2px solid var(--accent);
-  border-radius: 12px;
-  padding: 16px;
-  width: 270px;
+  border-radius: 14px;
+  padding: 18px;
+  width: 280px;
   max-width: 90vw;
   box-shadow: 0 12px 36px var(--shadow-color);
   text-align: left;
@@ -332,8 +340,8 @@ label {
   margin-top: 6px;
   font-size: 0.82rem;
   font-weight: bold;
-  border-radius: 6px;
-  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  border: 1px solid var(--accent);
   background: var(--calc-btn-bg);
   color: var(--text-primary);
   cursor: pointer;
@@ -373,32 +381,46 @@ label {
   align-items: flex-start;
 }
 
+/* Panel / Card Principal del Formulario (Glassmorphism Transparente) */
 .container {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 10px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px var(--shadow-color);
+  padding: 22px 24px;
   flex: 1;
   min-width: 320px;
-  max-width: 700px;
+  max-width: 720px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .calculadora {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 10px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px var(--shadow-color);
+  padding: 18px 16px;
   width: 320px;
   flex-shrink: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .indice-lateral {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 10px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px var(--shadow-color);
+  padding: 18px 16px;
   margin-bottom: 20px;
-  min-width: 210px;
+  min-width: 220px;
+  max-width: 280px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .checkbox-section label {
@@ -409,13 +431,16 @@ label {
 .saldos-extra {
   position: relative;
   margin-top: 14px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: var(--input-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-left: 3px solid var(--accent);
+  border-top: 1px solid var(--card-border);
+  border-right: 1px solid var(--card-border);
+  border-bottom: 1px solid var(--card-border);
   border-radius: 8px;
-  box-shadow: 0 4px 12px var(--shadow-color);
+  box-shadow: 0 4px 14px var(--shadow-color);
   color: var(--text-primary);
 }
 
@@ -467,32 +492,54 @@ label {
   box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 
-select, textarea, input[type="text"], input[type="password"], input[type="date"] {
+/* Form inputs & textareas (Excluyendo selects de la tabla sheet) */
+.container select,
+.modal-content select,
+textarea,
+.container input[type="text"],
+.container input[type="password"],
+.container input[type="date"],
+.modal-content input[type="text"],
+.modal-content input[type="password"],
+.modal-content input[type="date"] {
   display: block;
   width: 100%;
   margin: 8px 0;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1.5px solid var(--accent);
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
   background: var(--input-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--input-text);
   box-sizing: border-box;
-  font-size: 1rem;
-  box-shadow: var(--depth);
-  transition: border-color .25s ease, background-color .25s ease, box-shadow .2s ease, color .25s ease;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease, color .2s ease;
 }
 
-select option {
-  background: var(--bg-body);
-  color: var(--text-primary);
+.container select option,
+.modal-content select option,
+.sheet-select option {
+  background: #12141c;
+  color: #ffffff;
 }
 
-select:focus, textarea:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus {
+:root[data-theme="light"] .container select option,
+:root[data-theme="light"] .modal-content select option,
+:root[data-theme="light"] .sheet-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.container select:focus,
+textarea:focus,
+.container input[type="text"]:focus,
+.container input[type="password"]:focus,
+.container input[type="date"]:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 12px var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 12px var(--accent);
 }
 
 textarea {
@@ -507,8 +554,8 @@ textarea {
   color: var(--accent-oncolor);
   border: none;
   padding: 12px 16px;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 0.98rem;
   font-weight: bold;
   cursor: pointer;
   margin: 10px 0;
@@ -556,14 +603,14 @@ textarea {
 
 #calcDisplay {
   background: var(--calc-display-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--calc-display-text);
-  border: 1.5px solid var(--accent);
+  border: 1px solid var(--input-border);
   font-size: 2rem;
   padding: 10px;
   text-align: right;
-  border-radius: 10px;
+  border-radius: 8px;
   margin-bottom: 15px;
   height: 60px;
   overflow-x: auto;
@@ -582,10 +629,10 @@ textarea {
   font-size: 1.2rem;
   padding: 14px 0;
   border-radius: 8px;
-  border: 1.5px solid var(--accent);
+  border: 1px solid var(--card-border);
   background: var(--calc-btn-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--calc-btn-text);
   cursor: pointer;
   box-shadow: 0 2px 8px var(--shadow-color);
@@ -661,26 +708,28 @@ textarea {
   cursor: pointer;
 }
 
-/* ========================================= */
-/* VISTA: HOJA DE CONTROL DE LIMPIEZAS       */
-/* ========================================= */
+/* ========================================================= */
+/* VISTA: HOJA DE CONTROL DE LIMPIEZAS (TOTALMENTE TRANSPARENTE) */
+/* ========================================================= */
 .sheet-wrapper {
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
   background: var(--card-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 12px;
-  border: 1.5px solid var(--accent);
-  box-shadow: 0 8px 30px var(--shadow-color);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 32px var(--shadow-color);
   overflow: hidden;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 /* Encabezado dinámico que adopta el color de personalización */
 .sheet-header-bar {
   background: var(--accent-header);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 10px 16px;
   display: flex;
   justify-content: space-between;
@@ -697,7 +746,7 @@ textarea {
   min-height: 480px;
   overflow-y: auto;
   overflow-x: auto;
-  background: transparent;
+  background: transparent !important;
 }
 
 .sheet-table-container::-webkit-scrollbar {
@@ -705,7 +754,7 @@ textarea {
   height: 8px;
 }
 .sheet-table-container::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.1);
 }
 .sheet-table-container::-webkit-scrollbar-thumb {
   background: var(--accent);
@@ -717,13 +766,14 @@ textarea {
   border-collapse: collapse;
   font-size: 0.84rem;
   text-align: center;
+  background: transparent !important;
 }
 
 .sheet-table th {
   background: var(--accent-th);
   color: var(--accent-oncolor);
   padding: 9px 8px;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.18);
   position: sticky;
   top: 0;
   z-index: 2;
@@ -742,26 +792,60 @@ textarea {
   white-space: nowrap;
   text-align: center;
   font-size: 0.84rem;
+  background: transparent !important;
 }
 
 .sheet-table tr:hover td {
-  background: var(--table-hover);
+  background: var(--table-hover) !important;
 }
 
-.sheet-select {
-  border-radius: 16px;
-  padding: 4px 8px;
-  font-size: 0.80rem;
-  font-weight: bold;
-  border: 1px solid transparent;
-  outline: none;
-  cursor: pointer;
-  appearance: auto;
-  margin: 0 auto;
-  text-align: center;
-  text-align-last: center;
-  box-sizing: border-box;
+/* Monto editable en tabla */
+.sheet-monto-input {
+  display: inline-block !important;
+  width: 100px !important;
+  padding: 4px 6px !important;
+  margin: 0 auto !important;
+  font-weight: bold !important;
+  font-size: 0.84rem !important;
+  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.4 + 0.05)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 6px !important;
+  color: var(--text-primary) !important;
+  text-align: center !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
+
+:root[data-theme="light"] .sheet-monto-input {
+  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.8 + 0.1)) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Selectores Pills en celdas de la tabla (100% transparentes cuando están vacíos) */
+.sheet-select {
+  display: inline-block !important;
+  width: auto !important;
+  margin: 0 auto !important;
+  border-radius: 16px !important;
+  padding: 4px 8px !important;
+  font-size: 0.80rem !important;
+  font-weight: bold !important;
+  outline: none !important;
+  cursor: pointer !important;
+  appearance: auto !important;
+  text-align: center !important;
+  text-align-last: center !important;
+  box-sizing: border-box !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.08 + 0.02));
+  color: var(--text-primary);
+}
+
 .sheet-select-soporte {
   min-width: 115px;
   max-width: 135px;
@@ -786,38 +870,52 @@ textarea {
   cursor: not-allowed;
 }
 
-/* Píldoras de colores para celdas */
-.pill-soporte-empty { background: rgba(128,128,128,0.2) !important; color: var(--text-primary) !important; border: 1px dashed #888 !important; }
-.pill-soporte-maria { background: #f8bbd0 !important; color: #880e4f !important; font-weight: bold; }
-.pill-soporte-adriel { background: #f8bbd0 !important; color: #880e4f !important; font-weight: bold; }
-.pill-soporte-antuan { background: #e91e63 !important; color: #ffffff !important; font-weight: bold; }
-.pill-soporte-fabricio { background: #9ccc65 !important; color: #1a3300 !important; font-weight: bold; }
-.pill-soporte-enoc { background: #fbc02d !important; color: #202124 !important; font-weight: bold; }
+/* Píldoras transparentes cuando están vacías */
+.pill-soporte-empty,
+.pill-cat-empty,
+.pill-mot-empty {
+  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.08 + 0.02)) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
 
-.pill-cat-empty { background: rgba(128,128,128,0.2) !important; color: var(--text-primary) !important; border: 1px dashed #888 !important; }
-.pill-cat-noprocede { background: #990000 !important; color: #ffffff !important; }
-.pill-cat-repetida { background: #81c784 !important; color: #0d4214 !important; }
-.pill-cat-controlaltas { background: #64b5f6 !important; color: #062b50 !important; }
-.pill-cat-reversion { background: #ffab91 !important; color: #4e190d !important; }
-.pill-cat-sp { background: #ffd600 !important; color: #202124 !important; }
-.pill-cat-nofuncionan { background: #fbc02d !important; color: #202124 !important; }
-.pill-cat-masiva1 { background: #99cc33 !important; color: #ffffff !important; }
-.pill-cat-masiva2 { background: #ffbb00 !important; color: #ffffff !important; }
-.pill-cat-masiva3 { background: #0055ff !important; color: #ffffff !important; }
-.pill-cat-masiva4 { background: #ff0066 !important; color: #ffffff !important; }
+:root[data-theme="light"] .pill-soporte-empty,
+:root[data-theme="light"] .pill-cat-empty,
+:root[data-theme="light"] .pill-mot-empty {
+  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.06 + 0.02)) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
 
-.pill-mot-empty { background: rgba(128,128,128,0.2) !important; color: var(--text-primary) !important; border: 1px dashed #888 !important; }
-.pill-mot-wf-facturas { background: #b7e1cd !important; color: #0d652d !important; }
-.pill-mot-facturas-supera-63000 { background: #f9cb9c !important; color: #6e3a07 !important; }
-.pill-mot-facturas-menos-ano { background: #cfe2f3 !important; color: #0b5394 !important; }
-.pill-mot-cero-supera-63000 { background: #c9daf8 !important; color: #1c4587 !important; }
-.pill-mot-cero-facturas { background: #d9d2e9 !important; color: #351c75 !important; }
-.pill-mot-incubadora { background: #f4cccc !important; color: #783f04 !important; }
-.pill-mot-financiamiento-facturas { background: #ffe599 !important; color: #7f6000 !important; }
-.pill-mot-factura-menores-2750 { background: #d9ead3 !important; color: #274e13 !important; }
-.pill-mot-servicio-suspendido { background: #f6b26b !important; color: #4e2904 !important; }
-.pill-mot-servicio-activo { background: #38761d !important; color: #ffffff !important; }
-.pill-mot-wf-supera-63000 { background: #42a5f5 !important; color: #ffffff !important; }
+/* Píldoras con valor asignado */
+.pill-soporte-maria { background: #f8bbd0 !important; color: #880e4f !important; font-weight: bold; border-color: transparent !important; }
+.pill-soporte-adriel { background: #f8bbd0 !important; color: #880e4f !important; font-weight: bold; border-color: transparent !important; }
+.pill-soporte-antuan { background: #e91e63 !important; color: #ffffff !important; font-weight: bold; border-color: transparent !important; }
+.pill-soporte-fabricio { background: #9ccc65 !important; color: #1a3300 !important; font-weight: bold; border-color: transparent !important; }
+.pill-soporte-enoc { background: #fbc02d !important; color: #202124 !important; font-weight: bold; border-color: transparent !important; }
+
+.pill-cat-noprocede { background: #990000 !important; color: #ffffff !important; border-color: transparent !important; }
+.pill-cat-repetida { background: #81c784 !important; color: #0d4214 !important; border-color: transparent !important; }
+.pill-cat-controlaltas { background: #64b5f6 !important; color: #062b50 !important; border-color: transparent !important; }
+.pill-cat-reversion { background: #ffab91 !important; color: #4e190d !important; border-color: transparent !important; }
+.pill-cat-sp { background: #ffd600 !important; color: #202124 !important; border-color: transparent !important; }
+.pill-cat-nofuncionan { background: #fbc02d !important; color: #202124 !important; border-color: transparent !important; }
+.pill-cat-masiva1 { background: #99cc33 !important; color: #ffffff !important; border-color: transparent !important; }
+.pill-cat-masiva2 { background: #ffbb00 !important; color: #ffffff !important; border-color: transparent !important; }
+.pill-cat-masiva3 { background: #0055ff !important; color: #ffffff !important; border-color: transparent !important; }
+.pill-cat-masiva4 { background: #ff0066 !important; color: #ffffff !important; border-color: transparent !important; }
+
+.pill-mot-wf-facturas { background: #b7e1cd !important; color: #0d652d !important; border-color: transparent !important; }
+.pill-mot-facturas-supera-63000 { background: #f9cb9c !important; color: #6e3a07 !important; border-color: transparent !important; }
+.pill-mot-facturas-menos-ano { background: #cfe2f3 !important; color: #0b5394 !important; border-color: transparent !important; }
+.pill-mot-cero-supera-63000 { background: #c9daf8 !important; color: #1c4587 !important; border-color: transparent !important; }
+.pill-mot-cero-facturas { background: #d9d2e9 !important; color: #351c75 !important; border-color: transparent !important; }
+.pill-mot-incubadora { background: #f4cccc !important; color: #783f04 !important; border-color: transparent !important; }
+.pill-mot-financiamiento-facturas { background: #ffe599 !important; color: #7f6000 !important; border-color: transparent !important; }
+.pill-mot-factura-menores-2750 { background: #d9ead3 !important; color: #274e13 !important; border-color: transparent !important; }
+.pill-mot-servicio-suspendido { background: #f6b26b !important; color: #4e2904 !important; border-color: transparent !important; }
+.pill-mot-servicio-activo { background: #38761d !important; color: #ffffff !important; border-color: transparent !important; }
+.pill-mot-wf-supera-63000 { background: #42a5f5 !important; color: #ffffff !important; border-color: transparent !important; }
 
 /* ========================================= */
 /* ESTILOS PARA CÉDULA EN PROCESO            */
@@ -863,7 +961,7 @@ textarea {
   gap: 14px;
 }
 .stats-kpi-card {
-  background: var(--input-bg);
+  background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-left: 4px solid var(--accent);
   border-radius: 10px;
