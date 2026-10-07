@@ -7,9 +7,9 @@
   --accent: #0078d7;
   --accent-text: #64b5f6;
   --accent-oncolor: #ffffff;
-  --accent-header: linear-gradient(135deg, color-mix(in srgb, #0078d7 80%, transparent), color-mix(in srgb, #0078d7 45%, #000 55%));
-  --accent-th: color-mix(in srgb, #0078d7 70%, #000 30%);
-  --input-opacity: 0.20; /* Transparencia estética por defecto estilo glassmorphism */
+  --accent-header: linear-gradient(135deg, #0078d7, #004d8c);
+  --accent-th: #004c8a;
+  --input-opacity: 0.30; /* Transparencia estética por defecto estilo glassmorphism */
   --bg-darkness: 0.15;
   
   --bg-body: #0d0f14;
@@ -17,20 +17,20 @@
   --text-secondary: #cccccc;
   --text-muted: #8e99a8;
   
-  --input-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.5 + 0.05));
+  --input-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.75 + 0.05));
   --input-text: #ffffff;
   --input-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.18 + 0.12));
   
-  --card-bg: rgba(12, 14, 20, calc(var(--input-opacity) * 0.55));
+  --card-bg: rgba(12, 14, 20, var(--input-opacity));
   --card-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.15 + 0.08));
   
-  --navbar-bg: rgba(15, 18, 25, calc(var(--input-opacity) * 0.75 + 0.2));
+  --navbar-bg: rgba(15, 18, 25, calc(var(--input-opacity) * 0.85 + 0.20));
   --panel-bg: rgba(18, 20, 30, 0.96);
   --modal-bg: rgba(18, 20, 30, 0.97);
   
-  --calc-btn-bg: rgba(25, 28, 40, calc(var(--input-opacity) * 0.6 + 0.12));
+  --calc-btn-bg: rgba(25, 28, 40, calc(var(--input-opacity) * 0.7 + 0.12));
   --calc-btn-text: #ffffff;
-  --calc-display-bg: rgba(10, 12, 18, calc(var(--input-opacity) * 0.6 + 0.12));
+  --calc-display-bg: rgba(10, 12, 18, calc(var(--input-opacity) * 0.75 + 0.12));
   --calc-display-text: #ffffff;
   
   --table-bg: transparent;
@@ -49,7 +49,7 @@
   --accent-oncolor: #ffffff;
   --accent-header: linear-gradient(135deg, #0078d7, #005a9e);
   --accent-th: #005a9e;
-  --input-opacity: 0.45;
+  --input-opacity: 0.55;
   --bg-darkness: 0.15;
   
   --bg-body: #f1f5f9;
@@ -61,7 +61,7 @@
   --input-text: #0f172a;
   --input-border: rgba(0, 0, 0, 0.15);
   
-  --card-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.85));
+  --card-bg: rgba(255, 255, 255, var(--input-opacity));
   --card-border: rgba(0, 0, 0, 0.12);
   
   --navbar-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.85 + 0.15));
@@ -156,8 +156,8 @@ label {
   justify-content: space-between;
   align-items: center;
   background: var(--navbar-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   padding: 10px 18px;
   border-radius: 14px;
   border: 1px solid var(--card-border);
@@ -384,8 +384,8 @@ label {
 /* Panel / Card Principal del Formulario (Glassmorphism Transparente) */
 .container {
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   box-shadow: 0 8px 32px var(--shadow-color);
@@ -398,8 +398,8 @@ label {
 
 .calculadora {
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   box-shadow: 0 8px 32px var(--shadow-color);
@@ -411,8 +411,8 @@ label {
 
 .indice-lateral {
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   box-shadow: 0 8px 32px var(--shadow-color);
@@ -716,8 +716,8 @@ textarea {
   max-width: 100%;
   margin: 0 auto;
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 14px;
   border: 1px solid var(--card-border);
   box-shadow: 0 8px 32px var(--shadow-color);
