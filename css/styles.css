@@ -9,36 +9,36 @@
   --accent-oncolor: #ffffff;
   --accent-header: linear-gradient(135deg, #0078d7, #004d8c);
   --accent-th: #004c8a;
-  --input-opacity: 0.30; /* Transparencia estética por defecto estilo glassmorphism */
-  --bg-darkness: 0.15;
+  --input-opacity: 0.00; /* 100% transparente por defecto */
+  --bg-darkness: 0.00;
   
   --bg-body: #0d0f14;
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
   --text-muted: #8e99a8;
   
-  --input-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.40 + 0.08));
+  --input-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45));
   --input-text: #ffffff;
-  --input-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.15 + 0.10));
+  --input-border: rgba(255, 255, 255, 0.28);
   
-  --card-bg: rgba(14, 17, 26, calc(var(--input-opacity) * 0.70 + 0.04));
-  --card-border: rgba(255, 255, 255, calc(var(--input-opacity) * 0.14 + 0.08));
+  --card-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.55));
+  --card-border: rgba(255, 255, 255, 0.22);
   
-  --navbar-bg: rgba(15, 18, 25, calc(var(--input-opacity) * 0.65 + 0.15));
+  --navbar-bg: rgba(12, 14, 20, calc(var(--input-opacity) * 0.60 + 0.35));
   --panel-bg: rgba(18, 20, 30, 0.96);
   --modal-bg: rgba(18, 20, 30, 0.97);
   
-  --calc-btn-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.12 + 0.05));
+  --calc-btn-bg: rgba(255, 255, 255, calc(var(--input-opacity) * 0.15 + 0.08));
   --calc-btn-text: #ffffff;
-  --calc-display-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45 + 0.10));
+  --calc-display-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45 + 0.15));
   --calc-display-text: #ffffff;
   
   --table-bg: transparent;
   --table-td-color: #ffffff;
-  --table-border: rgba(255, 255, 255, 0.06);
-  --table-hover: rgba(255, 255, 255, 0.08);
+  --table-border: rgba(255, 255, 255, 0.08);
+  --table-hover: rgba(255, 255, 255, 0.10);
   
-  --text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  --text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 1);
   --shadow-color: rgba(0, 0, 0, 0.45);
   --depth: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
@@ -384,11 +384,9 @@ label {
   margin: 0 auto;
 }
 
-/* Panel / Card Principal del Formulario (Glassmorphism Transparente) */
+/* Panel / Card Principal del Formulario (Totalmente Transparente: solo Contorno y Texto) */
 .container {
   background: var(--card-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   box-shadow: 0 8px 32px var(--shadow-color);
@@ -401,8 +399,6 @@ label {
 
 .calculadora {
   background: var(--card-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   box-shadow: 0 8px 32px var(--shadow-color);
@@ -414,8 +410,6 @@ label {
 
 .indice-lateral {
   background: var(--card-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   box-shadow: 0 8px 32px var(--shadow-color);
@@ -438,8 +432,6 @@ label {
   margin-top: 14px;
   padding: 14px 16px;
   background: var(--input-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border-left: 3px solid var(--accent);
   border-top: 1px solid var(--card-border);
   border-right: 1px solid var(--card-border);
@@ -514,8 +506,6 @@ textarea,
   border-radius: 8px;
   border: 1px solid var(--input-border);
   background: var(--input-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   color: var(--input-text);
   box-sizing: border-box;
   font-size: 0.95rem;

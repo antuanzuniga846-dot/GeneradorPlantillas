@@ -264,7 +264,7 @@ function ajustarOpacidadCampos(valor) {
 }
 
 function inicializarOpacidadCampos() {
-  const opacidadGuardada = localStorage.getItem("inputOpacityBuro") || "30";
+  const opacidadGuardada = localStorage.getItem("inputOpacityBuro") || "0";
   ajustarOpacidadCampos(opacidadGuardada);
 }
 
