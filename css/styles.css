@@ -1037,7 +1037,145 @@ textarea {
   color: var(--text-primary) !important;
 }
 
-/* Selectores Pills en celdas de la tabla (100% transparentes cuando están vacíos) */
+/* ========================================================= */
+/* BOTONES PÍLDORA EN TABLA (TOTALMENTE CENTRADOS Y ELEGANTES) */
+/* ========================================================= */
+.sheet-pill-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  margin: 0 auto !important;
+  border-radius: 999px !important;
+  padding: 5px 12px !important;
+  font-size: 0.82rem !important;
+  font-weight: bold !important;
+  outline: none !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: transparent !important;
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow);
+  box-shadow: none !important;
+  transition: transform 0.15s ease, filter 0.15s ease, border-color 0.15s ease;
+  user-select: none !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+}
+
+.sheet-pill-btn:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.02);
+  filter: brightness(1.1);
+  border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.sheet-pill-btn:disabled {
+  opacity: 0.9;
+  cursor: default !important;
+}
+
+.sheet-pill-label {
+  display: inline-block;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.sheet-pill-arrow {
+  font-size: 0.70rem;
+  opacity: 0.85;
+  margin-left: 2px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+/* ========================================================= */
+/* MENÚ FLOTANTE REDONDEADO Y ELEGANTE (SIN BORDES CUADRADOS)*/
+/* ========================================================= */
+#sheetDropdownMenu {
+  position: absolute;
+  z-index: 9999999;
+  display: none;
+  background: rgba(16, 20, 30, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 1px rgba(255, 255, 255, 0.2);
+  padding: 8px;
+  animation: dropdownPop 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  user-select: none;
+}
+
+@keyframes dropdownPop {
+  from { opacity: 0; transform: scale(0.94) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.sheet-dropdown-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.sheet-dropdown-inner::-webkit-scrollbar {
+  width: 6px;
+}
+.sheet-dropdown-inner::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+.sheet-dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 6px 14px !important;
+  border-radius: 999px !important;
+  font-size: 0.82rem !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+  position: relative;
+}
+
+.sheet-dropdown-item:hover {
+  transform: scale(1.04);
+  filter: brightness(1.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35) !important;
+}
+
+.sheet-dropdown-item.pill-opt-empty {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #8e99a8 !important;
+  border: 1px dashed rgba(255, 255, 255, 0.25) !important;
+  font-style: italic;
+  text-shadow: none !important;
+}
+.sheet-dropdown-item.pill-opt-empty:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.sheet-dropdown-item.active-opt {
+  outline: 2px solid #ffffff;
+  outline-offset: 1px;
+}
+
+.opt-check {
+  font-size: 0.78rem;
+  font-weight: 900;
+  margin-left: 4px;
+}
+
+/* Selectores Pills legacy y soporte */
 .sheet-select {
   display: inline-block !important;
   width: auto !important;
@@ -1061,25 +1199,6 @@ textarea {
   text-shadow: var(--text-shadow);
 }
 
-.sheet-select-soporte {
-  min-width: 115px;
-  max-width: 135px;
-  padding: 4px 8px;
-  font-size: 0.82rem;
-  letter-spacing: 0.2px;
-}
-.sheet-select-categoria {
-  min-width: 145px;
-  max-width: 175px;
-  padding: 4px 6px;
-  font-size: 0.80rem;
-}
-.sheet-select-motivo {
-  min-width: 175px;
-  max-width: 215px;
-  padding: 4px 6px;
-  font-size: 0.80rem;
-}
 .sheet-select:disabled {
   opacity: 0.9;
   cursor: not-allowed;

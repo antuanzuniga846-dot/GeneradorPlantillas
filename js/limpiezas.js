@@ -562,6 +562,145 @@ async function generarYProcesarPlantilla() {
 }
 
 // ==========================================
+// COMPONENTE DROPDOWN PERSONALIZADO REDONDEADO
+// ==========================================
+let _dropdownActivoInfo = null;
+
+function renderizarPillBoton(rowId, campo, valor, puedeEditar) {
+  let clasePill = "";
+  let minWidth = "120px";
+  if (campo === "soporte") {
+    clasePill = obtenerClaseSoporte(valor);
+    minWidth = "125px";
+  } else if (campo === "categoria") {
+    clasePill = obtenerClaseCategoria(valor);
+    minWidth = "155px";
+  } else if (campo === "motivo") {
+    clasePill = obtenerClaseMotivo(valor);
+    minWidth = "195px";
+  }
+
+  const disabledAttr = !puedeEditar ? 'disabled title="Solo editores autorizados"' : '';
+  const onclickHandler = puedeEditar ? `onclick="event.stopPropagation(); toggleCustomDropdown(this, '${rowId}', '${campo}')"` : '';
+
+  return `
+    <button 
+      type="button" 
+      class="sheet-pill-btn ${clasePill}" 
+      data-row-id="${rowId}" 
+      data-campo="${campo}" 
+      data-valor="${valor || ''}" 
+      style="min-width: ${minWidth};"
+      ${disabledAttr}
+      ${onclickHandler}
+    >
+      <span class="sheet-pill-label">${valor || ''}</span>
+      ${puedeEditar ? '<span class="sheet-pill-arrow">▾</span>' : ''}
+    </button>
+  `;
+}
+
+function toggleCustomDropdown(btnElem, rowId, campo) {
+  const menu = document.getElementById("sheetDropdownMenu");
+  if (!menu) return;
+
+  if (_dropdownActivoInfo && _dropdownActivoInfo.btnElem === btnElem && menu.style.display === "block") {
+    cerrarCustomDropdown();
+    return;
+  }
+
+  _dropdownActivoInfo = { btnElem, rowId, campo };
+
+  let opciones = [];
+  if (campo === "soporte") {
+    opciones = OPCIONES_SOPORTE;
+  } else if (campo === "categoria") {
+    opciones = OPCIONES_CATEGORIA;
+  } else if (campo === "motivo") {
+    opciones = OPCIONES_MOTIVO;
+  }
+
+  const valorActual = btnElem.getAttribute("data-valor") || "";
+
+  let html = `<div class="sheet-dropdown-inner">`;
+  opciones.forEach(op => {
+    const esVacio = !op.valor;
+    const texto = esVacio ? "— Quitar selección —" : op.texto;
+    const esSeleccionado = (op.valor === valorActual);
+    const claseOpt = esVacio ? "pill-opt-empty" : op.clase;
+
+    html += `
+      <div 
+        class="sheet-dropdown-item ${claseOpt} ${esSeleccionado ? 'active-opt' : ''}" 
+        onclick="seleccionarOpcionDropdown('${rowId}', '${campo}', '${op.valor.replace(/'/g, "\\'")}')"
+      >
+        <span>${texto}</span>
+        ${esSeleccionado ? '<span class="opt-check">✓</span>' : ''}
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  menu.innerHTML = html;
+  menu.style.display = "block";
+
+  posicionarCustomDropdown(btnElem, menu);
+}
+
+function posicionarCustomDropdown(btnElem, menu) {
+  const rect = btnElem.getBoundingClientRect();
+  const menuWidth = Math.max(rect.width, 175);
+  menu.style.minWidth = `${menuWidth}px`;
+
+  const margin = 6;
+  let top = rect.bottom + margin;
+  let left = rect.left + (rect.width / 2) - (menuWidth / 2);
+
+  if (left < 10) left = 10;
+  if (left + menuWidth > window.innerWidth - 10) {
+    left = window.innerWidth - menuWidth - 10;
+  }
+
+  const menuHeight = menu.offsetHeight || 240;
+  if (top + menuHeight > window.innerHeight - 10 && rect.top - menuHeight - margin > 10) {
+    top = rect.top - menuHeight - margin;
+  }
+
+  menu.style.top = `${top + window.scrollY}px`;
+  menu.style.left = `${left + window.scrollX}px`;
+}
+
+function seleccionarOpcionDropdown(rowId, campo, valor) {
+  if (_dropdownActivoInfo && _dropdownActivoInfo.btnElem) {
+    const btn = _dropdownActivoInfo.btnElem;
+    actualizarColumna(rowId, campo, valor, btn);
+  } else {
+    actualizarColumna(rowId, campo, valor);
+  }
+  cerrarCustomDropdown();
+}
+
+function cerrarCustomDropdown() {
+  const menu = document.getElementById("sheetDropdownMenu");
+  if (menu) menu.style.display = "none";
+  _dropdownActivoInfo = null;
+}
+
+document.addEventListener("click", (e) => {
+  const menu = document.getElementById("sheetDropdownMenu");
+  if (menu && menu.style.display === "block") {
+    if (!menu.contains(e.target) && (!_dropdownActivoInfo || !_dropdownActivoInfo.btnElem.contains(e.target))) {
+      cerrarCustomDropdown();
+    }
+  }
+});
+
+window.addEventListener("resize", cerrarCustomDropdown);
+document.addEventListener("scroll", (e) => {
+  if (_dropdownActivoInfo) cerrarCustomDropdown();
+}, true);
+
+// ==========================================
 // RENDERIZADO DE TABLA GOOGLE SHEETS
 // ==========================================
 function renderizarTablaSheet() {
@@ -619,32 +758,14 @@ function renderizarTablaSheet() {
       celdaMonto = `<strong>${row.monto || '-'}</strong>`;
     }
 
-    // 3. Select Soporte
-    let selectSoporte = `<select class="sheet-select sheet-select-soporte ${obtenerClaseSoporte(row.soporte)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'soporte', this.value, this)">`;
-    
-    let soporteEncontrado = OPCIONES_SOPORTE.some(op => op.valor.toLowerCase() === (row.soporte || "").toLowerCase());
-    if (row.soporte && !soporteEncontrado) {
-      selectSoporte += `<option value="${row.soporte}" selected>${row.soporte}</option>`;
-    }
+    // 3. Dropdown personalizado Soporte
+    let selectSoporte = renderizarPillBoton(row.id, 'soporte', row.soporte, puedeEditar);
 
-    OPCIONES_SOPORTE.forEach(op => {
-      selectSoporte += `<option value="${op.valor}" class="${op.clase}" ${row.soporte === op.valor ? 'selected' : ''}>${op.texto}</option>`;
-    });
-    selectSoporte += `</select>`;
+    // 4. Dropdown personalizado Categoría (Columna 7)
+    let selectCategoria = renderizarPillBoton(row.id, 'categoria', row.categoria, puedeEditar);
 
-    // 4. Select Categoría (Columna 7)
-    let selectCategoria = `<select class="sheet-select sheet-select-categoria ${obtenerClaseCategoria(row.categoria)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'categoria', this.value, this)">`;
-    OPCIONES_CATEGORIA.forEach(op => {
-      selectCategoria += `<option value="${op.valor}" class="${op.clase}" ${row.categoria === op.valor ? 'selected' : ''}>${op.texto}</option>`;
-    });
-    selectCategoria += `</select>`;
-
-    // 5. Select Motivo (Columna 8)
-    let selectMotivo = `<select class="sheet-select sheet-select-motivo ${obtenerClaseMotivo(row.motivo)}" ${!puedeEditar ? 'disabled title="Solo editores autorizados"' : ''} onchange="actualizarColumna('${row.id}', 'motivo', this.value, this)">`;
-    OPCIONES_MOTIVO.forEach(op => {
-      selectMotivo += `<option value="${op.valor}" class="${op.clase}" ${row.motivo === op.valor ? 'selected' : ''}>${op.texto}</option>`;
-    });
-    selectMotivo += `</select>`;
+    // 5. Dropdown personalizado Motivo (Columna 8)
+    let selectMotivo = renderizarPillBoton(row.id, 'motivo', row.motivo, puedeEditar);
 
     // Badge "En proceso": Solo se muestra si alguien la tomó y la columna Soporte aún NO tiene nombre
     const enProc = normalizarNombreEnProceso(row.enProceso || "");
@@ -800,7 +921,10 @@ async function actualizarColumna(id, campo, valor, selectElem) {
   // Actualización visual directa e instantánea sin destruir el DOM (0ms de retraso)
   if (selectElem) {
     if (campo === "soporte") {
-      selectElem.className = `sheet-select sheet-select-soporte ${obtenerClaseSoporte(valor)}`;
+      selectElem.className = `sheet-pill-btn ${obtenerClaseSoporte(valor)}`;
+      selectElem.setAttribute("data-valor", valor || "");
+      const lbl = selectElem.querySelector(".sheet-pill-label");
+      if (lbl) lbl.textContent = valor || "";
       if (valor) {
         const tr = selectElem.closest("tr");
         if (tr) {
@@ -810,10 +934,16 @@ async function actualizarColumna(id, campo, valor, selectElem) {
       }
     }
     else if (campo === "categoria") {
-      selectElem.className = `sheet-select sheet-select-categoria ${obtenerClaseCategoria(valor)}`;
+      selectElem.className = `sheet-pill-btn ${obtenerClaseCategoria(valor)}`;
+      selectElem.setAttribute("data-valor", valor || "");
+      const lbl = selectElem.querySelector(".sheet-pill-label");
+      if (lbl) lbl.textContent = valor || "";
     }
     else if (campo === "motivo") {
-      selectElem.className = `sheet-select sheet-select-motivo ${obtenerClaseMotivo(valor)}`;
+      selectElem.className = `sheet-pill-btn ${obtenerClaseMotivo(valor)}`;
+      selectElem.setAttribute("data-valor", valor || "");
+      const lbl = selectElem.querySelector(".sheet-pill-label");
+      if (lbl) lbl.textContent = valor || "";
     }
   } else {
     renderizarTablaSheet();
