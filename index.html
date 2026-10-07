@@ -41,6 +41,7 @@
       <span>👤 <strong id="lblUsuarioNombre">Usuario</strong> (<span id="lblUsuarioUser" style="color:#aaa;">-</span>)</span>
       <span id="lblRolActual" class="role-badge role-reader">Lector</span>
       <button id="btnAdminUsuarios" class="btn-nav-action" onclick="abrirModalAdminUsuarios()" style="display:none;">👥 Gestionar Usuarios</button>
+      <button class="btn-nav-action" onclick="abrirModalNotasParche()" title="Ver historial de actualizaciones y notas del parche">📜 Notas del Parche</button>
       
       <!-- Selector de tema y fondo integrado en la barra -->
       <div class="theme-widget">
@@ -659,6 +660,30 @@
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
         <button class="btn-secondary" onclick="cerrarModalExportarCSV()">Cancelar</button>
         <button class="btn-primary" style="background: #2e7d32; border-color: #2e7d32;" onclick="ejecutarDescargaCSV()">📥 Descargar CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Notas del Parche / Historial de Actualizaciones -->
+  <div id="modalNotasParche" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 680px; max-height: 88vh; display: flex; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 14px;">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.25rem;">
+          <span>📜</span> Historial & Notas del Parche
+        </h3>
+        <button class="btn-secondary" onclick="cerrarModalNotasParche()" style="padding: 4px 10px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;">✕</button>
+      </div>
+      
+      <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
+        Registro cronológico de todas las versiones, nuevas funciones, mejoras de rendimiento y optimizaciones de diseño implementadas en el sistema.
+      </p>
+
+      <div id="contenedorNotasParche" class="patch-notes-container" style="overflow-y: auto; flex: 1; padding-right: 6px;">
+        <!-- Se genera dinámicamente desde ui.js -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--card-border);">
+        <button class="btn-primary" onclick="cerrarModalNotasParche()">Entendido</button>
       </div>
     </div>
   </div>

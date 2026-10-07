@@ -382,3 +382,151 @@ function inicializarTema() {
   if (colorHex) colorHex.value = accentGuardado.toUpperCase();
   actualizarColoresDerivados();
 }
+
+// ==========================================
+// NOTAS DEL PARCHE / HISTORIAL DE VERSIONES
+// ==========================================
+const NOTAS_DEL_PARCHE = [
+  {
+    version: "v2.5",
+    fecha: "07/10/2026",
+    titulo: "Rediseño de Selectores, Centrado Matemático & Transparencia Cristal",
+    esActual: true,
+    cambios: [
+      {
+        icono: "🎨",
+        texto: "<strong>Menús Desplegables Píldora (Custom Dropdowns):</strong> Nuevo diseño redondeado con bordes suaves, flecha integrada y centrado horizontal/vertical exacto del texto."
+      },
+      {
+        icono: "💎",
+        texto: "<strong>Transparencia 100% Cristal:</strong> Eliminación de difuminados/backdrop-blur opacos en formularios y cabecera de la tabla de control, logrando visibilidad cristalina del fondo personalizado."
+      },
+      {
+        icono: "✨",
+        texto: "<strong>Restauración de Colores Pastel:</strong> Soporte para los tonos característicos de Fabricio (#9ccc65), Enoc (#fbc02d), María (#f8bbd0) y demás con texto blanco nítido (#ffffff) y sombra de contraste."
+      },
+      {
+        icono: "🖱️",
+        texto: "<strong>Optimización de Scroll:</strong> Aislamiento de desplazamiento mediante <code>overscroll-behavior: contain</code> evitando saltos de pantalla indeseados en la tabla."
+      }
+    ]
+  },
+  {
+    version: "v2.4",
+    fecha: "04/10/2026",
+    titulo: "Panel de Métricas, Tabla Dinámica & Exportación CSV Avanzada",
+    esActual: false,
+    cambios: [
+      {
+        icono: "📈",
+        texto: "<strong>Panel de Métricas KPI:</strong> Tarjetas en tiempo real con contador de limpiezas totales, montos procesados y desglose por motivo/soporte."
+      },
+      {
+        icono: "📊",
+        texto: "<strong>Tabla Dinámica (Pivot Matrix):</strong> Vista de resumen matricial cruzando responsables vs motivos de limpieza con totales automáticos."
+      },
+      {
+        icono: "📥",
+        texto: "<strong>Exportador CSV con Rango de Fechas:</strong> Descarga de registros a Excel/CSV filtrados por 'Hoy', 'Este Mes' o fechas personalizadas."
+      }
+    ]
+  },
+  {
+    version: "v2.3",
+    fecha: "01/10/2026",
+    titulo: "Sincronización en la Nube con Supabase Realtime & Sistema de Roles",
+    esActual: false,
+    cambios: [
+      {
+        icono: "⚡",
+        texto: "<strong>Sincronización Realtime:</strong> Base de datos PostgreSQL con Supabase para actualización colaborativa instantánea entre múltiples usuarios."
+      },
+      {
+        icono: "🔐",
+        texto: "<strong>Control de Acceso & Roles:</strong> Roles de Administrador, Editor y Lector con panel de gestión de contraseñas y permisos."
+      },
+      {
+        icono: "⏳",
+        texto: "<strong>Estado 'En Proceso':</strong> Nueva columna de estado para marcar limpiezas en trámite, reversadas o completadas."
+      }
+    ]
+  },
+  {
+    version: "v2.0",
+    fecha: "25/09/2026",
+    titulo: "Motor de Personalización Visual & Arquitectura Modular",
+    esActual: false,
+    cambios: [
+      {
+        icono: "🖼️",
+        texto: "<strong>Fondos Personalizados:</strong> Subida de imágenes locales o enlaces web con deslizador de oscurecimiento dinámico."
+      },
+      {
+        icono: "🌓",
+        texto: "<strong>Temas Claro / Oscuro:</strong> Conmutador de temas y selector de color de acento persistente en LocalStorage."
+      },
+      {
+        icono: "🧮",
+        texto: "<strong>Calculadora Integrada:</strong> Herramienta matemática rápida para sumar facturas y saldos sin salir del sistema."
+      },
+      {
+        icono: "📦",
+        texto: "<strong>Refactorización Modular:</strong> Separación del código fuente en módulos JS/CSS independientes y seguros."
+      }
+    ]
+  },
+  {
+    version: "v1.0",
+    fecha: "15/09/2026",
+    titulo: "Lanzamiento Inicial del Generador de Plantillas BURO",
+    esActual: false,
+    cambios: [
+      {
+        icono: "📋",
+        texto: "<strong>Generador de Plantillas:</strong> Formateo automatizado para Procede, No Procede, NC, Cero Pagos y Write Off."
+      },
+      {
+        icono: "⭐",
+        texto: "<strong>Accesos Rápidos:</strong> Botones superiores para copiar y gestionar plantillas frecuentes con un solo clic."
+      },
+      {
+        icono: "💾",
+        texto: "<strong>Almacenamiento Local:</strong> Respaldo inicial de registros de limpiezas en LocalStorage."
+      }
+    ]
+  }
+];
+
+function abrirModalNotasParche() {
+  const modal = document.getElementById("modalNotasParche");
+  const contenedor = document.getElementById("contenedorNotasParche");
+  if (!modal || !contenedor) return;
+
+  contenedor.innerHTML = NOTAS_DEL_PARCHE.map(patch => `
+    <div class="patch-card ${patch.esActual ? 'latest-patch' : ''}">
+      <div class="patch-header">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span class="patch-version-tag">${patch.version}</span>
+          ${patch.esActual ? '<span class="patch-badge-latest">Última Versión</span>' : ''}
+          <strong style="font-size: 0.95rem; color: var(--text-primary);">${patch.titulo}</strong>
+        </div>
+        <span class="patch-date">📅 ${patch.fecha}</span>
+      </div>
+      <ul class="patch-list">
+        ${patch.cambios.map(c => `
+          <li>
+            <span class="patch-item-icon">${c.icono}</span>
+            <div class="patch-item-text">${c.texto}</div>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  `).join('');
+
+  modal.style.display = "flex";
+}
+
+function cerrarModalNotasParche() {
+  const modal = document.getElementById("modalNotasParche");
+  if (modal) modal.style.display = "none";
+}
