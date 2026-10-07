@@ -330,15 +330,14 @@
   <div id="vistaHoja">
     <div class="sheet-wrapper">
       <div class="sheet-header-bar">
-        <div style="font-size: 1.15rem; font-weight: bold; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-          <span>📊 Hoja de Control de Limpiezas</span>
-          <button onclick="cambiarVista('generador')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer; font-size: 0.82rem;">⬅ Volver al Generador</button>
-          <span style="font-size: 0.78rem; font-weight: normal; color: #90caf9; background: rgba(13, 71, 161, 0.35); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(33, 150, 243, 0.4);">📋 Toca cualquier cédula para copiarla (Editores: marcar en proceso)</span>
+        <div class="sheet-header-left">
+          <span class="sheet-header-title">📊 Hoja de Control de Limpiezas</span>
+          <span class="sheet-info-badge">📋 Toca cualquier cédula para copiarla (Editores: marcar en proceso)</span>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <input type="text" id="filtroSheet" placeholder="🔍 Buscar cédula, agente..." style="width: 200px; margin: 0; padding: 7px 10px; font-size: 0.85rem;" oninput="renderizarTablaSheet()">
-          <button onclick="abrirModalExportarCSV()" style="padding: 7px 12px; border-radius: 6px; border: none; background: #2e7d32; color: #fff; cursor: pointer; font-weight: bold; font-size: 0.85rem;">📥 Exportar CSV</button>
-          <button onclick="sincronizarConSupabase()" style="padding: 7px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.35); background: rgba(0,0,0,0.25); color: #fff; cursor: pointer; font-weight: bold; font-size: 0.85rem;" title="Recargar datos de Supabase">🔄 Sincronizar</button>
+        <div class="sheet-header-right">
+          <input type="text" id="filtroSheet" class="sheet-header-input" style="width: 220px;" placeholder="🔍 Buscar cédula, agente..." oninput="renderizarTablaSheet()">
+          <button class="btn-header-action btn-header-success" onclick="abrirModalExportarCSV()">📥 Exportar CSV</button>
+          <button class="btn-header-action" onclick="sincronizarConSupabase()" title="Recargar datos de Supabase">🔄 Sincronizar</button>
         </div>
       </div>
 
@@ -372,23 +371,21 @@
     <div class="sheet-wrapper" style="margin-bottom: 25px;">
       <!-- Barra superior de Métricas -->
       <div class="sheet-header-bar">
-        <div style="font-size: 1.15rem; font-weight: bold; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-          <span>📈 Métricas, Gráfica de Soporte & Tabla Dinámica</span>
-          <button onclick="cambiarVista('generador')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer; font-size: 0.82rem;">⬅ Generador</button>
-          <button onclick="cambiarVista('hoja')" style="padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer; font-size: 0.82rem;">📊 Hoja de Control</button>
+        <div class="sheet-header-left">
+          <span class="sheet-header-title">📈 Métricas, Gráfica de Soporte & Tabla Dinámica</span>
         </div>
 
         <!-- Filtros de Fecha para Métricas y Tabla Dinámica -->
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoStats('hoy')">📅 Hoy</button>
-          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoStats('mes')">📅 Este Mes</button>
-          <button type="button" class="btn-rango-stats active" id="btnStatsTodo" onclick="setRangoRapidoStats('todo')">📁 Todo el Historial</button>
-          <div style="display: flex; align-items: center; gap: 4px;">
-            <input type="date" id="statsFechaDesde" style="width: 130px; margin: 0; padding: 6px 8px; font-size: 0.82rem;" onchange="actualizarEstadisticasYTablaDinamica()" title="Fecha Desde">
-            <span style="color:#aaa; font-size:0.8rem;">a</span>
-            <input type="date" id="statsFechaHasta" style="width: 130px; margin: 0; padding: 6px 8px; font-size: 0.82rem;" onchange="actualizarEstadisticasYTablaDinamica()" title="Fecha Hasta">
+        <div class="sheet-header-right">
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoStats('hoy', this)">📅 Hoy</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoStats('mes', this)">📅 Este Mes</button>
+          <button type="button" class="btn-rango-stats active" id="btnStatsTodo" onclick="setRangoRapidoStats('todo', this)">📁 Todo el Historial</button>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <input type="date" id="statsFechaDesde" class="sheet-header-input sheet-date-input" onchange="actualizarEstadisticasYTablaDinamica()" title="Fecha Desde">
+            <span style="color: var(--accent-oncolor); opacity: 0.85; font-size: 0.84rem; font-weight: bold;">a</span>
+            <input type="date" id="statsFechaHasta" class="sheet-header-input sheet-date-input" onchange="actualizarEstadisticasYTablaDinamica()" title="Fecha Hasta">
           </div>
-          <button onclick="actualizarEstadisticasYTablaDinamica()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #00bfa5; background: rgba(0, 191, 165, 0.25); color: #fff; cursor: pointer; font-weight: bold; font-size: 0.82rem;" title="Recalcular métricas">🔄 Actualizar</button>
+          <button class="btn-header-action btn-header-accent" onclick="actualizarEstadisticasYTablaDinamica()" title="Recalcular métricas">🔄 Actualizar</button>
         </div>
       </div>
 
@@ -433,13 +430,13 @@
         </div>
 
         <!-- SECCIÓN 1: GRÁFICA DE CONTEO DE LIMPIEZAS HECHAS POR SOPORTE -->
-        <div style="margin-top: 22px; background: rgba(0,0,0,0.35); padding: 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="margin-top: 22px; background: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--card-border); backdrop-filter: blur(10px);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
             <div>
               <h3 style="margin: 0 0 4px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
                 <span>📊 Conteo de Limpiezas Hechas por Soporte</span>
               </h3>
-              <span style="font-size: 0.8rem; color: #aaa;">Conteo total de trámites atendidos por cada resolutor de soporte</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Conteo total de trámites atendidos por cada resolutor de soporte</span>
             </div>
             <div style="display: flex; gap: 6px;">
               <button class="btn-chart-type active" id="btnChartBar" onclick="setChartType('bar')">📊 Barras</button>
@@ -451,7 +448,7 @@
             <div style="position: relative; height: 320px; width: 100%;">
               <canvas id="chartSoporteLimpiezas"></canvas>
             </div>
-            <div id="listaResumenSoporte" style="max-height: 320px; overflow-y: auto; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.08);">
+            <div id="listaResumenSoporte" style="max-height: 320px; overflow-y: auto; background: rgba(0,0,0,0.18); border-radius: 8px; padding: 12px; border: 1px solid var(--card-border);">
               <!-- Resumen numérico por soporte -->
             </div>
           </div>
@@ -464,11 +461,11 @@
               <h3 style="margin: 0 0 4px 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
                 <span>📋 Tabla Dinámica: Casos "No Procede" por Agente y Soporte</span>
               </h3>
-              <span style="font-size: 0.82rem; color: #80cbc4;">Distribución de qué agente de soporte otorgó el "No Procede" a cada solicitante</span>
+              <span style="font-size: 0.82rem; color: var(--text-muted);">Distribución de qué agente de soporte otorgó el "No Procede" a cada solicitante</span>
             </div>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-              <input type="text" id="filtroTablaDinamica" placeholder="🔍 Buscar agente en tabla..." style="width: 200px; margin: 0; padding: 6px 10px; font-size: 0.85rem;" oninput="renderizarTablaDinamicaHTML()">
-              <button onclick="exportarTablaDinamicaCSV()" style="padding: 6px 12px; border-radius: 6px; border: none; background: #00695c; color: #fff; cursor: pointer; font-weight: bold; font-size: 0.82rem;">📥 Exportar Tabla Dinámica CSV</button>
+              <input type="text" id="filtroTablaDinamica" class="sheet-header-input" style="width: 200px;" placeholder="🔍 Buscar agente en tabla..." oninput="renderizarTablaDinamicaHTML()">
+              <button class="btn-header-action btn-header-accent" onclick="exportarTablaDinamicaCSV()">📥 Exportar Tabla Dinámica CSV</button>
             </div>
           </div>
 
@@ -592,7 +589,7 @@
       </div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-        <button onclick="cerrarModalAdminUsuarios()" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cerrar</button>
+        <button class="btn-secondary" onclick="cerrarModalAdminUsuarios()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -610,10 +607,10 @@
       <input type="text" id="txtSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-size: 0.85rem;">
 
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-        <button onclick="probarConexionSupabase()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ab47bc; background: rgba(171, 71, 188, 0.25); color: #fff; cursor: pointer; font-size: 0.82rem;">🔍 Probar Conexión</button>
+        <button class="btn-secondary" onclick="probarConexionSupabase()" style="border-color: #ab47bc; color: #e1bee7;">🔍 Probar Conexión</button>
         <div style="display: flex; gap: 8px;">
-          <button onclick="cerrarModalConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid #555; background: #2a2a38; cursor: pointer; color:#fff;">Cerrar</button>
-          <button onclick="guardarConfigSupabase()" style="padding: 8px 14px; border-radius: 6px; border: none; background: var(--accent); color: var(--accent-oncolor); cursor: pointer; font-weight: bold;">Guardar</button>
+          <button class="btn-secondary" onclick="cerrarModalConfigSupabase()">Cerrar</button>
+          <button class="btn-primary" onclick="guardarConfigSupabase()">Guardar</button>
         </div>
       </div>
     </div>
@@ -629,22 +626,22 @@
         Selecciona un rango de fechas para filtrar la descarga o exporta el historial completo:
       </p>
 
-      <div style="background: rgba(0,0,0,0.32); padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 12px;">
+      <div style="background: var(--card-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 12px;">
         <!-- Botones de Rango Rápido -->
         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-          <button type="button" style="padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #fff; cursor: pointer;" onclick="setRangoRapidoCSV('hoy')">📅 Hoy</button>
-          <button type="button" style="padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #fff; cursor: pointer;" onclick="setRangoRapidoCSV('mes')">📅 Este Mes</button>
-          <button type="button" style="padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #fff; cursor: pointer;" onclick="setRangoRapidoCSV('todo')">📁 Todo el Historial</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoCSV('hoy')">📅 Hoy</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoCSV('mes')">📅 Este Mes</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoCSV('todo')">📁 Todo el Historial</button>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div>
-            <label style="display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px;">📅 Fecha Desde:</label>
-            <input type="date" id="csvFechaDesde" style="width: 100%; margin: 0; padding: 7px; font-size: 0.85rem;" oninput="actualizarContadorCSV()">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">📅 Fecha Desde:</label>
+            <input type="date" id="csvFechaDesde" class="sheet-header-input" style="width: 100%;" oninput="actualizarContadorCSV()">
           </div>
           <div>
-            <label style="display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px;">📅 Fecha Hasta:</label>
-            <input type="date" id="csvFechaHasta" style="width: 100%; margin: 0; padding: 7px; font-size: 0.85rem;" oninput="actualizarContadorCSV()">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">📅 Fecha Hasta:</label>
+            <input type="date" id="csvFechaHasta" class="sheet-header-input" style="width: 100%;" oninput="actualizarContadorCSV()">
           </div>
         </div>
 
@@ -655,7 +652,7 @@
 
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
         <button class="btn-secondary" onclick="cerrarModalExportarCSV()">Cancelar</button>
-        <button class="btn-primary" style="background: #2e7d32;" onclick="ejecutarDescargaCSV()">📥 Descargar CSV</button>
+        <button class="btn-primary" style="background: #2e7d32; border-color: #2e7d32;" onclick="ejecutarDescargaCSV()">📥 Descargar CSV</button>
       </div>
     </div>
   </div>

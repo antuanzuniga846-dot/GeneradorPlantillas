@@ -34,7 +34,7 @@ function obtenerColorSoporteStats(nombreSoporte, idx = 0) {
   return PALETA_FALLBACK_STATS[idx % PALETA_FALLBACK_STATS.length];
 }
 
-function setRangoRapidoStats(tipo) {
+function setRangoRapidoStats(tipo, btnElem) {
   const hoyObj = new Date();
   const hoyStr = `${hoyObj.getFullYear()}-${pad2(hoyObj.getMonth() + 1)}-${pad2(hoyObj.getDate())}`;
   
@@ -43,12 +43,12 @@ function setRangoRapidoStats(tipo) {
   if (tipo === 'hoy') {
     document.getElementById("statsFechaDesde").value = hoyStr;
     document.getElementById("statsFechaHasta").value = hoyStr;
-    if (event && event.target) event.target.classList.add("active");
+    if (btnElem) btnElem.classList.add("active");
   } else if (tipo === 'mes') {
     const primerDia = `${hoyObj.getFullYear()}-${pad2(hoyObj.getMonth() + 1)}-01`;
     document.getElementById("statsFechaDesde").value = primerDia;
     document.getElementById("statsFechaHasta").value = hoyStr;
-    if (event && event.target) event.target.classList.add("active");
+    if (btnElem) btnElem.classList.add("active");
   } else if (tipo === 'todo') {
     document.getElementById("statsFechaDesde").value = "";
     document.getElementById("statsFechaHasta").value = "";

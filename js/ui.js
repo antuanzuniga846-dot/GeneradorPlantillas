@@ -186,8 +186,8 @@ function actualizarColoresDerivados() {
   raiz.style.setProperty('--accent-text', colorAcentoLegible(accent, fondoHex, 4.5));
   
   // Encabezados dinámicos con degradado y profundidad
-  const darkerAccent = mezclarHex(accent, '#000000', 0.35);
-  const midDarkAccent = mezclarHex(accent, '#000000', 0.22);
+  const darkerAccent = mezclarHex(accent, '#000000', 0.22);
+  const midDarkAccent = mezclarHex(accent, '#000000', 0.14);
   raiz.style.setProperty('--accent-header', `linear-gradient(135deg, ${accent}, ${darkerAccent})`);
   raiz.style.setProperty('--accent-th', midDarkAccent);
 }
