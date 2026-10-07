@@ -58,18 +58,18 @@
             <input type="text" id="colorHex" value="#0078D7" maxlength="7" oninput="setAccentColorFromHex(this.value)" placeholder="#0078D7" style="margin:0; padding:6px 8px; font-size:0.85rem;">
           </div>
 
-          <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🪟 Transparencia campos</h4>
+          <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🪟 Transparencia Formulario & Campos</h4>
           <div>
             <label style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
               <span>Opacidad:</span>
-              <span id="inputOpacityVal" style="font-weight: bold; color: var(--accent);">75%</span>
+              <span id="inputOpacityVal" style="font-weight: bold; color: var(--accent);">35%</span>
             </label>
             <input 
               type="range" 
               id="inputOpacitySlider" 
-              min="20" 
+              min="0" 
               max="100" 
-              value="75" 
+              value="35" 
               oninput="ajustarOpacidadCampos(this.value)" 
               style="width: 100%; accent-color: var(--accent); cursor: pointer;"
             >
