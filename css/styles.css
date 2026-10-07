@@ -736,32 +736,34 @@ textarea {
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  background: var(--card-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: transparent !important;
   border-radius: 14px;
   border: 1px solid var(--card-border);
   box-shadow: 0 8px 32px var(--shadow-color);
   overflow: hidden;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
-/* Encabezado dinámico que adopta el color de personalización */
+/* Encabezado dinámico y transparente para la hoja de control */
 .sheet-header-bar {
-  background: var(--accent-header);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45)) !important;
   padding: 11px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--accent-oncolor);
+  color: var(--text-primary);
   font-weight: bold;
   flex-wrap: wrap;
   gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   transition: background 0.25s ease, color 0.25s ease;
+}
+
+:root[data-theme="light"] .sheet-header-bar {
+  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.5 + 0.2)) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.15);
+  color: #0f172a;
 }
 
 .sheet-header-left {
@@ -959,8 +961,8 @@ textarea {
 }
 
 .sheet-table th {
-  background: var(--accent-th);
-  color: var(--accent-oncolor);
+  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.45 + 0.35)) !important;
+  color: #ffffff;
   padding: 9px 8px;
   border: 1px solid rgba(255,255,255,0.18);
   position: sticky;
@@ -971,7 +973,14 @@ textarea {
   user-select: none;
   text-align: center;
   font-size: 0.84rem;
+  text-shadow: var(--text-shadow);
   transition: background 0.25s ease, color 0.25s ease;
+}
+
+:root[data-theme="light"] .sheet-table th {
+  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.5 + 0.4)) !important;
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 .sheet-table td {
@@ -982,13 +991,14 @@ textarea {
   text-align: center;
   font-size: 0.84rem;
   background: transparent !important;
+  text-shadow: var(--text-shadow);
 }
 
 .sheet-table tr:hover td {
   background: var(--table-hover) !important;
 }
 
-/* Monto editable en tabla */
+/* Monto editable en tabla (Totalmente transparente con solo contorno) */
 .sheet-monto-input {
   display: inline-block !important;
   width: 100px !important;
@@ -996,19 +1006,20 @@ textarea {
   margin: 0 auto !important;
   font-weight: bold !important;
   font-size: 0.84rem !important;
-  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.4 + 0.05)) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   border-radius: 6px !important;
   color: var(--text-primary) !important;
   text-align: center !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  text-shadow: var(--text-shadow);
 }
 
 :root[data-theme="light"] .sheet-monto-input {
-  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.8 + 0.1)) !important;
-  border-color: rgba(0, 0, 0, 0.15) !important;
+  background: transparent !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
   color: var(--text-primary) !important;
 }
 
@@ -1030,9 +1041,10 @@ textarea {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.08 + 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: transparent !important;
   color: var(--text-primary);
+  text-shadow: var(--text-shadow);
 }
 
 .sheet-select-soporte {
@@ -1063,17 +1075,17 @@ textarea {
 .pill-soporte-empty,
 .pill-cat-empty,
 .pill-mot-empty {
-  background: rgba(255, 255, 255, calc(var(--input-opacity) * 0.08 + 0.02)) !important;
+  background: transparent !important;
   color: var(--text-secondary) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
 }
 
 :root[data-theme="light"] .pill-soporte-empty,
 :root[data-theme="light"] .pill-cat-empty,
 :root[data-theme="light"] .pill-mot-empty {
-  background: rgba(0, 0, 0, calc(var(--input-opacity) * 0.06 + 0.02)) !important;
+  background: transparent !important;
   color: var(--text-secondary) !important;
-  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(0, 0, 0, 0.20) !important;
 }
 
 /* Píldoras con valor asignado */
@@ -1150,7 +1162,7 @@ textarea {
   gap: 14px;
 }
 .stats-kpi-card {
-  background: var(--card-bg);
+  background: transparent !important;
   border: 1px solid var(--card-border);
   border-left: 4px solid var(--accent);
   border-radius: 10px;
@@ -1158,7 +1170,6 @@ textarea {
   display: flex;
   align-items: center;
   gap: 14px;
-  backdrop-filter: blur(8px);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .stats-kpi-card:hover {
@@ -1258,7 +1269,7 @@ textarea {
   overflow: auto;
   border-radius: 8px;
   border: 1.5px solid rgba(0, 150, 136, 0.45);
-  background: var(--card-bg);
+  background: transparent !important;
   box-shadow: 0 6px 20px var(--shadow-color);
 }
 
