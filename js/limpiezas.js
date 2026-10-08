@@ -4,15 +4,22 @@
 
 let listaLimpiezas = JSON.parse(localStorage.getItem(STORAGE_KEY_SHEET)) || [];
 let canalRealtime = null;
-let intervalSincronizacion = null;
+let ultimaCargaSupabase = 0;
 
-async function cargarDatosDesdeSupabase(silencioso = false) {
+async function cargarDatosDesdeSupabase(silencioso = false, forzar = false) {
   if (!supabaseClient) return;
+
+  // Evitar consultas redundantes si pasaron menos de 60 segundos (a menos que se fuerce)
+  const ahora = Date.now();
+  if (!forzar && silencioso && ahora - ultimaCargaSupabase < 60000) {
+    return;
+  }
+  ultimaCargaSupabase = ahora;
 
   try {
     const { data, error } = await supabaseClient
       .from("control_limpiezas")
-      .select("*")
+      .select("id, marca_temporal, monto, agente, cedula, cero_pagos, soporte, categoria, motivo, en_proceso, created_at")
       .order("created_at", { ascending: false });
 
     if (!error && data) {
@@ -64,7 +71,7 @@ async function cargarDatosDesdeSupabase(silencioso = false) {
 async function sincronizarConSupabase() {
   if (supabaseClient) {
     await cargarUsuariosDesdeSupabase();
-    await cargarDatosDesdeSupabase(false);
+    await cargarDatosDesdeSupabase(false, true);
     if (vistaActual === "estadisticas") {
       actualizarEstadisticasYTablaDinamica();
     }
@@ -176,14 +183,25 @@ function suscribirRealtimeSupabase() {
   iniciarPollingSincronizacion();
 }
 
+let intervalSincronizacion = null;
+
 function iniciarPollingSincronizacion() {
   if (intervalSincronizacion) clearInterval(intervalSincronizacion);
+  // Intervalo de respaldo relajado a 5 minutos (300.000 ms) en vez de 3.5 segundos.
+  // Supabase Realtime ya sincroniza las inserciones y cambios instantáneamente vía WebSocket sin generar consumo API.
   intervalSincronizacion = setInterval(async () => {
     if (supabaseClient && document.visibilityState === "visible") {
       await cargarDatosDesdeSupabase(true);
     }
-  }, 3500);
+  }, 300000);
 }
+
+// Refrescar al volver a la pestaña si estuvo oculta (con límite de 60s)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && supabaseClient) {
+    cargarDatosDesdeSupabase(true);
+  }
+});
 
 function manejarEventoRealtime(payload) {
   const { eventType, new: nuevaFila, old: viejaFila } = payload;
