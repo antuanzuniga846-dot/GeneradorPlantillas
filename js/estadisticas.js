@@ -54,7 +54,7 @@ function setRangoRapidoStats(tipo, btnElem) {
     document.getElementById("statsFechaHasta").value = "";
     document.getElementById("btnStatsTodo")?.classList.add("active");
   }
-  actualizarEstadisticasYTablaDinamica();
+  actualizarEstadisticasYTablaDinamica(true);
 }
 
 function setChartType(type) {
@@ -64,10 +64,48 @@ function setChartType(type) {
   actualizarEstadisticasYTablaDinamica();
 }
 
-function actualizarEstadisticasYTablaDinamica() {
+let cacheStatsSupabase = null;
+let cargandoStats = false;
+
+async function actualizarEstadisticasYTablaDinamica(forzarRecarga = false) {
   const desde = document.getElementById("statsFechaDesde")?.value || "";
   const hasta = document.getElementById("statsFechaHasta")?.value || "";
-  const registros = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+
+  let registros = [];
+  if (supabaseClient) {
+    try {
+      const cacheKey = `${desde}_${hasta}`;
+      if (!forzarRecarga && cacheStatsSupabase && cacheStatsSupabase.key === cacheKey && (Date.now() - cacheStatsSupabase.time < 120000)) {
+        registros = cacheStatsSupabase.data;
+      } else {
+        let query = supabaseClient
+          .from("control_limpiezas")
+          .select("soporte, agente, categoria, created_at, marca_temporal")
+          .order("created_at", { ascending: false });
+
+        if (desde) query = query.gte("created_at", `${desde}T00:00:00`);
+        if (hasta) query = query.lte("created_at", `${hasta}T23:59:59`);
+
+        let todos = [];
+        let offset = 0;
+        let lote = 1000;
+        while (true) {
+          const { data, error } = await query.range(offset, offset + lote - 1);
+          if (error || !data || data.length === 0) break;
+          todos.push(...data);
+          if (data.length < lote) break;
+          offset += lote;
+        }
+        registros = todos;
+        cacheStatsSupabase = { key: cacheKey, data: registros, time: Date.now() };
+      }
+    } catch (e) {
+      console.warn("Error cargando estadísticas desde Supabase:", e);
+      registros = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+    }
+  } else {
+    registros = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+  }
 
   // 1. Conteo de Limpiezas Hechas por Soporte
   const conteoSoporte = {};

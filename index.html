@@ -342,7 +342,7 @@
           <span class="sheet-info-badge">📋 Toca cualquier cédula para copiarla (Editores: marcar en proceso)</span>
         </div>
         <div class="sheet-header-right">
-          <input type="text" id="filtroSheet" class="sheet-header-input" style="width: 220px;" placeholder="🔍 Buscar cédula, agente..." oninput="renderizarTablaSheet()">
+          <input type="text" id="filtroSheet" class="sheet-header-input" style="width: 220px;" placeholder="🔍 Buscar cédula, agente..." oninput="manejarFiltroSheet(this.value)" onkeydown="if(event.key==='Enter') buscarEnSupabaseDirecto()">
           <button class="btn-header-action btn-header-success" onclick="abrirModalExportarCSV()">📥 Exportar CSV</button>
           <button class="btn-header-action" onclick="sincronizarConSupabase()" title="Recargar datos de Supabase">🔄 Sincronizar</button>
         </div>

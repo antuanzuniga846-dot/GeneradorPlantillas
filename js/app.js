@@ -125,6 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
   inicializarOpacidadCampos();
   inicializarFondoPersonalizado();
   inicializarSupabase();
+  inicializarScrollInfinito();
 
   // Comprobar sesión guardada
   if (usuarioLogueado) {

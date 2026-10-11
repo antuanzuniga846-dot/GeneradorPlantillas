@@ -5,6 +5,35 @@
 let listaLimpiezas = JSON.parse(localStorage.getItem(STORAGE_KEY_SHEET)) || [];
 let canalRealtime = null;
 let ultimaCargaSupabase = 0;
+const TAMANO_PAGINA_LIMPIEZAS = 150;
+let hayMasRegistrosSupabase = true;
+let cargandoMasRegistros = false;
+
+function mapearRegistroLimpieza(item, anteriorLocal = null) {
+  let enProc = "";
+  if (item.en_proceso !== undefined && item.en_proceso !== null && String(item.en_proceso).trim() !== "") {
+    enProc = normalizarNombreEnProceso(item.en_proceso);
+  } else if (anteriorLocal && anteriorLocal.enProceso) {
+    enProc = normalizarNombreEnProceso(anteriorLocal.enProceso);
+  }
+
+  if (item.soporte && String(item.soporte).trim()) {
+    enProc = "";
+  }
+
+  return {
+    id: item.id,
+    marcaTemporal: normalizarFechaMarcaTemporal(item.marca_temporal),
+    monto: item.monto,
+    agente: item.agente,
+    cedula: item.cedula,
+    ceroPagos: !!item.cero_pagos,
+    soporte: item.soporte || "",
+    categoria: item.categoria || "",
+    motivo: item.motivo || "",
+    enProceso: enProc
+  };
+}
 
 async function cargarDatosDesdeSupabase(silencioso = false, forzar = false) {
   if (!supabaseClient) return;
@@ -20,42 +49,27 @@ async function cargarDatosDesdeSupabase(silencioso = false, forzar = false) {
     const { data, error } = await supabaseClient
       .from("control_limpiezas")
       .select("id, marca_temporal, monto, agente, cedula, cero_pagos, soporte, categoria, motivo, en_proceso, created_at")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(0, TAMANO_PAGINA_LIMPIEZAS - 1);
 
     if (!error && data) {
-      const nuevosDatos = data.map(item => {
+      hayMasRegistrosSupabase = data.length >= TAMANO_PAGINA_LIMPIEZAS;
+
+      const nuevosRecientes = data.map(item => {
         const anteriorLocal = listaLimpiezas.find(x => x.id === item.id);
-        
-        let enProc = "";
-        if (item.en_proceso !== undefined && item.en_proceso !== null && String(item.en_proceso).trim() !== "") {
-          enProc = normalizarNombreEnProceso(item.en_proceso);
-        } else if (anteriorLocal && anteriorLocal.enProceso) {
-          enProc = normalizarNombreEnProceso(anteriorLocal.enProceso);
-        }
-
-        if (item.soporte && String(item.soporte).trim()) {
-          enProc = "";
-        }
-
-        return {
-          id: item.id,
-          marcaTemporal: normalizarFechaMarcaTemporal(item.marca_temporal),
-          monto: item.monto,
-          agente: item.agente,
-          cedula: item.cedula,
-          ceroPagos: !!item.cero_pagos,
-          soporte: item.soporte || "",
-          categoria: item.categoria || "",
-          motivo: item.motivo || "",
-          enProceso: enProc
-        };
+        return mapearRegistroLimpieza(item, anteriorLocal);
       });
 
-      const jsonNuevo = JSON.stringify(nuevosDatos);
+      // Conservar registros antiguos que el usuario ya haya cargado mediante scroll
+      const idsNuevos = new Set(nuevosRecientes.map(x => x.id));
+      const antiguosConservados = listaLimpiezas.filter(x => !idsNuevos.has(x.id));
+      const listaCombinada = [...nuevosRecientes, ...antiguosConservados];
+
+      const jsonNuevo = JSON.stringify(listaCombinada);
       const jsonViejo = JSON.stringify(listaLimpiezas);
 
       if (jsonNuevo !== jsonViejo) {
-        listaLimpiezas = nuevosDatos;
+        listaLimpiezas = listaCombinada;
         localStorage.setItem(STORAGE_KEY_SHEET, jsonNuevo);
         renderizarTablaSheet();
         if (vistaActual === "estadisticas") {
@@ -68,12 +82,110 @@ async function cargarDatosDesdeSupabase(silencioso = false, forzar = false) {
   }
 }
 
+async function cargarMasRegistrosAnteriores() {
+  if (!supabaseClient || cargandoMasRegistros || !hayMasRegistrosSupabase) return;
+
+  cargandoMasRegistros = true;
+  actualizarEstadoScrollLoader(true, "⏳ Cargando registros de días anteriores...");
+
+  try {
+    const offset = listaLimpiezas.length;
+    const { data, error } = await supabaseClient
+      .from("control_limpiezas")
+      .select("id, marca_temporal, monto, agente, cedula, cero_pagos, soporte, categoria, motivo, en_proceso, created_at")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + TAMANO_PAGINA_LIMPIEZAS - 1);
+
+    if (error) {
+      console.warn("Error cargando más registros:", error);
+      actualizarEstadoScrollLoader(false, "⚠️ Error al cargar registros anteriores. Toca para reintentar.", true);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      hayMasRegistrosSupabase = false;
+      actualizarEstadoScrollLoader(false, "✅ Se ha cargado todo el historial de limpiezas.");
+      return;
+    }
+
+    if (data.length < TAMANO_PAGINA_LIMPIEZAS) {
+      hayMasRegistrosSupabase = false;
+    }
+
+    let nuevosAnadidos = 0;
+    data.forEach(item => {
+      if (!listaLimpiezas.some(x => x.id === item.id)) {
+        listaLimpiezas.push(mapearRegistroLimpieza(item));
+        nuevosAnadidos++;
+      }
+    });
+
+    localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+    renderizarTablaSheet();
+
+    if (hayMasRegistrosSupabase) {
+      actualizarEstadoScrollLoader(false, `📜 Mostrando ${listaLimpiezas.length} limpiezas. Desliza o toca para cargar más días anteriores.`);
+    } else {
+      actualizarEstadoScrollLoader(false, `✅ Se ha cargado todo el historial (${listaLimpiezas.length} registros).`);
+    }
+  } catch (e) {
+    console.error("Fallo al cargar más:", e);
+    actualizarEstadoScrollLoader(false, "⚠️ Error al cargar. Toca para reintentar.", true);
+  } finally {
+    cargandoMasRegistros = false;
+  }
+}
+
+function actualizarEstadoScrollLoader(cargando, mensaje, esError = false) {
+  let loader = document.getElementById("sheetScrollLoader");
+  if (!loader) {
+    const container = document.querySelector(".sheet-table-container");
+    if (!container) return;
+    loader = document.createElement("div");
+    loader.id = "sheetScrollLoader";
+    loader.style.cssText = "text-align: center; padding: 14px 10px; font-size: 0.85rem; cursor: pointer; user-select: none; border-top: 1px solid var(--card-border); background: rgba(0,0,0,0.1);";
+    loader.onclick = () => cargarMasRegistrosAnteriores();
+    container.appendChild(loader);
+  }
+
+  if (!mensaje) {
+    loader.style.display = "none";
+    return;
+  }
+
+  loader.style.display = "block";
+  loader.textContent = mensaje;
+  if (esError) {
+    loader.style.color = "#ff8a80";
+  } else {
+    loader.style.color = cargando ? "#ffb74d" : "#90caf9";
+  }
+}
+
+let _scrollListenerIniciado = false;
+function inicializarScrollInfinito() {
+  if (_scrollListenerIniciado) return;
+  const container = document.querySelector(".sheet-table-container");
+  if (!container) return;
+
+  _scrollListenerIniciado = true;
+  container.addEventListener("scroll", () => {
+    const filtro = (document.getElementById("filtroSheet")?.value || "").trim();
+    if (filtro) return; // No auto-scrollear si hay un filtro de búsqueda activo
+    if (container.scrollTop + container.clientHeight >= container.scrollHeight - 140) {
+      if (!cargandoMasRegistros && hayMasRegistrosSupabase && supabaseClient) {
+        cargarMasRegistrosAnteriores();
+      }
+    }
+  });
+}
+
 async function sincronizarConSupabase() {
   if (supabaseClient) {
     await cargarUsuariosDesdeSupabase();
     await cargarDatosDesdeSupabase(false, true);
     if (vistaActual === "estadisticas") {
-      actualizarEstadisticasYTablaDinamica();
+      actualizarEstadisticasYTablaDinamica(true);
     }
     notificar("success", "Sincronizado", "Datos actualizados desde Supabase.");
   } else {
@@ -732,7 +844,7 @@ function renderizarTablaSheet() {
   const tbody = document.getElementById("tablaSheetBody");
   if (!tbody) return;
 
-  const filtro = (document.getElementById("filtroSheet")?.value || "").toLowerCase();
+  const filtro = (document.getElementById("filtroSheet")?.value || "").toLowerCase().trim();
   tbody.innerHTML = "";
 
   const puedeEditar = esEditor();
@@ -748,7 +860,17 @@ function renderizarTablaSheet() {
   });
 
   if (filtrados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 22px; color: #aaa; font-style: italic;">No hay registros en la hoja de control.</td></tr>`;
+    if (filtro) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 24px; color: #90caf9;">
+        No hay coincidencias en los registros cargados actualmente.<br>
+        <button type="button" class="btn-header-action" onclick="buscarEnSupabaseDirecto()" style="margin-top: 10px; background: var(--accent); color: var(--accent-oncolor);">
+          🔍 Buscar "${filtro}" en todo el historial de Supabase
+        </button>
+      </td></tr>`;
+    } else {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 22px; color: #aaa; font-style: italic;">No hay registros en la hoja de control.</td></tr>`;
+    }
+    actualizarEstadoScrollLoader(false, "");
     return;
   }
 
@@ -822,6 +944,92 @@ function renderizarTablaSheet() {
 
     tbody.appendChild(tr);
   });
+
+  if (!filtro) {
+    if (hayMasRegistrosSupabase) {
+      actualizarEstadoScrollLoader(false, `📜 Mostrando ${listaLimpiezas.length} limpiezas recientes. Desliza hacia abajo o toca aquí para cargar más días anteriores...`);
+    } else {
+      actualizarEstadoScrollLoader(false, `✅ Se ha cargado todo el historial (${listaLimpiezas.length} registros).`);
+    }
+  } else {
+    actualizarEstadoScrollLoader(false, "");
+  }
+}
+
+let debounceTimerFiltro = null;
+let buscandoEnSupabase = false;
+
+function manejarFiltroSheet(termino) {
+  renderizarTablaSheet();
+
+  clearTimeout(debounceTimerFiltro);
+  const termLimpio = (termino || "").trim();
+
+  // Si tiene al menos 3 dígitos/letras y no hay coincidencia local
+  if (termLimpio.length >= 3 && supabaseClient) {
+    debounceTimerFiltro = setTimeout(() => {
+      buscarEnSupabaseDirecto(termLimpio);
+    }, 550);
+  }
+}
+
+async function buscarEnSupabaseDirecto(terminoForzado) {
+  const input = document.getElementById("filtroSheet");
+  const termino = (terminoForzado || (input ? input.value : "")).trim();
+  if (!termino || !supabaseClient || buscandoEnSupabase) return;
+
+  const tLower = termino.toLowerCase();
+  const coincidenciaLocal = listaLimpiezas.some(r => 
+    (r.cedula || "").toLowerCase().includes(tLower) || 
+    (r.agente || "").toLowerCase().includes(tLower)
+  );
+
+  // Si ya se encontró en memoria local, no gastar llamada a menos que se fuerce
+  if (coincidenciaLocal && !terminoForzado) return;
+
+  buscandoEnSupabase = true;
+  const tbody = document.getElementById("tablaSheetBody");
+  if (tbody) {
+    const avisoBuscando = document.createElement("tr");
+    avisoBuscando.id = "filaBuscandoSupabase";
+    avisoBuscando.innerHTML = `<td colspan="9" style="text-align:center; padding: 12px; color: #90caf9; background: rgba(33, 150, 243, 0.1);">🔎 Buscando "${termino}" en el historial de Supabase...</td>`;
+    tbody.prepend(avisoBuscando);
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("control_limpiezas")
+      .select("id, marca_temporal, monto, agente, cedula, cero_pagos, soporte, categoria, motivo, en_proceso, created_at")
+      .or(`cedula.ilike.%${termino}%,agente.ilike.%${termino}%`)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const filaAviso = document.getElementById("filaBuscandoSupabase");
+    if (filaAviso) filaAviso.remove();
+
+    if (!error && data && data.length > 0) {
+      let agregados = 0;
+      data.forEach(item => {
+        if (!listaLimpiezas.some(x => x.id === item.id)) {
+          listaLimpiezas.push(mapearRegistroLimpieza(item));
+          agregados++;
+        }
+      });
+
+      renderizarTablaSheet();
+      if (agregados > 0) {
+        notificar("info", "Búsqueda Completada", `Se cargaron <strong>${agregados}</strong> registro(s) anterior(es) desde Supabase.`);
+      }
+    } else if (!coincidenciaLocal) {
+      notificar("warning", "Sin Resultados", `No se encontraron registros para "${termino}" en Supabase.`);
+    }
+  } catch (err) {
+    console.warn("Error buscando en Supabase:", err);
+  } finally {
+    buscandoEnSupabase = false;
+    const filaAviso = document.getElementById("filaBuscandoSupabase");
+    if (filaAviso) filaAviso.remove();
+  }
 }
 
 async function editarCedulaDirecta(rowId) {
@@ -1125,23 +1333,81 @@ function obtenerRegistrosFiltradosPorFecha(desdeStr, hastaStr) {
   return registros;
 }
 
-function actualizarContadorCSV() {
+let debounceContadorCSV = null;
+async function actualizarContadorCSV() {
   const desde = document.getElementById("csvFechaDesde")?.value || "";
   const hasta = document.getElementById("csvFechaHasta")?.value || "";
-  const filtrados = obtenerRegistrosFiltradosPorFecha(desde, hasta);
-  const contadorElem = document.getElementById("contadorFilasCSV");
-  if (contadorElem) {
-    contadorElem.innerHTML = `📊 Registros a exportar: <strong>${filtrados.length}</strong> de ${listaLimpiezas.length}`;
+  const infoElem = document.getElementById("csvInfoRegistros") || document.getElementById("contadorFilasCSV");
+  if (!infoElem) return;
+
+  if (!supabaseClient) {
+    const filtrados = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+    infoElem.innerHTML = `📊 Registros a exportar: <strong>${filtrados.length}</strong> (Modo Local)`;
+    return;
   }
+
+  infoElem.innerHTML = `⏳ Calculando registros en Supabase...`;
+
+  clearTimeout(debounceContadorCSV);
+  debounceContadorCSV = setTimeout(async () => {
+    try {
+      let query = supabaseClient.from("control_limpiezas").select("*", { count: "exact", head: true });
+      if (desde) query = query.gte("created_at", `${desde}T00:00:00`);
+      if (hasta) query = query.lte("created_at", `${hasta}T23:59:59`);
+
+      const { count, error } = await query;
+      if (!error && count !== null) {
+        infoElem.innerHTML = `📊 Registros encontrados en Supabase: <strong>${count.toLocaleString()}</strong> limpiezas`;
+      } else {
+        const filtrados = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+        infoElem.innerHTML = `📊 Registros a exportar: <strong>${filtrados.length}</strong>`;
+      }
+    } catch(e) {
+      const filtrados = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+      infoElem.innerHTML = `📊 Registros a exportar: <strong>${filtrados.length}</strong>`;
+    }
+  }, 350);
 }
 
-function ejecutarDescargaCSV() {
+async function ejecutarDescargaCSV() {
   const desde = document.getElementById("csvFechaDesde")?.value || "";
   const hasta = document.getElementById("csvFechaHasta")?.value || "";
+  const infoElem = document.getElementById("csvInfoRegistros");
 
-  const registros = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+  if (infoElem) {
+    infoElem.innerHTML = `⏳ Preparando descarga desde Supabase...`;
+  }
+
+  let registros = [];
+  try {
+    if (supabaseClient) {
+      let queryBase = supabaseClient
+        .from("control_limpiezas")
+        .select("marca_temporal, monto, agente, cedula, cero_pagos, soporte, categoria, motivo, created_at")
+        .order("created_at", { ascending: false });
+
+      if (desde) queryBase = queryBase.gte("created_at", `${desde}T00:00:00`);
+      if (hasta) queryBase = queryBase.lte("created_at", `${hasta}T23:59:59`);
+
+      let offset = 0;
+      let lote = 1000;
+      while (true) {
+        const { data, error } = await queryBase.range(offset, offset + lote - 1);
+        if (error || !data || data.length === 0) break;
+        registros.push(...data);
+        if (data.length < lote) break;
+        offset += lote;
+      }
+    } else {
+      registros = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+    }
+  } catch(e) {
+    console.warn("Fallo descarga Supabase, usando local:", e);
+    registros = obtenerRegistrosFiltradosPorFecha(desde, hasta);
+  }
 
   if (registros.length === 0) {
+    if (infoElem) infoElem.innerHTML = `⚠️ No se encontraron registros en ese rango.`;
     notificar("warning", "Sin Datos", "No hay registros en el rango de fechas seleccionado.");
     return;
   }
@@ -1149,11 +1415,12 @@ function ejecutarDescargaCSV() {
   let csvContent = "\uFEFFMarca temporal,Monto,Agente,Cedula,Cero Pagos,Soporte,Categoria,Motivo\n";
 
   registros.forEach(r => {
-    const marca = `"${(r.marcaTemporal || '').replace(/"/g, '""')}"`;
+    const marcaRaw = r.marca_temporal || r.marcaTemporal || "";
+    const marca = `"${normalizarFechaMarcaTemporal(marcaRaw).replace(/"/g, '""')}"`;
     const monto = `"${(r.monto || '').replace(/"/g, '""')}"`;
     const agente = `"${(r.agente || '').replace(/"/g, '""')}"`;
     const cedula = `"${(r.cedula || '').replace(/"/g, '""')}"`;
-    const ceroPagos = r.ceroPagos ? "TRUE" : "FALSE";
+    const ceroPagos = (r.cero_pagos || r.ceroPagos) ? "TRUE" : "FALSE";
     const soporte = `"${(r.soporte || '').replace(/"/g, '""')}"`;
     const cat = `"${(r.categoria || '').replace(/"/g, '""')}"`;
     const mot = `"${(r.motivo || '').replace(/"/g, '""')}"`;

@@ -388,10 +388,34 @@ function inicializarTema() {
 // ==========================================
 const NOTAS_DEL_PARCHE = [
   {
+    version: "v2.6",
+    fecha: "11/10/2026",
+    titulo: "Paginación con Scroll Infinito, Búsqueda Global & Métricas Históricas",
+    esActual: true,
+    cambios: [
+      {
+        icono: "📜",
+        texto: "<strong>Scroll Infinito Bajo Demanda:</strong> Carga inicial rápida y ligera de 150 registros recientes con descarga progresiva de días anteriores al deslizar la tabla hacia abajo."
+      },
+      {
+        icono: "🔍",
+        texto: "<strong>Búsqueda Inteligente en Supabase:</strong> Si buscas una cédula o agente que no está en la vista actual, presiona Enter o escribe su número para encontrarlo de inmediato en todo el historial."
+      },
+      {
+        icono: "📥",
+        texto: "<strong>Exportador CSV Histórico Completo:</strong> Ahora descarga el 100% de los registros de cualquier rango de fechas o mes seleccionado directamente desde la base de datos."
+      },
+      {
+        icono: "📊",
+        texto: "<strong>Métricas & Gráficas del Mes Completo:</strong> Las estadísticas y tabla dinámica ahora procesan todo el historial del mes en curso sin cortes."
+      }
+    ]
+  },
+  {
     version: "v2.5",
     fecha: "07/10/2026",
     titulo: "Rediseño de Selectores, Centrado Matemático & Transparencia Cristal",
-    esActual: true,
+    esActual: false,
     cambios: [
       {
         icono: "🎨",
