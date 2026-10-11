@@ -1,17 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <!-- Fondo redondeado sólido navy — visible a cualquier tamaño -->
-  <rect x="0" y="0" width="32" height="32" rx="7" ry="7" fill="#1e3a5f"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
 
-  <!-- Headset simplificado, grueso y legible a 16px -->
-  <!-- Arco superior -->
-  <path d="M7 16 Q7 8 16 8 Q25 8 25 16"
-        stroke="#dceeff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <!-- Almohadilla izquierda -->
-  <rect x="4" y="15" width="5" height="8" rx="2" ry="2" fill="#dceeff"/>
-  <!-- Almohadilla derecha -->
-  <rect x="23" y="15" width="5" height="8" rx="2" ry="2" fill="#dceeff"/>
-  <!-- Brazo micrófono -->
-  <path d="M25 21 Q25 26 21 27" stroke="#dceeff" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <!-- Punta micrófono -->
-  <circle cx="19.5" cy="27.5" r="2" fill="#dceeff"/>
+  <!-- Fondo navy sólido para que sea visible en la pestaña del navegador -->
+  <rect x="0" y="0" width="512" height="512" rx="80" ry="80" fill="#0d1421"/>
+
+  <!-- === TARJETA 1 (fondo) — navy oscuro === -->
+  <rect x="90" y="155" width="270" height="270" rx="40" ry="40" fill="#1e3a5f" opacity="0.95"/>
+
+  <!-- === TARJETA 2 (medio) — steel blue === -->
+  <rect x="118" y="127" width="270" height="270" rx="40" ry="40" fill="#2d5f8a" opacity="0.95"/>
+
+  <!-- === TARJETA 3 (frente) — azul grisáceo === -->
+  <rect x="148" y="99" width="270" height="270" rx="40" ry="40" fill="#3d7ab5"/>
+
+  <!-- === HEADSET blanco helado centrado === -->
+  <g transform="translate(283, 234)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-62,10 Q-62,-72 0,-72 Q62,-72 62,10"
+          stroke="#dceeff" stroke-width="16" fill="none"/>
+    <rect x="-82" y="4" width="28" height="46" rx="12" ry="12" fill="#dceeff"/>
+    <rect x="54" y="4" width="28" height="46" rx="12" ry="12" fill="#dceeff"/>
+    <path d="M54,44 Q54,74 30,80"
+          stroke="#dceeff" stroke-width="11" fill="none"/>
+    <circle cx="24" cy="82" r="10" fill="#dceeff"/>
+  </g>
 </svg>
