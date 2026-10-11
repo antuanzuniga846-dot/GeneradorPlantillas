@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generador de Plantillas BURO & Control de Limpiezas</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
   
   <!-- Supabase JS Client & Chart.js desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,7 +24,7 @@
   <div class="top-navbar">
     <!-- Logo y Nombre de Marca del Sistema -->
     <div class="app-brand" onclick="cambiarVista('generador')" title="Inicio - Generador de Plantillas & Limpiezas" style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer; padding-right: 14px; margin-right: 8px; border-right: 1px solid var(--card-border); user-select: none;">
-      <img src="logo-soporte.svg" alt="Logo" style="width: 34px; height: 34px; filter: drop-shadow(0 0 8px rgba(61,122,181,0.7)); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+
       <div style="display: flex; flex-direction: column; line-height: 1.15; text-align: left;">
         <span style="font-weight: 800; font-size: 0.95rem; letter-spacing: 0.5px; color: #5ba8d8;">LIMPIEZAS</span>
         <span style="font-size: 0.65rem; font-weight: 700; color: #8eafc4; letter-spacing: 1px;">BURO CONTROL</span>
@@ -146,10 +146,7 @@
 
       <!-- Generador de plantillas -->
       <div class="container">
-        <h2 class="box-titulo" style="display:flex;align-items:center;gap:12px;">
-          <img src="logo-generador.svg" alt="Logo Generador" style="width:38px;height:38px;filter:drop-shadow(0 0 8px rgba(0,200,255,0.55)) drop-shadow(0 0 4px rgba(240,165,0,0.4));flex-shrink:0;">
-          Generador de Plantillas
-        </h2>
+        <h2 class="box-titulo">📄 Generador de Plantillas</h2>
 
         <label for="plantilla">Seleccionar Plantilla:</label>
         <select id="plantilla"></select>
@@ -514,7 +511,7 @@
   <!-- ======================================================= -->
   <div id="modalLogin" class="modal-overlay" style="display: flex; position: fixed; inset: 0; background: rgba(10, 10, 18, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 999999; justify-content: center; align-items: center;">
     <div class="modal-content login-box" style="box-shadow: 0 0 35px rgba(0, 120, 215, 0.35); border: 2px solid var(--accent); max-width: 440px; width: 92%;">
-      <img src="logo-soporte.svg" alt="Logo Soporte" style="width: 76px; height: 76px; margin: 0 auto 10px auto; display: block; filter: drop-shadow(0 0 16px rgba(61,122,181,0.75));">
+      <div style="font-size: 3rem; text-align: center; margin-bottom: 10px;">🔐</div>
       <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Sistema de Control BURO</h2>
       <p style="font-size: 0.85rem; color: #bbb; margin-bottom: 16px;">Ingresa tus credenciales para acceder al generador y a la hoja de control.</p>
 
