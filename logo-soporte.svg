@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Sin fondo — fondo completamente transparente -->
+
+  <!-- === TARJETA 1 (fondo) — navy oscuro === -->
+  <rect x="90" y="155" width="270" height="270" rx="40" ry="40" fill="#1e3a5f" opacity="0.95"/>
+
+  <!-- === TARJETA 2 (medio) — steel blue === -->
+  <rect x="118" y="127" width="270" height="270" rx="40" ry="40" fill="#2d5f8a" opacity="0.95"/>
+
+  <!-- === TARJETA 3 (frente) — azul grisáceo === -->
+  <rect x="148" y="99" width="270" height="270" rx="40" ry="40" fill="#3d7ab5"/>
+
+  <!-- === HEADSET blanco helado centrado === -->
+  <g transform="translate(283, 234)" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- Arco superior -->
+    <path d="M-62,10 Q-62,-72 0,-72 Q62,-72 62,10"
+          stroke="#dceeff" stroke-width="16" fill="none"/>
+
+    <!-- Almohadilla izquierda -->
+    <rect x="-82" y="4" width="28" height="46" rx="12" ry="12"
+          fill="#dceeff"/>
+
+    <!-- Almohadilla derecha -->
+    <rect x="54" y="4" width="28" height="46" rx="12" ry="12"
+          fill="#dceeff"/>
+
+    <!-- Brazo del micrófono -->
+    <path d="M54,44 Q54,74 30,80"
+          stroke="#dceeff" stroke-width="11" fill="none"/>
+
+    <!-- Punta del micrófono -->
+    <circle cx="24" cy="82" r="10" fill="#dceeff"/>
+
+  </g>
+</svg>
