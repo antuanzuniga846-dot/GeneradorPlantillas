@@ -11,7 +11,26 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Estilos CSS Modulares -->
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=3.0">
+
+  <!-- Estilos prioritarios para Píldoras de Soporte -->
+  <style>
+    .pill-soporte-maria,
+    button.sheet-pill-btn.pill-soporte-maria,
+    .sheet-dropdown-item.pill-soporte-maria,
+    .sheet-select option.pill-soporte-maria,
+    .pill-soporte-adriel,
+    button.sheet-pill-btn.pill-soporte-adriel,
+    .sheet-dropdown-item.pill-soporte-adriel,
+    .sheet-select option.pill-soporte-adriel { 
+      background: #f8bbd0 !important; 
+      background-color: #f8bbd0 !important;
+      color: #ffffff !important; 
+      font-weight: bold !important; 
+      border-color: transparent !important; 
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 2px #000 !important; 
+    }
+  </style>
 </head>
 <body>
 
@@ -21,98 +40,164 @@
   <!-- ========================================= -->
   <!-- BARRA SUPERIOR CON BOTONES DE NAVEGACIÓN  -->
   <!-- ========================================= -->
-  <div class="top-navbar">
-    <!-- Logo y Nombre de Marca del Sistema -->
-    <div class="app-brand" onclick="cambiarVista('generador')" title="Inicio - Generador de Plantillas & Limpiezas" style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer; padding-right: 14px; margin-right: 8px; border-right: 1px solid var(--card-border); user-select: none;">
+  <!-- LAYOUT PRINCIPAL CON SIDEBAR RETRAÍBLE -->
+  <div class="app-layout">
 
-      <div style="display: flex; flex-direction: column; line-height: 1.15; text-align: left;">
-        <span style="font-weight: 800; font-size: 0.95rem; letter-spacing: 0.5px; color: #5ba8d8;">LIMPIEZAS</span>
-        <span style="font-size: 0.65rem; font-weight: 700; color: #8eafc4; letter-spacing: 1px;">BURO CONTROL</span>
-      </div>
-    </div>
-
-    <div class="nav-tabs">
-      <button id="tabBtnGenerador" class="nav-tab-btn active" onclick="cambiarVista('generador')">
-        <span>📄</span> Generador de Plantillas
-      </button>
-      <button id="tabBtnHoja" class="nav-tab-btn" onclick="cambiarVista('hoja')">
-        <span>📊</span> Hoja de Control
-      </button>
-      <button id="tabBtnEstadisticas" class="nav-tab-btn" onclick="cambiarVista('estadisticas')">
-        <span>📈</span> Métricas & Tabla Dinámica
-      </button>
-    </div>
-
-    <div class="user-session-info">
-      <div id="dbStatusBadge" class="db-status-badge" title="Estado de conexión Supabase">
-        <span class="db-dot" id="dbDot"></span>
-        <span id="dbStatusText">Supabase Online</span>
-      </div>
-      <span>👤 <strong id="lblUsuarioNombre">Usuario</strong> (<span id="lblUsuarioUser" style="color:#aaa;">-</span>)</span>
-      <span id="lblRolActual" class="role-badge role-reader">Lector</span>
-      <button id="btnAdminUsuarios" class="btn-nav-action" onclick="abrirModalAdminUsuarios()" style="display:none;">👥 Gestionar Usuarios</button>
-      <button class="btn-nav-action" onclick="abrirModalNotasParche()" title="Ver historial de actualizaciones y notas del parche">📜 Notas del Parche</button>
-      
-      <!-- Selector de tema y fondo integrado en la barra -->
-      <div class="theme-widget">
-        <button type="button" class="theme-toggle-btn" onclick="toggleThemePanel()" title="Personalizar tema, colores y fondo">
-          <span>🎨</span> Personalizar
-        </button>
-        <div class="theme-panel" id="themePanel" style="display:none;">
-          <h4>Tema</h4>
-          <label><input type="radio" name="modoTema" value="light" id="temaClaro" onchange="setModoTema('light')"> ☀️ Claro</label>
-          <label><input type="radio" name="modoTema" value="dark" id="temaOscuro" onchange="setModoTema('dark')"> 🌙 Oscuro</label>
-          
-          <h4>Color de acento</h4>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input type="color" id="colorPicker" value="#0078d7" oninput="setAccentColor(this.value)" title="Elegir color" style="width:40px; height:34px; border:none; border-radius:4px; cursor:pointer;">
-            <input type="text" id="colorHex" value="#0078D7" maxlength="7" oninput="setAccentColorFromHex(this.value)" placeholder="#0078D7" style="margin:0; padding:6px 8px; font-size:0.85rem;">
-          </div>
-
-          <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🪟 Opacidad Formulario & Tablas</h4>
-          <div>
-            <label style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>Opacidad:</span>
-              <span id="inputOpacityVal" style="font-weight: bold; color: var(--accent);">0%</span>
-            </label>
-            <input 
-              type="range" 
-              id="inputOpacitySlider" 
-              min="0" 
-              max="100" 
-              value="0" 
-              oninput="ajustarOpacidadCampos(this.value)" 
-              style="width: 100%; accent-color: var(--accent); cursor: pointer;"
-            >
-          </div>
-
-          <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🖼️ Fondo personalizado</h4>
-          <input type="file" id="bgImageInput" accept="image/*" style="display:none;" onchange="manejarSubidaFondo(event)">
-          
-          <button type="button" class="btn-fondo" onclick="document.getElementById('bgImageInput').click()">📁 Subir imagen</button>
-          <button type="button" class="btn-fondo btn-fondo-quitar" id="removeBgBtn" onclick="quitarFondoPersonalizado()" style="display:none;">🗑️ Quitar fondo</button>
-
-          <div id="bgAdjustWrap" style="margin-top: 10px; display: none;">
-            <label style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>Oscuridad fondo:</span>
-              <span id="bgDarknessVal" style="font-weight: bold; color: var(--accent);">40%</span>
-            </label>
-            <input 
-              type="range" 
-              id="bgDarknessSlider" 
-              min="0" 
-              max="90" 
-              value="40" 
-              oninput="ajustarOscuridadFondo(this.value)" 
-              style="width: 100%; accent-color: var(--accent); cursor: pointer;"
-            >
+    <!-- ========================================= -->
+    <!-- BARRA LATERAL RETRAÍBLE (SIDEBAR)         -->
+    <!-- ========================================= -->
+    <aside id="appSidebar" class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <span class="sidebar-brand-icon">⚡</span>
+          <div class="sidebar-brand-info">
+            <span class="sidebar-brand-title">Generador de Plantillas</span>
+            <span class="sidebar-brand-sub">Control BURO</span>
           </div>
         </div>
       </div>
 
-      <button class="btn-nav-action btn-nav-logout" onclick="cerrarSesionUsuario()">🚪 Salir</button>
+      <nav class="sidebar-nav">
+        <button id="navItemGenerador" class="sidebar-nav-btn active" onclick="cambiarVista('generador')" title="Generador de Plantillas">
+          <span class="nav-icon">📄</span>
+          <span class="nav-label">Generador de Plantillas</span>
+        </button>
+        <button id="navItemHoja" class="sidebar-nav-btn" onclick="cambiarVista('hoja')" title="Hoja de Control de Limpiezas">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Hoja de Control</span>
+        </button>
+        <button id="navItemEstadisticas" class="sidebar-nav-btn" onclick="cambiarVista('estadisticas')" title="Métricas & Tabla Dinámica">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">Estadísticas</span>
+        </button>
+
+        <div class="sidebar-separator"></div>
+
+        <button class="sidebar-nav-btn" onclick="abrirModalNotasParche()" title="Historial y Notas del Parche">
+          <span class="nav-icon">📜</span>
+          <span class="nav-label">Notas del Parche</span>
+        </button>
+        <button id="sidebarBtnAdmin" class="sidebar-nav-btn" onclick="abrirModalAdminUsuarios()" style="display:none;" title="Gestión de Usuarios y Permisos">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Usuarios</span>
+        </button>
+        <button id="sidebarBtnPersonalizar" class="sidebar-nav-btn" onclick="toggleThemePanel(event)" title="Personalizar tema, colores y fondo">
+          <span class="nav-icon">🎨</span>
+          <span class="nav-label">Personalizar</span>
+        </button>
+
+        <div class="sidebar-separator"></div>
+
+        <button class="sidebar-nav-btn btn-sidebar-logout" onclick="cerrarSesionUsuario()" title="Cerrar Sesión">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">Salir</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-db-badge" title="Estado de Supabase">
+          <span class="db-dot" id="dbDot"></span>
+          <span class="sidebar-db-text" id="dbStatusText">Supabase Online</span>
+        </div>
+        <div class="sidebar-signature">Antuan Mora Zúñiga © 2026</div>
+      </div>
+    </aside>
+
+    <!-- Panel Flotante de Personalización (Sidebar) -->
+    <div class="theme-panel" id="themePanel" style="display:none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">
+        <h4 style="margin: 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; color: var(--text-primary);">
+          <span>🎨</span> Personalizar
+        </h4>
+        <button type="button" onclick="cerrarThemePanel()" style="background: none; border: none; color: var(--text-muted); font-size: 1.15rem; cursor: pointer; padding: 2px 6px; line-height: 1;">✕</button>
+      </div>
+
+      <h4>Tema</h4>
+      <label><input type="radio" name="modoTema" value="light" id="temaClaro" onchange="setModoTema('light')"> ☀️ Claro</label>
+      <label><input type="radio" name="modoTema" value="dark" id="temaOscuro" onchange="setModoTema('dark')"> 🌙 Oscuro</label>
+      
+      <h4>Color de acento</h4>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="color" id="colorPicker" value="#0078d7" oninput="setAccentColor(this.value)" title="Elegir color" style="width:40px; height:34px; border:none; border-radius:4px; cursor:pointer;">
+        <input type="text" id="colorHex" value="#0078D7" maxlength="7" oninput="setAccentColorFromHex(this.value)" placeholder="#0078D7" style="margin:0; padding:6px 8px; font-size:0.85rem;">
+      </div>
+
+      <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🪟 Opacidad Formulario & Tablas</h4>
+      <div>
+        <label style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Opacidad:</span>
+          <span id="inputOpacityVal" style="font-weight: bold; color: var(--accent);">50%</span>
+        </label>
+        <input 
+          type="range" 
+          id="inputOpacitySlider" 
+          min="0" 
+          max="100" 
+          value="50" 
+          oninput="ajustarOpacidadCampos(this.value)" 
+          style="width: 100%; accent-color: var(--accent); cursor: pointer;"
+        >
+      </div>
+
+      <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🖼️ Fondo personalizado</h4>
+      <input type="file" id="bgImageInput" accept="image/*" style="display:none;" onchange="manejarSubidaFondo(event)">
+      
+      <button type="button" class="btn-fondo" onclick="document.getElementById('bgImageInput').click()">📁 Subir imagen</button>
+      <button type="button" class="btn-fondo btn-fondo-quitar" id="removeBgBtn" onclick="quitarFondoPersonalizado()" style="display:none;">🗑️ Quitar fondo</button>
+
+      <div id="bgAdjustWrap" style="margin-top: 10px; display: none;">
+        <label style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Oscuridad fondo:</span>
+          <span id="bgDarknessVal" style="font-weight: bold; color: var(--accent);">40%</span>
+        </label>
+        <input 
+          type="range" 
+          id="bgDarknessSlider" 
+          min="0" 
+          max="90" 
+          value="40" 
+          oninput="ajustarOscuridadFondo(this.value)" 
+          style="width: 100%; accent-color: var(--accent); cursor: pointer;"
+        >
+      </div>
     </div>
-  </div>
+
+    <!-- ÁREA PRINCIPAL -->
+    <div class="app-main">
+
+      <!-- ========================================= -->
+      <!-- BARRA SUPERIOR (HEADER)                   -->
+      <!-- ========================================= -->
+      <header class="top-navbar">
+        <div class="topbar-left">
+          <button type="button" id="btnToggleSidebar" class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Colapsar / Expandir menú lateral">
+            <span class="hamburger-icon">☰</span>
+          </button>
+          <div class="topbar-heading">
+            <h1 id="topbarViewTitle" class="topbar-title">Generador de Plantillas</h1>
+            <p id="topbarViewSubtitle" class="topbar-subtitle">Genera y copia formatos de trámite para gestiones BURO</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="topbar-clock-box">
+            <span id="topbarFecha" class="topbar-clock-date">Fecha: 13/10/2026</span>
+            <span id="topbarHora" class="topbar-clock-time">Hora: 10:00 a.m.</span>
+          </div>
+
+          <div class="topbar-user-pill">
+            <span class="user-avatar">👤</span>
+            <span id="lblUsuarioUser" class="user-name">Usuario</span>
+            <span id="lblRolActual" class="role-badge role-reader">Lector</span>
+          </div>
+
+          <span id="lblUsuarioNombre" style="display:none;">Usuario</span>
+          <div id="dbStatusBadge" style="display:none;"></div>
+        </div>
+      </header>
+
+      <!-- CONTENIDO DE LAS VISTAS -->
+      <main class="app-content">
 
   <!-- ======================================================= -->
   <!-- VISTA 1: GENERADOR DE PLANTILLAS                       -->
@@ -145,8 +230,19 @@
       </div>
 
       <!-- Generador de plantillas -->
-      <div class="container">
-        <h2 class="box-titulo">📄 Generador de Plantillas</h2>
+      <div class="container" id="cardGenerador">
+        <div class="generator-header-bar">
+          <div class="generator-header-left">
+            <span class="generator-header-icon">📄</span>
+            <h2 class="generator-header-title">Generador de Plantillas</h2>
+          </div>
+          <div class="generator-header-right">
+            <button type="button" id="btnPinGenerador" class="btn-pin-generador" onclick="togglePinGenerador()" title="Fijar generador para que baje al hacer scroll y ver las demás plantillas">
+              <span class="pin-icon">📌</span>
+              <span class="pin-text">Fijar</span>
+            </button>
+          </div>
+        </div>
 
         <label for="plantilla">Seleccionar Plantilla:</label>
         <select id="plantilla"></select>
@@ -504,12 +600,15 @@
       </div>
     </div>
   </div>
+      </main>
+    </div>
+  </div>
 
   <!-- ======================================================= -->
   <!-- ======================================================= -->
   <!-- MODAL DE INICIO DE SESIÓN / REGISTRO (AUTH GATE)        -->
   <!-- ======================================================= -->
-  <div id="modalLogin" class="modal-overlay" style="display: flex; position: fixed; inset: 0; background: rgba(10, 10, 18, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 999999; justify-content: center; align-items: center;">
+  <div id="modalLogin" class="modal-overlay" style="display: flex; position: fixed; inset: 0; background: rgba(10, 10, 18, 0.94); backdrop-filter: none; -webkit-backdrop-filter: none; z-index: 999999; justify-content: center; align-items: center;">
     <div class="modal-content login-box" style="box-shadow: 0 0 35px rgba(0, 120, 215, 0.35); border: 2px solid var(--accent); max-width: 440px; width: 92%;">
       <div style="font-size: 3rem; text-align: center; margin-bottom: 10px;">🔐</div>
       <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Sistema de Control BURO</h2>

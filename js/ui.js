@@ -9,34 +9,104 @@ function cambiarVista(vista) {
   const vGenerador = document.getElementById("vistaGenerador");
   const vHoja = document.getElementById("vistaHoja");
   const vEstadisticas = document.getElementById("vistaEstadisticas");
+
+  // Botones del sidebar
+  const navGen = document.getElementById("navItemGenerador");
+  const navHoj = document.getElementById("navItemHoja");
+  const navEst = document.getElementById("navItemEstadisticas");
+
+  // Botones tradicionales (compatibilidad)
   const btnGen = document.getElementById("tabBtnGenerador");
   const btnHoj = document.getElementById("tabBtnHoja");
   const btnEst = document.getElementById("tabBtnEstadisticas");
+
+  // Título y subtítulo superior
+  const topTitle = document.getElementById("topbarViewTitle");
+  const topSubtitle = document.getElementById("topbarViewSubtitle");
 
   if (vista === "generador") {
     if (vGenerador) vGenerador.style.display = "block";
     if (vHoja) vHoja.style.display = "none";
     if (vEstadisticas) vEstadisticas.style.display = "none";
+    if (navGen) navGen.classList.add("active");
+    if (navHoj) navHoj.classList.remove("active");
+    if (navEst) navEst.classList.remove("active");
     if (btnGen) btnGen.classList.add("active");
     if (btnHoj) btnHoj.classList.remove("active");
     if (btnEst) btnEst.classList.remove("active");
+    if (topTitle) topTitle.textContent = "Generador de Plantillas";
+    if (topSubtitle) topSubtitle.textContent = "Genera y copia formatos de trámite para gestiones BURO";
   } else if (vista === "hoja") {
     if (vGenerador) vGenerador.style.display = "none";
     if (vHoja) vHoja.style.display = "block";
     if (vEstadisticas) vEstadisticas.style.display = "none";
+    if (navGen) navGen.classList.remove("active");
+    if (navHoj) navHoj.classList.add("active");
+    if (navEst) navEst.classList.remove("active");
     if (btnGen) btnGen.classList.remove("active");
     if (btnHoj) btnHoj.classList.add("active");
     if (btnEst) btnEst.classList.remove("active");
+    if (topTitle) topTitle.textContent = "Hoja de Control de Limpiezas";
+    if (topSubtitle) topSubtitle.textContent = "Registro y sincronización en tiempo real de trámites y gestiones";
     renderizarTablaSheet();
   } else if (vista === "estadisticas") {
     if (vGenerador) vGenerador.style.display = "none";
     if (vHoja) vHoja.style.display = "none";
     if (vEstadisticas) vEstadisticas.style.display = "block";
+    if (navGen) navGen.classList.remove("active");
+    if (navHoj) navHoj.classList.remove("active");
+    if (navEst) navEst.classList.remove("active");
     if (btnGen) btnGen.classList.remove("active");
     if (btnHoj) btnHoj.classList.remove("active");
     if (btnEst) btnEst.classList.add("active");
+    if (topTitle) topTitle.textContent = "Métricas & Tabla Dinámica";
+    if (topSubtitle) topSubtitle.textContent = "Análisis de rendimiento, distribución de soporte y KPIs";
     actualizarEstadisticasYTablaDinamica();
   }
+}
+
+// ==========================================
+// CONTROL DEL SIDEBAR RETRAÍBLE & RELOJ
+// ==========================================
+function toggleSidebar() {
+  const sidebar = document.getElementById("appSidebar");
+  if (!sidebar) return;
+  const isCollapsed = sidebar.classList.toggle("collapsed");
+  try {
+    localStorage.setItem("sidebarCollapsedBuro", isCollapsed ? "true" : "false");
+  } catch (e) {}
+}
+
+function inicializarSidebar() {
+  const collapsed = localStorage.getItem("sidebarCollapsedBuro") === "true";
+  const sidebar = document.getElementById("appSidebar");
+  if (sidebar && collapsed) {
+    sidebar.classList.add("collapsed");
+  }
+}
+
+function iniciarRelojTopbar() {
+  function actualizar() {
+    const ahora = new Date();
+    const elFecha = document.getElementById("topbarFecha");
+    const elHora = document.getElementById("topbarHora");
+    if (elFecha) {
+      const dia = String(ahora.getDate()).padStart(2, '0');
+      const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+      const anio = ahora.getFullYear();
+      elFecha.textContent = `Fecha: ${dia}/${mes}/${anio}`;
+    }
+    if (elHora) {
+      let horas = ahora.getHours();
+      const ampm = horas >= 12 ? 'p.m.' : 'a.m.';
+      horas = horas % 12;
+      horas = horas ? horas : 12;
+      const minutos = String(ahora.getMinutes()).padStart(2, '0');
+      elHora.textContent = `Hora: ${horas}:${minutos} ${ampm}`;
+    }
+  }
+  actualizar();
+  setInterval(actualizar, 10000);
 }
 
 // ==========================================
@@ -183,7 +253,35 @@ function actualizarColoresDerivados() {
   const rgb = hexARgb(accent);
   const rgbStr = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
   raiz.style.setProperty('--accent-rgb', rgbStr);
-  raiz.style.setProperty('--card-bg', `rgba(${rgbStr}, calc(var(--input-opacity) * 0.1))`);
+  
+  // Opacidades exactas de la referencia (Generador NC):
+  // --card: 0.18, --card2: 0.26, --stroke: 0.35, --card-glow: 0.20
+  const opacidadGuardada = localStorage.getItem("inputOpacityBuro");
+  let mult = 1.0;
+  if (opacidadGuardada !== null && opacidadGuardada !== undefined && opacidadGuardada !== "") {
+    const val = parseFloat(opacidadGuardada);
+    if (!isNaN(val) && val > 0) {
+      mult = val / 50; // a 50% slider => factor 1.0 (exacto 0.18), a 100% => 0.36
+    }
+  }
+
+  const alphaCard = (0.18 * mult).toFixed(2);
+  const alphaCard2 = (0.26 * mult).toFixed(2);
+  const alphaStroke = Math.min(0.70, (0.35 * mult)).toFixed(2);
+  const alphaGlow = Math.min(0.50, (0.20 * mult)).toFixed(2);
+
+  raiz.style.setProperty('--card', `rgba(${rgbStr}, ${alphaCard})`);
+  raiz.style.setProperty('--card-bg', `rgba(${rgbStr}, ${alphaCard})`);
+  raiz.style.setProperty('--card2', `rgba(${rgbStr}, ${alphaCard2})`);
+  raiz.style.setProperty('--card2-bg', `rgba(${rgbStr}, ${alphaCard2})`);
+  raiz.style.setProperty('--stroke', `rgba(${rgbStr}, ${alphaStroke})`);
+  raiz.style.setProperty('--card-border', `rgba(${rgbStr}, ${alphaStroke})`);
+  raiz.style.setProperty('--card-glow', `rgba(${rgbStr}, ${alphaGlow})`);
+  raiz.style.setProperty('--input-bg', `rgba(${rgbStr}, ${alphaCard2})`);
+  raiz.style.setProperty('--input-border', `rgba(${rgbStr}, ${alphaStroke})`);
+  raiz.style.setProperty('--navbar-bg', `rgba(${rgbStr}, ${alphaCard})`);
+  raiz.style.setProperty('--calc-btn-bg', `rgba(${rgbStr}, ${alphaCard})`);
+  raiz.style.setProperty('--calc-display-bg', `rgba(${rgbStr}, ${alphaCard2})`);
   
   const onColor = colorSobreAcento(accent);
   raiz.style.setProperty('--accent-oncolor', onColor);
@@ -198,12 +296,19 @@ function actualizarColoresDerivados() {
   raiz.style.setProperty('--accent-th', midDarkAccent);
 }
 
-function toggleThemePanel() {
+function toggleThemePanel(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
   const panel = document.getElementById("themePanel");
-  if (panel) {
-    const estaVisible = panel.style.display === "block";
-    panel.style.display = estaVisible ? "none" : "block";
-  }
+  if (!panel) return;
+  const sidebar = document.getElementById("appSidebar");
+  const isCollapsed = sidebar && sidebar.classList.contains("collapsed");
+  panel.style.left = isCollapsed ? "76px" : "240px";
+  panel.style.display = (panel.style.display === "block") ? "none" : "block";
+}
+
+function cerrarThemePanel() {
+  const panel = document.getElementById("themePanel");
+  if (panel) panel.style.display = "none";
 }
 
 function setModoTema(modo) {
@@ -272,7 +377,7 @@ function ajustarOpacidadCampos(valor) {
 }
 
 function inicializarOpacidadCampos() {
-  const opacidadGuardada = localStorage.getItem("inputOpacityBuro") || "0";
+  const opacidadGuardada = localStorage.getItem("inputOpacityBuro") || "50";
   ajustarOpacidadCampos(opacidadGuardada);
 }
 
@@ -396,10 +501,30 @@ function inicializarTema() {
 // ==========================================
 const NOTAS_DEL_PARCHE = [
   {
+    version: "v2.8",
+    fecha: "13/10/2026",
+    titulo: "Fijación con Pin del Generador & Estilo Cápsula Píldora",
+    esActual: true,
+    cambios: [
+      {
+        icono: "📌",
+        texto: "<strong>Fijación Dinámica (Pin):</strong> Nuevo botón de pin en la cabecera del Generador de Plantillas. Al activarse, la tarjeta del generador permanece fija al hacer scroll hacia abajo para explorar todas las plantillas del índice lateral."
+      },
+      {
+        icono: "💊",
+        texto: "<strong>Estilo de Botones Píldora:</strong> Rediseño de los botones principales del generador con bordes redondeados tipo cápsula, destello de vidrio y degradado suave inspirado en el Generador NC."
+      },
+      {
+        icono: "💾",
+        texto: "<strong>Persistencia del Pin:</strong> El estado fijado se recuerda automáticamente en el almacenamiento local para sesiones futuras."
+      }
+    ]
+  },
+  {
     version: "v2.7",
     fecha: "13/10/2026",
     titulo: "Sincronización Dinámica de Cards con Paleta de Colores & Opacidad",
-    esActual: true,
+    esActual: false,
     cambios: [
       {
         icono: "🎨",
@@ -582,3 +707,52 @@ function cerrarModalNotasParche() {
   const modal = document.getElementById("modalNotasParche");
   if (modal) modal.style.display = "none";
 }
+
+// ==========================================
+// FUNCIÓN DE FIJACIÓN (PIN) DEL GENERADOR
+// ==========================================
+function togglePinGenerador() {
+  const card = document.getElementById("cardGenerador") || document.querySelector("#vistaGenerador .container");
+  if (!card) return;
+
+  const isPinned = card.classList.toggle("pinned");
+  try {
+    localStorage.setItem("generadorPinnedBuro", isPinned ? "true" : "false");
+  } catch (e) {}
+
+  actualizarEstadoPinUI(isPinned);
+
+  if (typeof notificar === "function") {
+    if (isPinned) {
+      notificar("info", "📌 Generador Fijado", "El generador permanecerá visible al desplazarte hacia abajo para ver las demás plantillas.");
+    } else {
+      notificar("info", "Generador Desfijado", "El generador volvió a su posición estándar.");
+    }
+  }
+}
+
+function actualizarEstadoPinUI(isPinned) {
+  const btn = document.getElementById("btnPinGenerador");
+  if (!btn) return;
+  if (isPinned) {
+    btn.classList.add("active");
+    btn.title = "Generador fijado. Clic para desfijar.";
+    const text = btn.querySelector(".pin-text");
+    if (text) text.textContent = "Fijado";
+  } else {
+    btn.classList.remove("active");
+    btn.title = "Fijar generador para que baje al hacer scroll y ver las demás plantillas";
+    const text = btn.querySelector(".pin-text");
+    if (text) text.textContent = "Fijar";
+  }
+}
+
+function inicializarPinGenerador() {
+  const pinned = localStorage.getItem("generadorPinnedBuro") === "true";
+  const card = document.getElementById("cardGenerador") || document.querySelector("#vistaGenerador .container");
+  if (card && pinned) {
+    card.classList.add("pinned");
+  }
+  actualizarEstadoPinUI(pinned);
+}
+

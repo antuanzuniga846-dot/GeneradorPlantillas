@@ -85,10 +85,12 @@ if (selectPlantillaElem) {
 
 // Cierre de panel de tema al hacer clic fuera
 document.addEventListener("click", function (e) {
-  const widget = document.querySelector(".theme-widget");
   const panel = document.getElementById("themePanel");
-  if (widget && panel && panel.style.display === "block" && !widget.contains(e.target)) {
-    panel.style.display = "none";
+  const btnSidebar = document.getElementById("sidebarBtnPersonalizar");
+  if (panel && panel.style.display === "block") {
+    if (!panel.contains(e.target) && (!btnSidebar || !btnSidebar.contains(e.target))) {
+      panel.style.display = "none";
+    }
   }
 });
 
@@ -125,7 +127,9 @@ document.addEventListener("DOMContentLoaded", function () {
   inicializarOpacidadCampos();
   inicializarFondoPersonalizado();
   inicializarSupabase();
-  inicializarScrollInfinito();
+  if (typeof inicializarScrollInfinito === "function") inicializarScrollInfinito();
+  inicializarSidebar();
+  iniciarRelojTopbar();
 
   // Comprobar sesión guardada
   if (usuarioLogueado) {
@@ -144,4 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (selPlantilla) {
     cambiarPlantilla(selPlantilla.value);
   }
+
+  // Inicializar estado del Pin del generador
+  inicializarPinGenerador();
 });

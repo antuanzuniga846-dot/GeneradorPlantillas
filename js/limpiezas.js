@@ -699,9 +699,14 @@ let _dropdownActivoInfo = null;
 function renderizarPillBoton(rowId, campo, valor, puedeEditar) {
   let clasePill = "";
   let minWidth = "120px";
+  let estiloExtra = "";
   if (campo === "soporte") {
     clasePill = obtenerClaseSoporte(valor);
     minWidth = "125px";
+    const vLower = (valor || "").trim().toLowerCase();
+    if (vLower === "maría" || vLower === "maria" || vLower === "adriel") {
+      estiloExtra = "background: #f8bbd0 !important; background-color: #f8bbd0 !important; color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 2px #000 !important; border-color: transparent !important;";
+    }
   } else if (campo === "categoria") {
     clasePill = obtenerClaseCategoria(valor);
     minWidth = "155px";
@@ -720,7 +725,7 @@ function renderizarPillBoton(rowId, campo, valor, puedeEditar) {
       data-row-id="${rowId}" 
       data-campo="${campo}" 
       data-valor="${valor || ''}" 
-      style="min-width: ${minWidth};"
+      style="min-width: ${minWidth}; ${estiloExtra}"
       ${disabledAttr}
       ${onclickHandler}
     >
@@ -759,9 +764,18 @@ function toggleCustomDropdown(btnElem, rowId, campo) {
     const esSeleccionado = (op.valor === valorActual);
     const claseOpt = esVacio ? "pill-opt-empty" : op.clase;
 
+    let estiloOptExtra = "";
+    if (campo === "soporte" && op.valor) {
+      const vOpt = op.valor.trim().toLowerCase();
+      if (vOpt === "maría" || vOpt === "maria" || vOpt === "adriel") {
+        estiloOptExtra = 'style="background: #f8bbd0 !important; background-color: #f8bbd0 !important; color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 2px #000 !important; border-color: transparent !important;"';
+      }
+    }
+
     html += `
       <div 
         class="sheet-dropdown-item ${claseOpt} ${esSeleccionado ? 'active-opt' : ''}" 
+        ${estiloOptExtra}
         onclick="seleccionarOpcionDropdown('${rowId}', '${campo}', '${op.valor.replace(/'/g, "\\'")}')"
       >
         <span>${texto}</span>
@@ -1158,6 +1172,12 @@ async function actualizarColumna(id, campo, valor, selectElem) {
       selectElem.setAttribute("data-valor", valor || "");
       const lbl = selectElem.querySelector(".sheet-pill-label");
       if (lbl) lbl.textContent = valor || "";
+      const vLower = (valor || "").trim().toLowerCase();
+      if (vLower === "maría" || vLower === "maria" || vLower === "adriel") {
+        selectElem.style.cssText = "min-width: 125px; background: #f8bbd0 !important; background-color: #f8bbd0 !important; color: #ffffff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 2px #000 !important; border-color: transparent !important;";
+      } else {
+        selectElem.style.cssText = "min-width: 125px;";
+      }
       if (valor) {
         const tr = selectElem.closest("tr");
         if (tr) {

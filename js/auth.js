@@ -242,24 +242,34 @@ function actualizarUIUsuario() {
   const lblUser = document.getElementById("lblUsuarioUser");
   const lblRol = document.getElementById("lblRolActual");
   const btnAdmin = document.getElementById("btnAdminUsuarios");
+  const sidebarBtnAdmin = document.getElementById("sidebarBtnAdmin");
 
   if (!usuarioLogueado) {
-    lblNombre.textContent = "Invitado";
-    lblUser.textContent = "-";
-    lblRol.textContent = "Sin Sesión";
-    lblRol.className = "role-badge role-reader";
-    btnAdmin.style.display = "none";
-  } else {
-    lblNombre.textContent = usuarioLogueado.nombre;
-    lblUser.textContent = usuarioLogueado.usuario;
-    if (esEditor()) {
-      lblRol.textContent = "Editor Autorizado";
-      lblRol.className = "role-badge role-editor";
-      btnAdmin.style.display = "inline-block";
-    } else {
-      lblRol.textContent = "Solicitante";
+    if (lblNombre) lblNombre.textContent = "Invitado";
+    if (lblUser) lblUser.textContent = "-";
+    if (lblRol) {
+      lblRol.textContent = "Sin Sesión";
       lblRol.className = "role-badge role-reader";
-      btnAdmin.style.display = "none";
+    }
+    if (btnAdmin) btnAdmin.style.display = "none";
+    if (sidebarBtnAdmin) sidebarBtnAdmin.style.display = "none";
+  } else {
+    if (lblNombre) lblNombre.textContent = usuarioLogueado.nombre;
+    if (lblUser) lblUser.textContent = usuarioLogueado.usuario;
+    if (esEditor()) {
+      if (lblRol) {
+        lblRol.textContent = "Editor";
+        lblRol.className = "role-badge role-editor";
+      }
+      if (btnAdmin) btnAdmin.style.display = "inline-block";
+      if (sidebarBtnAdmin) sidebarBtnAdmin.style.display = "flex";
+    } else {
+      if (lblRol) {
+        lblRol.textContent = "Solicitante";
+        lblRol.className = "role-badge role-reader";
+      }
+      if (btnAdmin) btnAdmin.style.display = "none";
+      if (sidebarBtnAdmin) sidebarBtnAdmin.style.display = "none";
     }
   }
   renderizarTablaSheet();
