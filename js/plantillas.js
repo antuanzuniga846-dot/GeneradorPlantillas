@@ -42,8 +42,7 @@ const plantillas = {
 
 function accesoRapido(texto) {
   const select = document.getElementById('plantilla');
-  const option = document.querySelector(`option[value="${texto}"]`);
-  if (option && select) {
+  if (select && texto) {
     select.value = texto;
     cambiarPlantilla(texto);
   }
@@ -141,6 +140,15 @@ function cambiarPlantilla(seleccionDirecta) {
       montoInput.style.display = "none";
     }
   }
+
+  // Resaltar plantilla activa en el índice lateral
+  document.querySelectorAll(".indice-lateral li").forEach(li => {
+    if (li.dataset.valor === seleccion) {
+      li.classList.add("activo");
+    } else {
+      li.classList.remove("activo");
+    }
+  });
 }
 
 function parseMontoTermino(termino) {
@@ -514,6 +522,7 @@ function toggleFavorito(nombre) {
 function crearFilaIndice(valor, etiqueta) {
   const li = document.createElement("li");
   li.dataset.valor = valor;
+  li.title = etiqueta;
   const estrella = document.createElement("span");
   estrella.className = "star-fav";
   estrella.textContent = favoritos[valor] ? "★" : "☆";
@@ -542,6 +551,13 @@ function renderIndice() {
   renderLista("listaProcede", plantillasProcede, soloFavoritos);
   renderLista("listaNoProcede", plantillasNoProcede, soloFavoritos);
   renderLista("rechazosLista", plantillasRechazos, soloFavoritos);
+
+  const select = document.getElementById("plantilla");
+  if (select && select.value) {
+    document.querySelectorAll(".indice-lateral li").forEach(li => {
+      if (li.dataset.valor === select.value) li.classList.add("activo");
+    });
+  }
 }
 
 function toggleSeccion(id) {

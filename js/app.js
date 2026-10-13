@@ -77,8 +77,11 @@ if (selectPlantillaElem) {
     elem.addEventListener("click", function (e) {
       const li = e.target.closest("li");
       if (!li || !this.contains(li)) return;
-      if (e.target.closest("span")) toggleFavorito(li.dataset.valor);
-      else if (e.target.closest("button")) accesoRapido(li.dataset.valor);
+      if (e.target.closest(".star-fav") || (e.target.tagName === "SPAN" && !e.target.closest("button"))) {
+        toggleFavorito(li.dataset.valor);
+      } else {
+        accesoRapido(li.dataset.valor);
+      }
     });
   }
 });

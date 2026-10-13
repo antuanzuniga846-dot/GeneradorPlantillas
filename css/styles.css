@@ -1073,7 +1073,8 @@ textarea {
   padding: 5px 8px;
   border-radius: 6px;
   white-space: nowrap;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, border-left 0.15s ease;
+  user-select: none;
 }
 
 .indice-lateral li:hover {
@@ -1082,6 +1083,24 @@ textarea {
 
 :root[data-theme="light"] .indice-lateral li:hover {
   background: rgba(0, 0, 0, 0.05);
+}
+
+.indice-lateral li.activo,
+.indice-lateral li.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-left: 3px solid var(--accent);
+}
+
+:root[data-theme="light"] .indice-lateral li.activo,
+:root[data-theme="light"] .indice-lateral li.active {
+  background: rgba(0, 0, 0, 0.08);
+  border-left: 3px solid var(--accent);
+}
+
+.indice-lateral li:hover button,
+.indice-lateral li.activo button,
+.indice-lateral li.active button {
+  color: var(--accent);
 }
 
 .indice-lateral li span.star-fav,
