@@ -179,6 +179,12 @@ function actualizarColoresDerivados() {
   const modo = raiz.getAttribute("data-theme") || "dark";
   const accent = (raiz.style.getPropertyValue('--accent') || '#0078d7').trim();
   
+  // Extraer componentes R, G, B del color seleccionado en la paleta
+  const rgb = hexARgb(accent);
+  const rgbStr = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+  raiz.style.setProperty('--accent-rgb', rgbStr);
+  raiz.style.setProperty('--card-bg', `rgba(${rgbStr}, calc(var(--input-opacity) * 0.1))`);
+  
   const onColor = colorSobreAcento(accent);
   raiz.style.setProperty('--accent-oncolor', onColor);
   
@@ -261,6 +267,8 @@ function ajustarOpacidadCampos(valor) {
 
   const slider = document.getElementById("inputOpacitySlider");
   if (slider && slider.value !== String(valor)) slider.value = valor;
+
+  actualizarColoresDerivados();
 }
 
 function inicializarOpacidadCampos() {
@@ -388,10 +396,30 @@ function inicializarTema() {
 // ==========================================
 const NOTAS_DEL_PARCHE = [
   {
+    version: "v2.7",
+    fecha: "13/10/2026",
+    titulo: "Sincronización Dinámica de Cards con Paleta de Colores & Opacidad",
+    esActual: true,
+    cambios: [
+      {
+        icono: "🎨",
+        texto: "<strong>Fondo Dinámico de Tarjetas (--card-bg):</strong> Las tarjetas ahora adoptan automáticamente el color elegido en la paleta de acento con fórmula <code>rgba(R, G, B, calc(var(--input-opacity) * 0.1))</code>."
+      },
+      {
+        icono: "🃏",
+        texto: "<strong>Unificación Visual en Todos los Cards:</strong> Aplicado globalmente al contenedor del generador, panel de acceso rápido, calculadora, tabla de control, métricas KPI y cajas auxiliares."
+      },
+      {
+        icono: "🎚️",
+        texto: "<strong>Control Preciso de Tinte:</strong> Ajustable en tiempo real mediante el deslizador de opacidad en el menú 'Personalizar'."
+      }
+    ]
+  },
+  {
     version: "v2.6",
     fecha: "11/10/2026",
     titulo: "Paginación con Scroll Infinito, Búsqueda Global & Métricas Históricas",
-    esActual: true,
+    esActual: false,
     cambios: [
       {
         icono: "📜",

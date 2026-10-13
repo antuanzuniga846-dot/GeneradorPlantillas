@@ -5,6 +5,7 @@
 :root,
 :root[data-theme="dark"] {
   --accent: #0078d7;
+  --accent-rgb: 0, 120, 215;
   --accent-text: #64b5f6;
   --accent-oncolor: #ffffff;
   --accent-header: linear-gradient(135deg, #0078d7, #004d8c);
@@ -21,7 +22,7 @@
   --input-text: #ffffff;
   --input-border: rgba(255, 255, 255, 0.28);
   
-  --card-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.55));
+  --card-bg: rgba(var(--accent-rgb, 0, 120, 215), calc(var(--input-opacity) * 0.1));
   --card-border: rgba(255, 255, 255, 0.22);
   
   --navbar-bg: rgba(0, 0, 0, calc(var(--input-opacity) * 0.60));
@@ -45,6 +46,7 @@
 
 :root[data-theme="light"] {
   --accent: #0078d7;
+  --accent-rgb: 0, 120, 215;
   --accent-text: #005a9e;
   --accent-oncolor: #ffffff;
   --accent-header: linear-gradient(135deg, #0078d7, #005a9e);
@@ -61,7 +63,7 @@
   --input-text: #0f172a;
   --input-border: rgba(0, 0, 0, 0.18);
   
-  --card-bg: rgba(255, 255, 255, var(--input-opacity));
+  --card-bg: rgba(var(--accent-rgb, 0, 120, 215), calc(var(--input-opacity) * 0.1));
   --card-border: rgba(0, 0, 0, 0.14);
   
   --navbar-bg: rgba(255, 255, 255, var(--input-opacity));
@@ -385,7 +387,8 @@ label {
 }
 
 /* Panel / Card Principal del Formulario (Totalmente Transparente: solo Contorno y Texto) */
-.container {
+.container,
+.card {
   background: var(--card-bg);
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -437,7 +440,7 @@ label {
   position: relative;
   margin-top: 14px;
   padding: 14px 16px;
-  background: var(--input-bg);
+  background: var(--card-bg);
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-left: 3px solid var(--accent);
@@ -744,7 +747,7 @@ textarea {
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  background: transparent !important;
+  background: var(--card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-radius: 14px;
@@ -1356,7 +1359,9 @@ textarea {
   gap: 14px;
 }
 .stats-kpi-card {
-  background: transparent !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: 1px solid var(--card-border);
   border-left: 4px solid var(--accent);
   border-radius: 10px;
@@ -1468,7 +1473,9 @@ textarea {
   overflow: auto;
   border-radius: 8px;
   border: 1.5px solid rgba(0, 150, 136, 0.45);
-  background: transparent !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   box-shadow: 0 6px 20px var(--shadow-color);
 }
 
