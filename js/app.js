@@ -1,157 +1,67 @@
-// ==========================================
-// INICIALIZACIÓN PRINCIPAL & LISTENERS DE EVENTOS
-// ==========================================
+// ==========================================================================
+// META FECHA / HORA / USUARIO
+// ==========================================================================
+function actualizarMeta() {
+  const f = document.getElementById("metaFecha");
+  const h = document.getElementById("metaHora");
 
-// Dragging para la calculadora flotante
-(function () {
-  const calc = document.querySelector(".calculadora");
-  const header = document.querySelector(".calc-header");
-  if (!calc || !header) return;
-  let isDragging = false, startX, startY, initialLeft, initialTop;
+  if (!f || !h) return;
 
-  header.addEventListener("mousedown", e => {
-    if (e.target.tagName === "BUTTON") return;
-    isDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    const rect = calc.getBoundingClientRect();
-    initialLeft = rect.left;
-    initialTop = rect.top;
-    e.preventDefault();
-  });
+  const ahora = new Date();
+  const dia = String(ahora.getDate()).padStart(2, "0");
+  const mes = String(ahora.getMonth() + 1).padStart(2, "0");
+  const anio = ahora.getFullYear();
 
-  document.addEventListener("mousemove", e => {
-    if (!isDragging) return;
-    calc.style.left = `${initialLeft + (e.clientX - startX)}px`;
-    calc.style.top = `${initialTop + (e.clientY - startY)}px`;
-    calc.style.right = "auto";
-    calc.style.bottom = "auto";
-  });
+  let hora = ahora.getHours();
+  const min = String(ahora.getMinutes()).padStart(2, "0");
+  const ampm = hora >= 12 ? "p.m." : "a.m.";
 
-  document.addEventListener("mouseup", () => { isDragging = false; });
-})();
+  hora = hora % 12;
+  hora = hora ? hora : 12;
 
-// Listeners de la calculadora
-const calcDisp = document.getElementById("calcDisplay");
-if (calcDisp) {
-  calcDisp.addEventListener("input", function(e) { calcInput = this.value; });
-  calcDisp.addEventListener("keydown", function(e) { if (e.key === "Enter") calculate(); });
+  f.textContent = `Fecha: ${dia}/${mes}/${anio}`;
+  h.textContent = `Hora: ${hora}:${min} ${ampm} | Usuario: ${typeof getUsuarioActual === "function" ? getUsuarioActual() : ""}`;
 }
 
-// Formateo de campos monto al desenfocar
-document.querySelectorAll('.monto-input').forEach(el => {
-  el.addEventListener('blur', function () {
-    const formateado = formatMonto(this.value);
-    if (formateado !== "") this.value = formateado;
-  });
-});
+// Carga del tema del usuario
+async function inicializarTemaUsuario() {
+  if (!window.supabase) return;
 
-// Limpieza de estados de error en inputs
-["montoFacturasPendientesSA", "montoCeroPagosSA", "montoWritteOffSA"].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener("input", () => marcarErrorGrupo("grupoSaldosSA", "saldosSAError", false));
-});
-
-["montoFacturasPendientesLS", "montoWritteOffLS", "montoCeroPagosLS"].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener("input", () => marcarErrorGrupo("grupoSaldosLS", "saldosLSError", false));
-});
-
-["gestion", "nombre", "cedula", "monto", "fecha_activacion", "fecha_expiracion", "fecha_desactivacion", "terminal", "fecha"].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener("input", () => marcarError(id, false));
-});
-
-// Selector de plantilla
-const selectPlantillaElem = document.getElementById("plantilla");
-if (selectPlantillaElem) {
-  selectPlantillaElem.addEventListener("change", function () {
-    cambiarPlantilla(this.value);
-  });
+  try {
+    const { data: { session } } = await window.supabase.auth.getSession();
+    if (session?.user && typeof loadTheme === "function") {
+      await loadTheme(session.user.id);
+    }
+  } catch (err) {
+    console.error("Error cargando tema guardado:", err);
+  }
 }
 
-// Clics en listas de acceso rápido
-["listaProcede", "listaNoProcede", "rechazosLista"].forEach(id => {
-  const elem = document.getElementById(id);
-  if (elem) {
-    elem.addEventListener("click", function (e) {
-      const li = e.target.closest("li");
-      if (!li || !this.contains(li)) return;
-      if (e.target.closest(".star-fav") || (e.target.tagName === "SPAN" && !e.target.closest("button"))) {
-        toggleFavorito(li.dataset.valor);
-      } else {
-        accesoRapido(li.dataset.valor);
+document.addEventListener("DOMContentLoaded", () => {
+  actualizarMeta();
+  setInterval(actualizarMeta, 8000);
+
+  // Escuchar cuando Supabase esté listo para cargar el tema
+  window.addEventListener("supabase-ready", inicializarTemaUsuario);
+  if (window.supabase) inicializarTemaUsuario();
+
+  // 1. Selector de tema (compatibilidad si existe)
+  const themeSelector = document.getElementById("themeSelector");
+  if (themeSelector) {
+    themeSelector.addEventListener("change", (e) => {
+      if (typeof applyThemeByName === "function") {
+        applyThemeByName(e.target.value);
       }
     });
   }
-});
 
-// Cierre de panel de tema al hacer clic fuera
-document.addEventListener("click", function (e) {
-  const panel = document.getElementById("themePanel");
-  const btnSidebar = document.getElementById("sidebarBtnPersonalizar");
-  if (panel && panel.style.display === "block") {
-    if (!panel.contains(e.target) && (!btnSidebar || !btnSidebar.contains(e.target))) {
-      panel.style.display = "none";
-    }
+  // 2. Guardar tema (localStorage y Supabase)
+  const saveBtn = document.getElementById("saveThemeBtn");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", async () => {
+      if (typeof guardarConfiguracionTema === "function") {
+        await guardarConfiguracionTema();
+      }
+    });
   }
-});
-
-// Número de gestión solo dígitos
-(function () {
-  const campo = document.getElementById("gestion");
-  if (!campo) return;
-  campo.addEventListener("keydown", function (e) {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault();
-  });
-  campo.addEventListener("paste", function (e) {
-    e.preventDefault();
-    const texto = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "");
-    const ini = campo.selectionStart, fin = campo.selectionEnd;
-    campo.value = campo.value.slice(0, ini) + texto + campo.value.slice(fin);
-    const pos = ini + texto.length;
-    campo.setSelectionRange(pos, pos);
-    campo.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-  campo.addEventListener("input", function () {
-    const limpio = campo.value.replace(/\D/g, "");
-    if (campo.value !== limpio) campo.value = limpio;
-  });
-})();
-
-// ==========================================
-// INICIALIZACIÓN GENERAL AL CARGAR
-// ==========================================
-document.addEventListener("DOMContentLoaded", function () {
-  actualizarLista();
-  renderIndice();
-  inicializarTema();
-  inicializarOpacidadCampos();
-  inicializarFondoPersonalizado();
-  inicializarSupabase();
-  if (typeof inicializarScrollInfinito === "function") inicializarScrollInfinito();
-  inicializarSidebar();
-  iniciarRelojTopbar();
-
-  // Comprobar sesión guardada
-  if (usuarioLogueado) {
-    const modal = document.getElementById("modalLogin");
-    if (modal) modal.style.display = "none";
-    actualizarUIUsuario();
-  } else {
-    const modal = document.getElementById("modalLogin");
-    if (modal) modal.style.display = "flex";
-    cambiarTabLogin('ingreso');
-    actualizarUIUsuario();
-  }
-
-  // Disparar evento inicial del selector de plantilla
-  const selPlantilla = document.getElementById("plantilla");
-  if (selPlantilla) {
-    cambiarPlantilla(selPlantilla.value);
-  }
-
-  // Inicializar estado del Pin del generador
-  inicializarPinGenerador();
 });
