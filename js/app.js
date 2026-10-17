@@ -5,7 +5,7 @@
 // Dragging para la calculadora flotante
 (function () {
   const calc = document.querySelector(".calculadora");
-  const header = document.querySelector(".calc-header");
+  const header = document.querySelector(".calc-header-bar") || document.querySelector(".calc-header");
   if (!calc || !header) return;
   let isDragging = false, startX, startY, initialLeft, initialTop;
 
@@ -154,4 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Inicializar estado del Pin del generador
   inicializarPinGenerador();
+
+  // Inicializar estado de activación de la calculadora
+  inicializarEstadoCalculadora();
 });

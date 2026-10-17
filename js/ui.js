@@ -283,7 +283,10 @@ function actualizarColoresDerivados() {
   raiz.style.setProperty('--calc-btn-bg', `rgba(${rgbStr}, ${alphaCard})`);
   raiz.style.setProperty('--calc-display-bg', `rgba(${rgbStr}, ${alphaCard2})`);
   
-  const onColor = colorSobreAcento(accent);
+  // Texto de contraste sobre botones/acento según el tema:
+  // Modo oscuro => texto blanco (#ffffff)
+  // Modo claro => texto negro/oscuro (#0f172a)
+  const onColor = (modo === "light") ? "#0f172a" : "#ffffff";
   raiz.style.setProperty('--accent-oncolor', onColor);
   
   const fondoHex = (modo === "light") ? "#f1f5f9" : "#181824";
@@ -501,10 +504,30 @@ function inicializarTema() {
 // ==========================================
 const NOTAS_DEL_PARCHE = [
   {
+    version: "v2.9",
+    fecha: "17/10/2026",
+    titulo: "Scroll Independiente en Plantillas, Control de Calculadora & Inversión de Contraste",
+    esActual: true,
+    cambios: [
+      {
+        icono: "📜",
+        texto: "<strong>Scroll Independiente en Acceso Rápido:</strong> La lista de plantillas ahora cuenta con su propio desplazamiento vertical; la pantalla permanece estática sin tener que bajar toda la página para explorar las opciones."
+      },
+      {
+        icono: "🧮",
+        texto: "<strong>Botón para Desactivar/Activar Calculadora:</strong> Ahora es posible ocultar o mostrar completamente la calculadora desde la barra lateral, desde el panel de personalización o con el botón ✕ en su cabecera."
+      },
+      {
+        icono: "🌓",
+        texto: "<strong>Corrección de Contraste (Modo Oscuro / Claro):</strong> Los títulos de 'Acceso Rápido' y 'Calculadora', el botón 'Fijar', y las acciones de 'Generar Plantilla' y 'Copiar al portapapeles' ahora muestran texto blanco nítido en modo oscuro y texto negro/oscuro en modo claro."
+      }
+    ]
+  },
+  {
     version: "v2.8",
     fecha: "13/10/2026",
     titulo: "Fijación con Pin del Generador & Estilo Cápsula Píldora",
-    esActual: true,
+    esActual: false,
     cambios: [
       {
         icono: "📌",
@@ -755,4 +778,59 @@ function inicializarPinGenerador() {
   }
   actualizarEstadoPinUI(pinned);
 }
+
+// ==========================================
+// FUNCIÓN DE ACTIVACIÓN / DESACTIVACIÓN CALCULADORA
+// ==========================================
+function toggleVisibilidadCalculadora(forzarEstado) {
+  const calc = document.querySelector(".calculadora");
+  if (!calc) return;
+  const actualmenteVisible = calc.style.display !== "none" && !calc.classList.contains("desactivada");
+  const nuevoEstado = (typeof forzarEstado === "boolean") ? forzarEstado : !actualmenteVisible;
+  
+  if (nuevoEstado) {
+    calc.style.display = "";
+    calc.classList.remove("desactivada");
+    try { localStorage.setItem("calculadoraVisibleBuro", "true"); } catch (e) {}
+    if (typeof notificar === "function") notificar("info", "🧮 Calculadora Activada", "La calculadora ahora está disponible en pantalla.");
+  } else {
+    calc.style.display = "none";
+    calc.classList.add("desactivada");
+    try { localStorage.setItem("calculadoraVisibleBuro", "false"); } catch (e) {}
+    if (typeof notificar === "function") notificar("info", "Calculadora Desactivada", "La calculadora se ha ocultado de la pantalla.");
+  }
+  actualizarUICalculadora(nuevoEstado);
+}
+
+function actualizarUICalculadora(visible) {
+  const btnSidebar = document.getElementById("sidebarBtnCalculadora");
+  const chk = document.getElementById("chkToggleCalculadora");
+  if (btnSidebar) {
+    if (visible) {
+      btnSidebar.classList.add("active");
+      btnSidebar.title = "Desactivar Calculadora (Actualmente Activa)";
+    } else {
+      btnSidebar.classList.remove("active");
+      btnSidebar.title = "Activar Calculadora (Actualmente Desactivada)";
+    }
+  }
+  if (chk) chk.checked = visible;
+}
+
+function inicializarEstadoCalculadora() {
+  const guardado = localStorage.getItem("calculadoraVisibleBuro");
+  const visible = guardado !== "false";
+  const calc = document.querySelector(".calculadora");
+  if (calc) {
+    if (!visible) {
+      calc.style.display = "none";
+      calc.classList.add("desactivada");
+    } else {
+      calc.style.display = "";
+      calc.classList.remove("desactivada");
+    }
+  }
+  actualizarUICalculadora(visible);
+}
+
 

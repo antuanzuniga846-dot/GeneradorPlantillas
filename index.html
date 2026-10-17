@@ -70,6 +70,10 @@
           <span class="nav-icon">📈</span>
           <span class="nav-label">Estadísticas</span>
         </button>
+        <button id="sidebarBtnCalculadora" class="sidebar-nav-btn active" onclick="toggleVisibilidadCalculadora()" title="Activar / Desactivar Calculadora">
+          <span class="nav-icon">🧮</span>
+          <span class="nav-label">Calculadora</span>
+        </button>
 
         <div class="sidebar-separator"></div>
 
@@ -160,6 +164,12 @@
           style="width: 100%; accent-color: var(--accent); cursor: pointer;"
         >
       </div>
+
+      <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🧮 Herramientas</h4>
+      <label style="cursor: pointer;">
+        <input type="checkbox" id="chkToggleCalculadora" checked onchange="toggleVisibilidadCalculadora(this.checked)" style="width: auto; margin: 0;">
+        <span>Mostrar Calculadora</span>
+      </label>
     </div>
 
     <!-- ÁREA PRINCIPAL -->
@@ -207,12 +217,14 @@
       
       <!-- Índice lateral -->
       <div class="indice-lateral">
-        <h3 class="box-titulo">📌 Acceso Rápido</h3>
-        <label style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.82rem; margin-bottom: 10px; cursor: pointer;">
-          <input type="checkbox" id="toggleFavoritos" checked onchange="renderIndice()" style="width: auto; margin: 0;"> 
-          <span>Mostrar solo favoritos</span>
-        </label>
-        <div>
+        <div class="indice-lateral-header">
+          <h3 class="box-titulo">📌 Acceso Rápido</h3>
+          <label style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.82rem; margin-bottom: 10px; cursor: pointer;">
+            <input type="checkbox" id="toggleFavoritos" checked onchange="renderIndice()" style="width: auto; margin: 0;"> 
+            <span>Mostrar solo favoritos</span>
+          </label>
+        </div>
+        <div class="indice-lateral-scroll">
           <strong class="indice-section-title">✅ Procede</strong>
           <ul id="listaProcede"></ul>
 
@@ -410,8 +422,11 @@
       </div>
 
       <!-- Calculadora -->
-      <div class="calculadora">
-        <h3 class="box-titulo" role="button" tabindex="0" title="Clic para mostrar/ocultar la calculadora" onclick="toggleCalculadora()" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleCalculadora(); }">🧮 Calculadora</h3>
+      <div class="calculadora" id="cardCalculadora">
+        <div class="calc-header-bar">
+          <h3 class="box-titulo" role="button" tabindex="0" title="Clic para mostrar/ocultar los botones de la calculadora" onclick="toggleCalculadora()" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleCalculadora(); }">🧮 Calculadora</h3>
+          <button type="button" class="btn-cerrar-calc" onclick="toggleVisibilidadCalculadora(false)" title="Desactivar y ocultar calculadora completamente">✕</button>
+        </div>
         <input type="text" id="calcDisplay">
         <div class="botones">
           <button id="buttonCalcu" onclick="appendCalc('7')">7</button>
