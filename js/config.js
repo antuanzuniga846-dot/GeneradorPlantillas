@@ -8,8 +8,15 @@ const DEFAULT_SUPABASE_KEY = "sb_publishable_ctDXquEkqLpXpuzOoRvtXQ_Vazap6tB";
 let supabaseClient = null;
 
 function inicializarSupabase() {
-  const url = localStorage.getItem("supabaseUrlBuro") || DEFAULT_SUPABASE_URL;
-  const key = localStorage.getItem("supabaseKeyBuro") || DEFAULT_SUPABASE_KEY;
+  let url = DEFAULT_SUPABASE_URL;
+  let key = DEFAULT_SUPABASE_KEY;
+  try {
+    url = localStorage.getItem("supabaseUrlBuro") || DEFAULT_SUPABASE_URL;
+    key = localStorage.getItem("supabaseKeyBuro") || DEFAULT_SUPABASE_KEY;
+  } catch (e) {
+    url = DEFAULT_SUPABASE_URL;
+    key = DEFAULT_SUPABASE_KEY;
+  }
 
   const dot = document.getElementById("dbDot");
   const text = document.getElementById("dbStatusText");

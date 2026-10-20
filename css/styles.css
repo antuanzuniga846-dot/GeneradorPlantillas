@@ -567,6 +567,15 @@ label {
   box-shadow: 0 0 6px #4caf50;
 }
 .db-dot.offline { background: #ff9800; box-shadow: 0 0 6px #ff9800; }
+.db-dot.reconnecting {
+  background: #ffc107;
+  box-shadow: 0 0 6px #ffc107;
+  animation: pulseDot 1.2s infinite ease-in-out;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.85); }
+}
 
 /* ========================================= */
 /* THEME WIDGET & CUSTOMIZER (TOP LEVEL)    */

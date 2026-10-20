@@ -2,8 +2,33 @@
 // MÓDULO DE CONTROL DE LIMPIEZAS & SINCRONIZACIÓN
 // ==========================================
 
-let listaLimpiezas = JSON.parse(localStorage.getItem(STORAGE_KEY_SHEET)) || [];
+function obtenerLocalStorageSeguro(clave, defecto = null) {
+  try {
+    const val = localStorage.getItem(clave);
+    return val !== null ? JSON.parse(val) : defecto;
+  } catch (e) {
+    console.warn(`Aviso: No se pudo leer ${clave} de localStorage:`, e);
+    return defecto;
+  }
+}
+
+function guardarLocalStorageSeguro(clave, datos) {
+  try {
+    localStorage.setItem(clave, typeof datos === "string" ? datos : JSON.stringify(datos));
+  } catch (e) {
+    console.warn(`Aviso: No se pudo guardar ${clave} en localStorage:`, e);
+  }
+}
+
+function guardarLimpiezasLocalmente() {
+  guardarLocalStorageSeguro(STORAGE_KEY_SHEET, listaLimpiezas);
+}
+
+let listaLimpiezas = obtenerLocalStorageSeguro(STORAGE_KEY_SHEET, []);
 let canalRealtime = null;
+let realtimeConectado = false;
+let retryRealtimeTimer = null;
+let intentosReconexion = 0;
 let ultimaCargaSupabase = 0;
 const TAMANO_PAGINA_LIMPIEZAS = 150;
 let hayMasRegistrosSupabase = true;
@@ -38,9 +63,11 @@ function mapearRegistroLimpieza(item, anteriorLocal = null) {
 async function cargarDatosDesdeSupabase(silencioso = false, forzar = false) {
   if (!supabaseClient) return;
 
-  // Evitar consultas redundantes si pasaron menos de 60 segundos (a menos que se fuerce)
   const ahora = Date.now();
-  if (!forzar && silencioso && ahora - ultimaCargaSupabase < 60000) {
+  // Si Realtime está activo, evitamos consultas muy seguidas salvo que sea forzado.
+  // Si Realtime está desconectado/bloqueado, permitimos sync cada 12s para garantizar actualización continua.
+  const limiteMinimo = realtimeConectado ? 45000 : 12000;
+  if (!forzar && silencioso && ahora - ultimaCargaSupabase < limiteMinimo) {
     return;
   }
   ultimaCargaSupabase = ahora;
@@ -70,7 +97,7 @@ async function cargarDatosDesdeSupabase(silencioso = false, forzar = false) {
 
       if (jsonNuevo !== jsonViejo) {
         listaLimpiezas = listaCombinada;
-        localStorage.setItem(STORAGE_KEY_SHEET, jsonNuevo);
+        guardarLimpiezasLocalmente();
         renderizarTablaSheet();
         if (vistaActual === "estadisticas") {
           actualizarEstadisticasYTablaDinamica();
@@ -120,7 +147,7 @@ async function cargarMasRegistrosAnteriores() {
       }
     });
 
-    localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+    guardarLimpiezasLocalmente();
     renderizarTablaSheet();
 
     if (hayMasRegistrosSupabase) {
@@ -197,11 +224,45 @@ async function sincronizarConSupabase() {
   }
 }
 
+function actualizarDotRealtime(estado) {
+  const dot = document.getElementById("dbDot");
+  const text = document.getElementById("dbStatusText");
+  if (!dot || !text) return;
+
+  if (estado === "online") {
+    dot.className = "db-dot";
+    text.textContent = "Supabase Online";
+  } else if (estado === "reconnecting") {
+    dot.className = "db-dot reconnecting";
+    text.textContent = "Reconectando...";
+  } else if (estado === "polling") {
+    dot.className = "db-dot offline";
+    text.textContent = "Sync Periódico";
+  } else {
+    dot.className = "db-dot offline";
+    text.textContent = "Modo Local";
+  }
+}
+
+function programarReconexionRealtime(delayMs = 4000) {
+  if (retryRealtimeTimer) clearTimeout(retryRealtimeTimer);
+  actualizarDotRealtime("reconnecting");
+
+  intentosReconexion++;
+  const espera = Math.min(delayMs * Math.min(intentosReconexion, 4), 20000);
+
+  retryRealtimeTimer = setTimeout(() => {
+    console.log(`🔄 Reintentando suscribir Realtime (intento #${intentosReconexion})...`);
+    suscribirRealtimeSupabase();
+  }, espera);
+}
+
 function suscribirRealtimeSupabase() {
   if (!supabaseClient) return;
   try {
     if (canalRealtime) {
       try { supabaseClient.removeChannel(canalRealtime); } catch(e){}
+      canalRealtime = null;
     }
 
     const channelId = "global_control_limpiezas_realtime";
@@ -222,35 +283,39 @@ function suscribirRealtimeSupabase() {
         "broadcast",
         { event: "en_proceso_sync" },
         (payload) => {
-          const data = payload.payload || {};
-          if (data && data.id) {
-            const itm = listaLimpiezas.find(x => x.id === data.id);
-            if (itm) {
-              const nuevoEnProc = normalizarNombreEnProceso(data.enProceso || "");
-              if (itm.enProceso !== nuevoEnProc) {
-                itm.enProceso = nuevoEnProc;
-                localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
-                
-                const tr = document.querySelector(`tr[data-row-id="${data.id}"]`);
-                if (tr) {
-                  const celdaClick = tr.querySelector(".cell-cedula-click > div");
-                  if (celdaClick) {
-                    const badgeExistente = celdaClick.querySelector(".badge-en-proceso");
-                    if (badgeExistente) badgeExistente.remove();
+          try {
+            const data = payload.payload || {};
+            if (data && data.id) {
+              const itm = listaLimpiezas.find(x => x.id === data.id);
+              if (itm) {
+                const nuevoEnProc = normalizarNombreEnProceso(data.enProceso || "");
+                if (itm.enProceso !== nuevoEnProc) {
+                  itm.enProceso = nuevoEnProc;
+                  guardarLimpiezasLocalmente();
 
-                    if (nuevoEnProc && !(itm.soporte && itm.soporte.trim())) {
-                      const badge = document.createElement("span");
-                      badge.className = "badge-en-proceso";
-                      badge.title = `En proceso por ${nuevoEnProc} (Toca para desmarcar)`;
-                      badge.textContent = `⏳ ${nuevoEnProc}`;
-                      celdaClick.insertBefore(badge, celdaClick.firstChild);
+                  const tr = document.querySelector(`tr[data-row-id="${data.id}"]`);
+                  if (tr) {
+                    const celdaClick = tr.querySelector(".cell-cedula-click > div");
+                    if (celdaClick) {
+                      const badgeExistente = celdaClick.querySelector(".badge-en-proceso");
+                      if (badgeExistente) badgeExistente.remove();
+
+                      if (nuevoEnProc && !(itm.soporte && itm.soporte.trim())) {
+                        const badge = document.createElement("span");
+                        badge.className = "badge-en-proceso";
+                        badge.title = `En proceso por ${nuevoEnProc} (Toca para desmarcar)`;
+                        badge.textContent = `⏳ ${nuevoEnProc}`;
+                        celdaClick.insertBefore(badge, celdaClick.firstChild);
+                      }
                     }
+                  } else {
+                    renderizarTablaSheet();
                   }
-                } else {
-                  renderizarTablaSheet();
                 }
               }
             }
+          } catch (e) {
+            console.warn("Error en broadcast en_proceso_sync:", e);
           }
         }
       )
@@ -258,7 +323,7 @@ function suscribirRealtimeSupabase() {
         "broadcast",
         { event: "solicitar_estados_en_proceso" },
         () => {
-          if (usuarioLogueado) {
+          if (usuarioLogueado && canalRealtime) {
             const miNombre = normalizarNombreEnProceso(usuarioLogueado.nombre || usuarioLogueado.usuario);
             const misActivas = listaLimpiezas.filter(x => normalizarNombreEnProceso(x.enProceso).toLowerCase() === miNombre.toLowerCase() && !x.soporte);
             misActivas.forEach(act => {
@@ -276,20 +341,39 @@ function suscribirRealtimeSupabase() {
       .subscribe((status, err) => {
         console.log("📡 Estado conexión Realtime Supabase:", status);
         if (status === "SUBSCRIBED") {
+          realtimeConectado = true;
+          intentosReconexion = 0;
+          if (retryRealtimeTimer) {
+            clearTimeout(retryRealtimeTimer);
+            retryRealtimeTimer = null;
+          }
+          actualizarDotRealtime("online");
+
+          // Sincronizar de inmediato al conectar para asegurar que no perdimos registros
+          cargarDatosDesdeSupabase(true, true);
+
           setTimeout(() => {
             try {
-              canalRealtime.send({
-                type: 'broadcast',
-                event: 'solicitar_estados_en_proceso',
-                payload: {}
-              });
+              if (canalRealtime) {
+                canalRealtime.send({
+                  type: 'broadcast',
+                  event: 'solicitar_estados_en_proceso',
+                  payload: {}
+                });
+              }
             } catch(e){}
           }, 400);
+        } else if (status === "CLOSED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          realtimeConectado = false;
+          actualizarDotRealtime("polling");
+          programarReconexionRealtime(5000);
         }
         if (err) console.warn("Realtime error:", err);
       });
   } catch (e) {
     console.warn("Error suscribiendo realtime:", e);
+    realtimeConectado = false;
+    programarReconexionRealtime(5000);
   }
 
   iniciarPollingSincronizacion();
@@ -299,117 +383,136 @@ let intervalSincronizacion = null;
 
 function iniciarPollingSincronizacion() {
   if (intervalSincronizacion) clearInterval(intervalSincronizacion);
-  // Intervalo de respaldo relajado a 5 minutos (300.000 ms) en vez de 3.5 segundos.
-  // Supabase Realtime ya sincroniza las inserciones y cambios instantáneamente vía WebSocket sin generar consumo API.
+
+  // Polling híbrido inteligente:
+  // - Si Realtime está activo y conectado: sync suave cada 60s
+  // - Si Realtime está desconectado o bloqueado (Edge estricto o redes con proxy): sync forzado cada 15s
   intervalSincronizacion = setInterval(async () => {
-    if (supabaseClient && document.visibilityState === "visible") {
-      await cargarDatosDesdeSupabase(true);
+    if (!supabaseClient || document.visibilityState !== "visible") return;
+
+    const intervaloNecesario = realtimeConectado ? 60000 : 15000;
+    const tiempoDesdeUltima = Date.now() - ultimaCargaSupabase;
+
+    if (tiempoDesdeUltima >= intervaloNecesario) {
+      await cargarDatosDesdeSupabase(true, !realtimeConectado);
     }
-  }, 300000);
+  }, 5000);
 }
 
-// Refrescar al volver a la pestaña si estuvo oculta (con límite de 60s)
-document.addEventListener("visibilitychange", () => {
+// Sincronización instantánea al regresar a la pestaña o enfocar ventana
+function alVolverAPestana() {
   if (document.visibilityState === "visible" && supabaseClient) {
-    cargarDatosDesdeSupabase(true);
+    if (!canalRealtime || canalRealtime.state !== 'joined' || !realtimeConectado) {
+      console.log("👁️ Ventana enfocada con canal inactivo. Reconectando Realtime...");
+      suscribirRealtimeSupabase();
+    }
+    cargarDatosDesdeSupabase(true, true);
   }
-});
+}
+
+document.addEventListener("visibilitychange", alVolverAPestana);
+window.addEventListener("focus", alVolverAPestana);
 
 function manejarEventoRealtime(payload) {
-  const { eventType, new: nuevaFila, old: viejaFila } = payload;
+  try {
+    const { eventType, new: nuevaFila, old: viejaFila } = payload;
+    console.log("📥 Evento Realtime recibido:", eventType, nuevaFila?.id || viejaFila?.id);
 
-  if (eventType === "INSERT") {
-    const existe = listaLimpiezas.some(x => x.id === nuevaFila.id);
-    if (!existe) {
-      const itemNuevo = {
-        id: nuevaFila.id,
-        marcaTemporal: normalizarFechaMarcaTemporal(nuevaFila.marca_temporal),
-        monto: nuevaFila.monto,
-        agente: nuevaFila.agente,
-        cedula: nuevaFila.cedula,
-        ceroPagos: !!nuevaFila.cero_pagos,
-        soporte: nuevaFila.soporte || "",
-        categoria: nuevaFila.categoria || "",
-        motivo: nuevaFila.motivo || "",
-        enProceso: normalizarNombreEnProceso(nuevaFila.en_proceso || "")
-      };
-      listaLimpiezas.unshift(itemNuevo);
-      localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+    if (eventType === "INSERT") {
+      const existe = listaLimpiezas.some(x => x.id === nuevaFila.id);
+      if (!existe) {
+        const itemNuevo = {
+          id: nuevaFila.id,
+          marcaTemporal: normalizarFechaMarcaTemporal(nuevaFila.marca_temporal),
+          monto: nuevaFila.monto,
+          agente: nuevaFila.agente,
+          cedula: nuevaFila.cedula,
+          ceroPagos: !!nuevaFila.cero_pagos,
+          soporte: nuevaFila.soporte || "",
+          categoria: nuevaFila.categoria || "",
+          motivo: nuevaFila.motivo || "",
+          enProceso: normalizarNombreEnProceso(nuevaFila.en_proceso || "")
+        };
+        listaLimpiezas.unshift(itemNuevo);
+        guardarLimpiezasLocalmente();
+        renderizarTablaSheet();
+        if (vistaActual === "estadisticas") {
+          actualizarEstadisticasYTablaDinamica();
+        }
+      }
+    } else if (eventType === "UPDATE") {
+      const idx = listaLimpiezas.findIndex(x => x.id === nuevaFila.id);
+      if (idx !== -1) {
+        const anterior = listaLimpiezas[idx];
+        const nuevoSoporte = nuevaFila.soporte || "";
+        const nuevaCat = nuevaFila.categoria || "";
+        const nuevoMotivo = nuevaFila.motivo || "";
+        const nuevoMonto = nuevaFila.monto || "";
+        const nuevaCedula = nuevaFila.cedula || "";
+        let nuevoEnProc = "";
+        if (nuevaFila.en_proceso !== undefined && nuevaFila.en_proceso !== null && String(nuevaFila.en_proceso).trim() !== "") {
+          nuevoEnProc = normalizarNombreEnProceso(nuevaFila.en_proceso);
+        } else if (anterior.enProceso) {
+          nuevoEnProc = normalizarNombreEnProceso(anterior.enProceso);
+        }
+        if (nuevoSoporte && String(nuevoSoporte).trim()) {
+          nuevoEnProc = "";
+        }
+
+        // Si los datos son exactamente idénticos (eco de nuestra propia actualización), no redibujar toda la tabla
+        const sinCambios = (anterior.monto || "") === (nuevoMonto || "") &&
+                           (anterior.soporte || "") === nuevoSoporte &&
+                           (anterior.categoria || "") === nuevaCat &&
+                           (anterior.motivo || "") === nuevoMotivo &&
+                           (anterior.cedula || "") === nuevaCedula &&
+                           normalizarNombreEnProceso(anterior.enProceso || "") === nuevoEnProc;
+
+        if (sinCambios) {
+          return;
+        }
+
+        // Notificar al usuario si su limpieza fue atendida por alguien más
+        if (
+          usuarioLogueado &&
+          anterior.agente &&
+          (anterior.agente.toLowerCase() === usuarioLogueado.usuario.toLowerCase() || anterior.agente.toLowerCase() === usuarioLogueado.nombre.toLowerCase()) &&
+          (anterior.soporte !== nuevoSoporte || anterior.categoria !== nuevaCat)
+        ) {
+          let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> ya fue atendida / realizada.`;
+          if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
+          if (nuevaCat) msg += `<br>🏷️ Categoría: <strong>${nuevaCat}</strong>`;
+          if (nuevaFila.motivo) msg += `<br>📝 Motivo: <strong>${nuevaFila.motivo}</strong>`;
+          notificar("success", "🔔 ¡Limpieza Realizada!", msg, true);
+        }
+
+        listaLimpiezas[idx] = {
+          id: nuevaFila.id,
+          marcaTemporal: normalizarFechaMarcaTemporal(nuevaFila.marca_temporal),
+          monto: nuevaFila.monto,
+          agente: nuevaFila.agente,
+          cedula: nuevaFila.cedula,
+          ceroPagos: !!nuevaFila.cero_pagos,
+          soporte: nuevoSoporte,
+          categoria: nuevaCat,
+          motivo: nuevaFila.motivo || "",
+          enProceso: nuevoEnProc
+        };
+        guardarLimpiezasLocalmente();
+        renderizarTablaSheet();
+        if (vistaActual === "estadisticas") {
+          actualizarEstadisticasYTablaDinamica();
+        }
+      }
+    } else if (eventType === "DELETE") {
+      listaLimpiezas = listaLimpiezas.filter(x => x.id !== viejaFila.id);
+      guardarLimpiezasLocalmente();
       renderizarTablaSheet();
       if (vistaActual === "estadisticas") {
         actualizarEstadisticasYTablaDinamica();
       }
     }
-  } else if (eventType === "UPDATE") {
-    const idx = listaLimpiezas.findIndex(x => x.id === nuevaFila.id);
-    if (idx !== -1) {
-      const anterior = listaLimpiezas[idx];
-      const nuevoSoporte = nuevaFila.soporte || "";
-      const nuevaCat = nuevaFila.categoria || "";
-      const nuevoMotivo = nuevaFila.motivo || "";
-      const nuevoMonto = nuevaFila.monto || "";
-      const nuevaCedula = nuevaFila.cedula || "";
-      let nuevoEnProc = "";
-      if (nuevaFila.en_proceso !== undefined && nuevaFila.en_proceso !== null && String(nuevaFila.en_proceso).trim() !== "") {
-        nuevoEnProc = normalizarNombreEnProceso(nuevaFila.en_proceso);
-      } else if (anterior.enProceso) {
-        nuevoEnProc = normalizarNombreEnProceso(anterior.enProceso);
-      }
-      if (nuevoSoporte && String(nuevoSoporte).trim()) {
-        nuevoEnProc = "";
-      }
-
-      // Si los datos son exactamente idénticos (eco de nuestra propia actualización), no redibujar toda la tabla
-      const sinCambios = (anterior.monto || "") === (nuevoMonto || "") &&
-                         (anterior.soporte || "") === nuevoSoporte &&
-                         (anterior.categoria || "") === nuevaCat &&
-                         (anterior.motivo || "") === nuevoMotivo &&
-                         (anterior.cedula || "") === nuevaCedula &&
-                         normalizarNombreEnProceso(anterior.enProceso || "") === nuevoEnProc;
-
-      if (sinCambios) {
-        return;
-      }
-
-      // Notificar al usuario si su limpieza fue atendida por alguien más
-      if (
-        usuarioLogueado &&
-        anterior.agente &&
-        (anterior.agente.toLowerCase() === usuarioLogueado.usuario.toLowerCase() || anterior.agente.toLowerCase() === usuarioLogueado.nombre.toLowerCase()) &&
-        (anterior.soporte !== nuevoSoporte || anterior.categoria !== nuevaCat)
-      ) {
-        let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> ya fue atendida / realizada.`;
-        if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
-        if (nuevaCat) msg += `<br>🏷️ Categoría: <strong>${nuevaCat}</strong>`;
-        if (nuevaFila.motivo) msg += `<br>📝 Motivo: <strong>${nuevaFila.motivo}</strong>`;
-        notificar("success", "🔔 ¡Limpieza Realizada!", msg, true);
-      }
-
-      listaLimpiezas[idx] = {
-        id: nuevaFila.id,
-        marcaTemporal: normalizarFechaMarcaTemporal(nuevaFila.marca_temporal),
-        monto: nuevaFila.monto,
-        agente: nuevaFila.agente,
-        cedula: nuevaFila.cedula,
-        ceroPagos: !!nuevaFila.cero_pagos,
-        soporte: nuevoSoporte,
-        categoria: nuevaCat,
-        motivo: nuevaFila.motivo || "",
-        enProceso: nuevoEnProc
-      };
-      localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
-      renderizarTablaSheet();
-      if (vistaActual === "estadisticas") {
-        actualizarEstadisticasYTablaDinamica();
-      }
-    }
-  } else if (eventType === "DELETE") {
-    listaLimpiezas = listaLimpiezas.filter(x => x.id !== viejaFila.id);
-    localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
-    renderizarTablaSheet();
-    if (vistaActual === "estadisticas") {
-      actualizarEstadisticasYTablaDinamica();
-    }
+  } catch (err) {
+    console.error("Error procesando evento Realtime:", err);
   }
 }
 
@@ -483,7 +586,7 @@ async function toggleTomarCedula(rowId) {
     notificar("success", "Copiada y En Proceso", `Cédula <strong>${cedulaTexto}</strong> copiada y marcada en proceso por <strong>${miNombre}</strong>.`);
   }
 
-  localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+  guardarLimpiezasLocalmente();
 
   // Actualizar el badge en el DOM directamente sin redibujar toda la tabla (0ms de retraso)
   const tr = document.querySelector(`tr[data-row-id="${rowId}"]`);
@@ -603,7 +706,7 @@ async function subirLimpiezaDesdePlantilla() {
   };
 
   listaLimpiezas.unshift(nuevo);
-  localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+  guardarLimpiezasLocalmente();
   renderizarTablaSheet();
   if (vistaActual === "estadisticas") {
     actualizarEstadisticasYTablaDinamica();
@@ -1085,7 +1188,7 @@ async function actualizarCedulaFila(id, nuevaCedulaRaw) {
   if (item.cedula !== valorFinal) {
     const cedulaAnterior = item.cedula;
     item.cedula = valorFinal;
-    localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+    guardarLimpiezasLocalmente();
     renderizarTablaSheet();
 
     if (supabaseClient) {
@@ -1120,7 +1223,7 @@ async function actualizarMontoFila(id, nuevoMontoRaw, inputElem) {
   if (item.monto !== valorFinal) {
     item.monto = valorFinal;
     if (inputElem) inputElem.value = valorFinal;
-    localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+    guardarLimpiezasLocalmente();
 
     if (supabaseClient) {
       (async () => {
@@ -1163,7 +1266,7 @@ async function actualizarColumna(id, campo, valor, selectElem) {
   }
 
   // Guardar en memoria y localStorage inmediatamente
-  localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+  guardarLimpiezasLocalmente();
 
   // Actualización visual directa e instantánea sin destruir el DOM (0ms de retraso)
   if (selectElem) {
@@ -1243,7 +1346,7 @@ async function eliminarRegistro(id) {
   if (!confirmar) return;
 
   listaLimpiezas = listaLimpiezas.filter(x => x.id !== id);
-  localStorage.setItem(STORAGE_KEY_SHEET, JSON.stringify(listaLimpiezas));
+  guardarLimpiezasLocalmente();
 
   if (supabaseClient) {
     await supabaseClient.from("control_limpiezas").delete().eq("id", id);

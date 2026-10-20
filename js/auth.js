@@ -2,8 +2,33 @@
 // SISTEMA DE USUARIOS, LOGIN, REGISTRO Y ADMIN
 // ==========================================
 
-let listaUsuarios = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS_V6)) || USUARIOS_INICIALES;
-let usuarioLogueado = JSON.parse(localStorage.getItem(STORAGE_KEY_AUTH)) || null;
+function guardarAuthLocalSeguro(clave, valor) {
+  try {
+    if (valor === null || valor === undefined) {
+      localStorage.removeItem(clave);
+    } else {
+      localStorage.setItem(clave, typeof valor === "string" ? valor : JSON.stringify(valor));
+    }
+  } catch (e) {
+    console.warn(`Aviso: No se pudo guardar ${clave} en localStorage:`, e);
+  }
+}
+
+let listaUsuarios = USUARIOS_INICIALES;
+try {
+  const guardados = localStorage.getItem(STORAGE_KEY_USERS_V6);
+  if (guardados) listaUsuarios = JSON.parse(guardados) || USUARIOS_INICIALES;
+} catch (e) {
+  listaUsuarios = USUARIOS_INICIALES;
+}
+
+let usuarioLogueado = null;
+try {
+  const auth = localStorage.getItem(STORAGE_KEY_AUTH);
+  if (auth) usuarioLogueado = JSON.parse(auth) || null;
+} catch (e) {
+  usuarioLogueado = null;
+}
 
 async function cargarUsuariosDesdeSupabase() {
   if (!supabaseClient) return;
@@ -18,14 +43,14 @@ async function cargarUsuariosDesdeSupabase() {
         rol: u.rol || "solicitante",
         activo: u.activo !== false
       }));
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+      guardarAuthLocalSeguro(STORAGE_KEY_USERS, listaUsuarios);
       
       // Refrescar permisos de la sesión activa
       if (usuarioLogueado) {
         const match = listaUsuarios.find(u => u.usuario === usuarioLogueado.usuario);
         if (match) {
           usuarioLogueado = match;
-          localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado));
+          guardarAuthLocalSeguro(STORAGE_KEY_AUTH, usuarioLogueado);
           actualizarUIUsuario();
         }
       }
@@ -148,9 +173,9 @@ async function ejecutarLogin() {
   usuarioLogueado = usuarioValido;
   const recordar = document.getElementById("chkRecordarSesion").checked;
   if (recordar) {
-    localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado));
+    guardarAuthLocalSeguro(STORAGE_KEY_AUTH, usuarioLogueado);
   } else {
-    sessionStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado));
+    try { sessionStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado)); } catch (e) {}
   }
 
   if (fb) {
@@ -212,10 +237,10 @@ async function ejecutarRegistro() {
   }
 
   listaUsuarios.push(nuevoUsuario);
-  localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+  guardarAuthLocalSeguro(STORAGE_KEY_USERS, listaUsuarios);
 
   usuarioLogueado = nuevoUsuario;
-  localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(usuarioLogueado));
+  guardarAuthLocalSeguro(STORAGE_KEY_AUTH, usuarioLogueado);
 
   document.getElementById("modalLogin").style.display = "none";
   actualizarUIUsuario();
@@ -224,8 +249,8 @@ async function ejecutarRegistro() {
 
 function cerrarSesionUsuario() {
   usuarioLogueado = null;
-  localStorage.removeItem(STORAGE_KEY_AUTH);
-  sessionStorage.removeItem(STORAGE_KEY_AUTH);
+  guardarAuthLocalSeguro(STORAGE_KEY_AUTH, null);
+  try { sessionStorage.removeItem(STORAGE_KEY_AUTH); } catch (e) {}
 
   document.getElementById("txtLoginUser").value = "";
   document.getElementById("txtLoginPass").value = "";
@@ -342,7 +367,7 @@ async function guardarUsuarioDesdeAdmin() {
     }, { onConflict: "usuario" });
   }
 
-  localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+  guardarAuthLocalSeguro(STORAGE_KEY_USERS, listaUsuarios);
   renderizarListaUsuariosAdminUI();
   actualizarUIUsuario();
 
@@ -380,7 +405,7 @@ async function eliminarUsuarioAdmin(index) {
     await supabaseClient.from("usuarios_permisos").delete().eq("usuario", u.usuario);
   }
   listaUsuarios.splice(index, 1);
-  localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(listaUsuarios));
+  guardarAuthLocalSeguro(STORAGE_KEY_USERS, listaUsuarios);
   renderizarListaUsuariosAdminUI();
   notificar("info", "Usuario Eliminado", `Se borró la cuenta de @${u.usuario}.`);
 }
