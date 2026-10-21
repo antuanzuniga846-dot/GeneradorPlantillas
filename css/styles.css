@@ -1862,16 +1862,52 @@ button.sheet-pill-btn.pill-soporte-adriel,
 .sheet-select option.pill-mot-wf-supera-63000 { background: #42a5f5 !important; color: #ffffff !important; }
 
 /* ========================================= */
-/* ESTILOS PARA CÉDULA EN PROCESO            */
+/* ESTILOS PARA COLUMNA CÉDULA Y PROCESO     */
 /* ========================================= */
+.sheet-table th.col-cedula {
+  width: 175px !important;
+  max-width: 185px !important;
+  min-width: 130px !important;
+  text-align: center !important;
+  overflow: hidden !important;
+}
+
 .cell-cedula-click {
   cursor: pointer;
   user-select: none;
   transition: background 0.18s ease;
-  padding: 7px 10px !important;
+  padding: 6px 8px !important;
+  width: 175px !important;
+  max-width: 185px !important;
+  min-width: 130px !important;
+  text-align: center !important;
+  overflow: hidden !important;
 }
+
 .cell-cedula-click:hover {
   background: var(--table-hover) !important;
+}
+
+.cedula-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 140px;
+  overflow: hidden;
+}
+
+.cedula-num-text {
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  min-width: 0;
+  max-width: 100%;
 }
 .badge-en-proceso {
   display: inline-flex;

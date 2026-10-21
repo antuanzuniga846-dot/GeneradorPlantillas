@@ -996,10 +996,13 @@ function renderizarTablaSheet() {
     tr.setAttribute("data-row-id", row.id);
 
     // 1. Cédula y botón de edición para editores
+    const textoCedulaRaw = String(row.cedula || '-').trim();
+    const cedulaEscapada = textoCedulaRaw.replace(/"/g, '&quot;');
+
     let celdaCedula = `
-      <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-        <strong style="font-size: 0.95rem; letter-spacing: 0.3px;">${row.cedula || '-'}</strong>
-        ${puedeEditar ? `<button type="button" class="btn-edit-cedula" onclick="event.stopPropagation(); editarCedulaDirecta('${row.id}')" title="Modificar número de cédula (Editor)" style="background: transparent; border: none; cursor: pointer; font-size: 0.82rem; padding: 0 3px; color: #90caf9; opacity: 0.75; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">✏️</button>` : ''}
+      <div class="cedula-wrapper">
+        <strong class="cedula-num-text" title="Cédula / Documentos: ${cedulaEscapada}&#10;📋 Toca para copiar al portapapeles">${textoCedulaRaw}</strong>
+        ${puedeEditar ? `<button type="button" class="btn-edit-cedula" onclick="event.stopPropagation(); editarCedulaDirecta('${row.id}')" title="Modificar número de cédula (Editor)" style="background: transparent; border: none; cursor: pointer; font-size: 0.82rem; padding: 0 2px; color: #90caf9; opacity: 0.75; transition: opacity 0.2s; flex-shrink: 0;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">✏️</button>` : ''}
       </div>
     `;
 
@@ -1044,8 +1047,8 @@ function renderizarTablaSheet() {
       <td style="text-align: center;">${normalizarFechaMarcaTemporal(row.marcaTemporal)}</td>
       <td style="text-align: center;">${celdaMonto}</td>
       <td style="text-align: center;">${row.agente || '-'}</td>
-      <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Toca para copiar la cédula (Editores: marcar en proceso)">
-        <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+      <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Cédula / Documentos: ${cedulaEscapada}&#10;📋 Toca para copiar al portapapeles${puedeEditar ? ' (o marcar en proceso)' : ''}">
+        <div class="cell-cedula-inner" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; max-width: 100%; overflow: hidden;">
           ${badgeHTML}
           ${celdaCedula}
         </div>
