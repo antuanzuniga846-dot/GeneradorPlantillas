@@ -700,6 +700,90 @@ async function toggleTomarCedula(rowId) {
 // ==========================================
 // SUBIDA DE LIMPIEZAS Y GENERACIÓN UNIFICADA
 // ==========================================
+
+// Consulta de duplicados directa contra la base de datos completa de Supabase
+async function buscarCedulaExistente(cedulaRaw) {
+  const cedula = String(cedulaRaw || '').trim();
+  if (!cedula) return null;
+
+  // Extraer todos los documentos/cédulas ingresados (separados por coma, barra, saltos de línea, punto y coma)
+  const docsIngresados = cedula
+    .split(/[,;\/\n\r]+/)
+    .map(p => p.trim().replace(/[-\s]/g, '').toLowerCase())
+    .filter(Boolean);
+
+  if (docsIngresados.length === 0) {
+    const soloLimpio = cedula.replace(/[-\s]/g, '').toLowerCase();
+    if (soloLimpio) docsIngresados.push(soloLimpio);
+  }
+
+  function coincideRegistro(r) {
+    const rCed = String(r.cedula || '').trim().replace(/[-\s]/g, '').toLowerCase();
+    const partesReg = String(r.cedula || '')
+      .split(/[,;\/\n\r]+/)
+      .map(p => p.trim().replace(/[-\s]/g, '').toLowerCase())
+      .filter(Boolean);
+
+    return docsIngresados.some(doc => rCed === doc || partesReg.includes(doc));
+  }
+
+  // 1. Revisar primero en la memoria local (0ms si ya está cargada)
+  const localMatch = listaLimpiezas.find(coincideRegistro);
+  if (localMatch) {
+    return localMatch;
+  }
+
+  // 2. Si no está en memoria local (ej. días anteriores no cargados en la hoja),
+  // consultar directamente en toda la base de datos de Supabase sin importar la fecha
+  if (supabaseClient) {
+    try {
+      const terminos = [];
+      docsIngresados.forEach(d => {
+        if (d) {
+          terminos.push(`cedula.ilike.%${d}%`);
+          // Si tiene 9 dígitos costarricense (ej: 112340567), buscar también con formato de guiones (1-1234-0567)
+          if (d.length === 9) {
+            const conGuiones = `${d[0]}-${d.slice(1, 5)}-${d.slice(5)}`;
+            terminos.push(`cedula.ilike.%${conGuiones}%`);
+          }
+        }
+      });
+
+      // Si la cédula original tiene guiones o caracteres específicos y no está ya incluida
+      const cOriginalLimpia = cedula.trim();
+      if (cOriginalLimpia.length < 50 && !terminos.includes(`cedula.ilike.%${cOriginalLimpia}%`)) {
+        terminos.push(`cedula.ilike.%${cOriginalLimpia}%`);
+      }
+
+      if (terminos.length > 0) {
+        const { data, error } = await supabaseClient
+          .from("control_limpiezas")
+          .select("id, marca_temporal, monto, agente, cedula, cero_pagos, soporte, categoria, motivo, en_proceso, created_at")
+          .or(terminos.slice(0, 15).join(","))
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (!error && data && data.length > 0) {
+          const matchDB = data.find(coincideRegistro);
+          if (matchDB) {
+            const mapeado = mapearRegistroLimpieza(matchDB);
+            // Conservar en memoria para que no tenga que volver a consultar
+            if (!listaLimpiezas.some(x => x.id === mapeado.id)) {
+              listaLimpiezas.push(mapeado);
+              guardarLimpiezasLocalmente();
+            }
+            return mapeado;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso al consultar cédula en Supabase:", e);
+    }
+  }
+
+  return null;
+}
+
 async function subirLimpiezaDesdePlantilla() {
   if (!usuarioLogueado) {
     notificar("warning", "Sesión Requerida", "Debes iniciar sesión para subir una limpieza.");
@@ -715,12 +799,8 @@ async function subirLimpiezaDesdePlantilla() {
   const cedula = document.getElementById("cedula").value.trim();
   const esReversion = document.getElementById("chkReversionLS")?.checked || false;
 
-  // Validación de duplicados: No permitir subir la misma cédula (excepto si es una Reversión)
-  const cLimpia = cedula.replace(/[-\s]/g, '').toLowerCase();
-  const cedulaExistente = !esReversion ? listaLimpiezas.find(r => {
-    const rCed = String(r.cedula || '').trim().replace(/[-\s]/g, '').toLowerCase();
-    return rCed === cLimpia;
-  }) : null;
+  // Validación de duplicados: No permitir subir la misma cédula consultando la base de datos (excepto si es una Reversión)
+  const cedulaExistente = !esReversion ? await buscarCedulaExistente(cedula) : null;
 
   if (cedulaExistente) {
     let detalle = `La cédula <strong>${cedula}</strong> ya se encuentra registrada en la hoja de control.`;
@@ -807,18 +887,15 @@ async function generarYProcesarPlantilla() {
   const esReversion = document.getElementById("chkReversionLS")?.checked || false;
   const esRec = document.getElementById("chkRecLS")?.checked || false;
   const cedula = document.getElementById("cedula")?.value.trim() || "";
-  const cLimpia = cedula.replace(/[-\s]/g, '').toLowerCase();
 
   const tieneSaldoFPoCP = (seleccion === "LIMPIEZA DE SALDOS") && !esRec && (montoFP !== "" || montoCP !== "");
 
   if (tieneSaldoFPoCP) {
-    const cedulaExistente = !esReversion ? listaLimpiezas.find(r => {
-      const rCed = String(r.cedula || '').trim().replace(/[-\s]/g, '').toLowerCase();
-      return rCed === cLimpia;
-    }) : null;
+    const cedulaExistente = !esReversion ? await buscarCedulaExistente(cedula) : null;
 
     if (cedulaExistente) {
       let detalleAviso = `⚠️ La cédula ${cedula} ya se encuentra registrada en la hoja de cálculo.`;
+      if (cedulaExistente.marcaTemporal) detalleAviso += `\n⏱️ Fecha: ${cedulaExistente.marcaTemporal}`;
       if (cedulaExistente.agente) detalleAviso += `\n👤 Solicitada por: ${cedulaExistente.agente}`;
       if (cedulaExistente.soporte) detalleAviso += `\n🎧 Atendida por: ${cedulaExistente.soporte}`;
       if (cedulaExistente.categoria) detalleAviso += `\n🏷️ Categoría: ${cedulaExistente.categoria}`;
