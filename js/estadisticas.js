@@ -9,13 +9,17 @@ let matrizPivotActual = null; // Para renderizado y exportación CSV
 const COLORES_SOPORTE_MAP = {
   "maría": { bg: "rgba(248, 187, 208, 0.85)", border: "#f8bbd0", text: "#880e4f" },
   "maria": { bg: "rgba(248, 187, 208, 0.85)", border: "#f8bbd0", text: "#880e4f" },
-  "adriel": { bg: "rgba(248, 187, 208, 0.85)", border: "#f8bbd0", text: "#880e4f" },
   "fabricio": { bg: "rgba(156, 204, 101, 0.85)", border: "#9ccc65", text: "#1a3300" },
   "enoc": { bg: "rgba(251, 192, 45, 0.85)", border: "#fbc02d", text: "#202124" },
   "antuan": { bg: "rgba(233, 30, 99, 0.85)", border: "#e91e63", text: "#ffffff" },
   "jorshan": { bg: "rgba(171, 71, 188, 0.85)", border: "#ab47bc", text: "#ffffff" },
   "sebas": { bg: "rgba(38, 166, 154, 0.85)", border: "#26a69a", text: "#ffffff" }
 };
+
+function esSoporteExcluidoStats(nombre) {
+  const norm = (nombre || "").trim().toLowerCase();
+  return norm === "adriel";
+}
 
 const PALETA_FALLBACK_STATS = [
   { bg: "rgba(0, 188, 212, 0.85)", border: "#00bcd4" },
@@ -122,6 +126,11 @@ async function actualizarEstadisticasYTablaDinamica(forzarRecarga = false) {
     const ag = (r.agente || "").trim() || "Sin Agente";
     const cat = (r.categoria || "").trim().toLowerCase();
 
+    // Excluir totalmente a Adriel de las estadísticas, conteos y tabla de No Procede
+    if (esSoporteExcluidoStats(sop) || esSoporteExcluidoStats(ag)) {
+      return;
+    }
+
     // Contabilizar limpiezas hechas por soporte
     if (sop) {
       conteoSoporte[sop] = (conteoSoporte[sop] || 0) + 1;
@@ -172,10 +181,10 @@ async function actualizarEstadisticasYTablaDinamica(forzarRecarga = false) {
   // 4. Preparar datos para Tabla Dinámica
   const soportesEstandar = ["María", "Fabricio", "Enoc", "Antuan"];
   const todosSoportesSet = new Set([...soportesEstandar, ...Object.keys(conteoSoporte), ...soportesNoProcedeSet]);
-  const columnasSoporte = Array.from(todosSoportesSet).filter(Boolean);
+  const columnasSoporte = Array.from(todosSoportesSet).filter(s => Boolean(s) && !esSoporteExcluidoStats(s));
 
   matrizPivotActual = {
-    agentes: Array.from(agentesSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })),
+    agentes: Array.from(agentesSet).filter(a => !esSoporteExcluidoStats(a)).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })),
     soportes: columnasSoporte,
     matriz: matrizNoProcede,
     totalRegistros: totalNoProcede

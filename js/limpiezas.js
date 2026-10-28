@@ -30,7 +30,12 @@ let realtimeConectado = false;
 let retryRealtimeTimer = null;
 let intentosReconexion = 0;
 let ultimaCargaSupabase = 0;
-const TAMANO_PAGINA_LIMPIEZAS = 150;
+const TAMANO_PAGINA_LIMPIEZAS = 50;
+const FILAS_POR_LOTE_DOM = 40;
+let filasRenderizadasDOM = FILAS_POR_LOTE_DOM;
+let _filtroSheetActual = "";
+let _listaFiltradaActual = [];
+let _primeraCargaSesion = true;
 let hayMasRegistrosSupabase = true;
 let cargandoMasRegistros = false;
 
@@ -87,10 +92,17 @@ async function cargarDatosDesdeSupabase(silencioso = false, forzar = false) {
         return mapearRegistroLimpieza(item, anteriorLocal);
       });
 
-      // Conservar registros antiguos que el usuario ya haya cargado mediante scroll
-      const idsNuevos = new Set(nuevosRecientes.map(x => x.id));
-      const antiguosConservados = listaLimpiezas.filter(x => !idsNuevos.has(x.id));
-      const listaCombinada = [...nuevosRecientes, ...antiguosConservados];
+      // Si es forzado (ej. botón sincronizar) o es el primer arranque de la sesión,
+      // iniciamos limpios con el lote reciente para no acumular registros infinitos ni provocar lag
+      let listaCombinada;
+      if (forzar || _primeraCargaSesion) {
+        listaCombinada = nuevosRecientes;
+        _primeraCargaSesion = false;
+      } else {
+        const idsNuevos = new Set(nuevosRecientes.map(x => x.id));
+        const antiguosConservados = listaLimpiezas.filter(x => !idsNuevos.has(x.id));
+        listaCombinada = [...nuevosRecientes, ...antiguosConservados];
+      }
 
       const jsonNuevo = JSON.stringify(listaCombinada);
       const jsonViejo = JSON.stringify(listaLimpiezas);
@@ -98,7 +110,7 @@ async function cargarDatosDesdeSupabase(silencioso = false, forzar = false) {
       if (jsonNuevo !== jsonViejo) {
         listaLimpiezas = listaCombinada;
         guardarLimpiezasLocalmente();
-        renderizarTablaSheet();
+        renderizarTablaSheet(forzar);
         if (vistaActual === "estadisticas") {
           actualizarEstadisticasYTablaDinamica();
         }
@@ -131,7 +143,7 @@ async function cargarMasRegistrosAnteriores() {
 
     if (!data || data.length === 0) {
       hayMasRegistrosSupabase = false;
-      actualizarEstadoScrollLoader(false, "✅ Se ha cargado todo el historial de limpiezas.");
+      actualizarMensajeEstadoFooter();
       return;
     }
 
@@ -148,13 +160,22 @@ async function cargarMasRegistrosAnteriores() {
     });
 
     guardarLimpiezasLocalmente();
-    renderizarTablaSheet();
 
-    if (hayMasRegistrosSupabase) {
-      actualizarEstadoScrollLoader(false, `📜 Mostrando ${listaLimpiezas.length} limpiezas. Desliza o toca para cargar más días anteriores.`);
-    } else {
-      actualizarEstadoScrollLoader(false, `✅ Se ha cargado todo el historial (${listaLimpiezas.length} registros).`);
-    }
+    // Actualizar lista filtrada actual
+    const filtro = (document.getElementById("filtroSheet")?.value || "").toLowerCase().trim();
+    _listaFiltradaActual = listaLimpiezas.filter(row => {
+      if (!filtro) return true;
+      return (row.cedula || "").toLowerCase().includes(filtro) ||
+             (row.agente || "").toLowerCase().includes(filtro) ||
+             (row.soporte || "").toLowerCase().includes(filtro) ||
+             (row.categoria || "").toLowerCase().includes(filtro) ||
+             (row.motivo || "").toLowerCase().includes(filtro) ||
+             (row.monto || "").toLowerCase().includes(filtro);
+    });
+
+    // Añadir al DOM de forma progresiva sin congelar el scroll ni redibujar la tabla entera
+    renderizarSiguienteLoteDOM();
+
   } catch (e) {
     console.error("Fallo al cargar más:", e);
     actualizarEstadoScrollLoader(false, "⚠️ Error al cargar. Toca para reintentar.", true);
@@ -171,7 +192,13 @@ function actualizarEstadoScrollLoader(cargando, mensaje, esError = false) {
     loader = document.createElement("div");
     loader.id = "sheetScrollLoader";
     loader.style.cssText = "text-align: center; padding: 14px 10px; font-size: 0.85rem; cursor: pointer; user-select: none; border-top: 1px solid var(--card-border); background: rgba(0,0,0,0.1);";
-    loader.onclick = () => cargarMasRegistrosAnteriores();
+    loader.onclick = () => {
+      if (filasRenderizadasDOM < _listaFiltradaActual.length) {
+        renderizarSiguienteLoteDOM();
+      } else if (hayMasRegistrosSupabase && !cargandoMasRegistros) {
+        cargarMasRegistrosAnteriores();
+      }
+    };
     container.appendChild(loader);
   }
 
@@ -189,7 +216,39 @@ function actualizarEstadoScrollLoader(cargando, mensaje, esError = false) {
   }
 }
 
+function actualizarMensajeEstadoFooter() {
+  if (_filtroSheetActual) {
+    actualizarEstadoScrollLoader(false, "");
+    return;
+  }
+
+  const totalLocales = _listaFiltradaActual.length;
+  const visibles = Math.min(filasRenderizadasDOM, totalLocales);
+
+  if (visibles < totalLocales) {
+    actualizarEstadoScrollLoader(false, `📜 Mostrando ${visibles} de ${totalLocales} limpiezas. Desliza hacia abajo para ver más...`);
+  } else if (hayMasRegistrosSupabase) {
+    actualizarEstadoScrollLoader(false, `📜 Mostrando ${visibles} limpiezas recientes. Desliza o toca aquí para cargar más días anteriores...`);
+  } else {
+    actualizarEstadoScrollLoader(false, `✅ Se ha cargado todo el historial (${totalLocales} registros).`);
+  }
+}
+
+function verificarScrollInfinito(container) {
+  if (_filtroSheetActual) return; // No auto-scrollear si hay filtro de texto activo
+
+  // Se activa al estar a 220px o menos del final del scroll
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 220) {
+    if (filasRenderizadasDOM < _listaFiltradaActual.length) {
+      renderizarSiguienteLoteDOM();
+    } else if (!cargandoMasRegistros && hayMasRegistrosSupabase && supabaseClient) {
+      cargarMasRegistrosAnteriores();
+    }
+  }
+}
+
 let _scrollListenerIniciado = false;
+let _tickingScroll = false;
 function inicializarScrollInfinito() {
   if (_scrollListenerIniciado) return;
   const container = document.querySelector(".sheet-table-container");
@@ -197,14 +256,14 @@ function inicializarScrollInfinito() {
 
   _scrollListenerIniciado = true;
   container.addEventListener("scroll", () => {
-    const filtro = (document.getElementById("filtroSheet")?.value || "").trim();
-    if (filtro) return; // No auto-scrollear si hay un filtro de búsqueda activo
-    if (container.scrollTop + container.clientHeight >= container.scrollHeight - 140) {
-      if (!cargandoMasRegistros && hayMasRegistrosSupabase && supabaseClient) {
-        cargarMasRegistrosAnteriores();
-      }
+    if (!_tickingScroll) {
+      window.requestAnimationFrame(() => {
+        verificarScrollInfinito(container);
+        _tickingScroll = false;
+      });
+      _tickingScroll = true;
     }
-  });
+  }, { passive: true });
 }
 
 async function sincronizarConSupabase() {
@@ -498,7 +557,7 @@ function manejarEventoRealtime(payload) {
           enProceso: nuevoEnProc
         };
         guardarLimpiezasLocalmente();
-        renderizarTablaSheet();
+        renderizarTablaSheet(false);
         if (vistaActual === "estadisticas") {
           actualizarEstadisticasYTablaDinamica();
         }
@@ -506,7 +565,7 @@ function manejarEventoRealtime(payload) {
     } else if (eventType === "DELETE") {
       listaLimpiezas = listaLimpiezas.filter(x => x.id !== viejaFila.id);
       guardarLimpiezasLocalmente();
-      renderizarTablaSheet();
+      renderizarTablaSheet(false);
       if (vistaActual === "estadisticas") {
         actualizarEstadisticasYTablaDinamica();
       }
@@ -605,7 +664,7 @@ async function toggleTomarCedula(rowId) {
       }
     }
   } else {
-    renderizarTablaSheet();
+    renderizarTablaSheet(false);
   }
 
   // Emitir broadcast en tiempo real a todos los compañeros conectados
@@ -955,16 +1014,112 @@ document.addEventListener("scroll", (e) => {
 }, true);
 
 // ==========================================
-// RENDERIZADO DE TABLA GOOGLE SHEETS
+// RENDERIZADO DE FILA INDIVIDUAL Y TABLA
 // ==========================================
-function renderizarTablaSheet() {
+function crearElementoFilaSheet(row, puedeEditar) {
+  const tr = document.createElement("tr");
+  tr.setAttribute("data-row-id", row.id);
+
+  // 1. Cédula y botón de edición para editores
+  const textoCedulaRaw = String(row.cedula || '-').trim();
+  const cedulaEscapada = textoCedulaRaw.replace(/"/g, '&quot;');
+
+  let celdaCedula = `
+    <div class="cedula-wrapper">
+      <strong class="cedula-num-text" title="Cédula / Documentos: ${cedulaEscapada}&#10;📋 Toca para copiar al portapapeles">${textoCedulaRaw}</strong>
+      ${puedeEditar ? `<button type="button" class="btn-edit-cedula" onclick="event.stopPropagation(); editarCedulaDirecta('${row.id}')" title="Modificar número de cédula (Editor)" style="background: transparent; border: none; cursor: pointer; font-size: 0.82rem; padding: 0 2px; color: #90caf9; opacity: 0.75; transition: opacity 0.2s; flex-shrink: 0;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">✏️</button>` : ''}
+    </div>
+  `;
+
+  // 2. Monto editable para editores
+  let celdaMonto = "";
+  if (puedeEditar) {
+    celdaMonto = `
+      <input 
+        type="text" 
+        class="sheet-monto-input" 
+        value="${row.monto || ''}" 
+        placeholder="0.00"
+        title="Haz clic para modificar el monto (Presiona Enter o desenfoca para guardar)"
+        onblur="actualizarMontoFila('${row.id}', this.value, this)" 
+        onkeydown="if(event.key==='Enter') this.blur()"
+        style="width: 100px; padding: 3px 6px; margin: 0 auto; font-weight: bold; font-size: 0.84rem; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 6px; color: var(--input-text); text-align: center;"
+      >
+    `;
+  } else {
+    celdaMonto = `<strong>${row.monto || '-'}</strong>`;
+  }
+
+  // 3. Dropdown personalizado Soporte
+  let selectSoporte = renderizarPillBoton(row.id, 'soporte', row.soporte, puedeEditar);
+
+  // 4. Dropdown personalizado Categoría (Columna 7)
+  let selectCategoria = renderizarPillBoton(row.id, 'categoria', row.categoria, puedeEditar);
+
+  // 5. Dropdown personalizado Motivo (Columna 8)
+  let selectMotivo = renderizarPillBoton(row.id, 'motivo', row.motivo, puedeEditar);
+
+  // Badge "En proceso": Solo se muestra si alguien la tomó y la columna Soporte aún NO tiene nombre
+  const enProc = normalizarNombreEnProceso(row.enProceso || "");
+  const tieneSoporte = !!(row.soporte || "").trim();
+  const mostrarBadgeEnProceso = enProc && !tieneSoporte;
+
+  const badgeHTML = mostrarBadgeEnProceso
+    ? `<span class="badge-en-proceso" title="En proceso por ${enProc} (Toca para desmarcar)">⏳ ${enProc}</span>`
+    : ``;
+
+  tr.innerHTML = `
+    <td style="text-align: center;">${normalizarFechaMarcaTemporal(row.marcaTemporal)}</td>
+    <td style="text-align: center;">${celdaMonto}</td>
+    <td style="text-align: center;">${row.agente || '-'}</td>
+    <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Cédula / Documentos: ${cedulaEscapada}&#10;📋 Toca para copiar al portapapeles${puedeEditar ? ' (o marcar en proceso)' : ''}">
+      <div class="cell-cedula-inner" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; max-width: 100%; overflow: hidden;">
+        ${badgeHTML}
+        ${celdaCedula}
+      </div>
+    </td>
+    <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
+    <td style="text-align: center;">${selectSoporte}</td>
+    <td style="text-align: center;">${selectCategoria}</td>
+    <td style="text-align: center;">${selectMotivo}</td>
+    <td style="text-align: center;">
+      ${puedeEditar ? `<button style="background: #d32f2f; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.75rem;" onclick="eliminarRegistro('${row.id}')" title="Eliminar fila">🗑️</button>` : `<span style="color:#999;" title="Solo lectura">🔒</span>`}
+    </td>
+  `;
+
+  return tr;
+}
+
+function renderizarSiguienteLoteDOM() {
+  const tbody = document.getElementById("tablaSheetBody");
+  if (!tbody) return;
+
+  const inicio = filasRenderizadasDOM;
+  const siguienteLote = _listaFiltradaActual.slice(inicio, inicio + FILAS_POR_LOTE_DOM);
+  if (siguienteLote.length === 0) {
+    actualizarMensajeEstadoFooter();
+    return;
+  }
+
+  const puedeEditar = esEditor();
+  const fragment = document.createDocumentFragment();
+
+  siguienteLote.forEach(row => {
+    const tr = crearElementoFilaSheet(row, puedeEditar);
+    fragment.appendChild(tr);
+  });
+
+  tbody.appendChild(fragment);
+  filasRenderizadasDOM += siguienteLote.length;
+  actualizarMensajeEstadoFooter();
+}
+
+function renderizarTablaSheet(resetearPaginacion = true) {
   const tbody = document.getElementById("tablaSheetBody");
   if (!tbody) return;
 
   const filtro = (document.getElementById("filtroSheet")?.value || "").toLowerCase().trim();
-  tbody.innerHTML = "";
-
-  const puedeEditar = esEditor();
+  _filtroSheetActual = filtro;
 
   const filtrados = listaLimpiezas.filter(row => {
     if (!filtro) return true;
@@ -975,6 +1130,7 @@ function renderizarTablaSheet() {
            (row.motivo || "").toLowerCase().includes(filtro) ||
            (row.monto || "").toLowerCase().includes(filtro);
   });
+  _listaFiltradaActual = filtrados;
 
   if (filtrados.length === 0) {
     if (filtro) {
@@ -991,89 +1147,24 @@ function renderizarTablaSheet() {
     return;
   }
 
-  filtrados.forEach(row => {
-    const tr = document.createElement("tr");
-    tr.setAttribute("data-row-id", row.id);
+  if (resetearPaginacion) {
+    filasRenderizadasDOM = FILAS_POR_LOTE_DOM;
+  } else {
+    filasRenderizadasDOM = Math.max(filasRenderizadasDOM, FILAS_POR_LOTE_DOM);
+  }
 
-    // 1. Cédula y botón de edición para editores
-    const textoCedulaRaw = String(row.cedula || '-').trim();
-    const cedulaEscapada = textoCedulaRaw.replace(/"/g, '&quot;');
+  tbody.innerHTML = "";
+  const puedeEditar = esEditor();
+  const primerLote = filtrados.slice(0, filasRenderizadasDOM);
+  const fragment = document.createDocumentFragment();
 
-    let celdaCedula = `
-      <div class="cedula-wrapper">
-        <strong class="cedula-num-text" title="Cédula / Documentos: ${cedulaEscapada}&#10;📋 Toca para copiar al portapapeles">${textoCedulaRaw}</strong>
-        ${puedeEditar ? `<button type="button" class="btn-edit-cedula" onclick="event.stopPropagation(); editarCedulaDirecta('${row.id}')" title="Modificar número de cédula (Editor)" style="background: transparent; border: none; cursor: pointer; font-size: 0.82rem; padding: 0 2px; color: #90caf9; opacity: 0.75; transition: opacity 0.2s; flex-shrink: 0;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">✏️</button>` : ''}
-      </div>
-    `;
-
-    // 2. Monto editable para editores
-    let celdaMonto = "";
-    if (puedeEditar) {
-      celdaMonto = `
-        <input 
-          type="text" 
-          class="sheet-monto-input" 
-          value="${row.monto || ''}" 
-          placeholder="0.00"
-          title="Haz clic para modificar el monto (Presiona Enter o desenfoca para guardar)"
-          onblur="actualizarMontoFila('${row.id}', this.value, this)" 
-          onkeydown="if(event.key==='Enter') this.blur()"
-          style="width: 100px; padding: 3px 6px; margin: 0 auto; font-weight: bold; font-size: 0.84rem; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 6px; color: var(--input-text); text-align: center;"
-        >
-      `;
-    } else {
-      celdaMonto = `<strong>${row.monto || '-'}</strong>`;
-    }
-
-    // 3. Dropdown personalizado Soporte
-    let selectSoporte = renderizarPillBoton(row.id, 'soporte', row.soporte, puedeEditar);
-
-    // 4. Dropdown personalizado Categoría (Columna 7)
-    let selectCategoria = renderizarPillBoton(row.id, 'categoria', row.categoria, puedeEditar);
-
-    // 5. Dropdown personalizado Motivo (Columna 8)
-    let selectMotivo = renderizarPillBoton(row.id, 'motivo', row.motivo, puedeEditar);
-
-    // Badge "En proceso": Solo se muestra si alguien la tomó y la columna Soporte aún NO tiene nombre
-    const enProc = normalizarNombreEnProceso(row.enProceso || "");
-    const tieneSoporte = !!(row.soporte || "").trim();
-    const mostrarBadgeEnProceso = enProc && !tieneSoporte;
-
-    const badgeHTML = mostrarBadgeEnProceso
-      ? `<span class="badge-en-proceso" title="En proceso por ${enProc} (Toca para desmarcar)">⏳ ${enProc}</span>`
-      : ``;
-
-    tr.innerHTML = `
-      <td style="text-align: center;">${normalizarFechaMarcaTemporal(row.marcaTemporal)}</td>
-      <td style="text-align: center;">${celdaMonto}</td>
-      <td style="text-align: center;">${row.agente || '-'}</td>
-      <td class="cell-cedula-click" onclick="toggleTomarCedula('${row.id}')" style="text-align: center;" title="Cédula / Documentos: ${cedulaEscapada}&#10;📋 Toca para copiar al portapapeles${puedeEditar ? ' (o marcar en proceso)' : ''}">
-        <div class="cell-cedula-inner" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; max-width: 100%; overflow: hidden;">
-          ${badgeHTML}
-          ${celdaCedula}
-        </div>
-      </td>
-      <td style="text-align: center; font-weight: bold; font-size: 1.15rem; color: #4caf50;">${row.ceroPagos ? '✓' : ''}</td>
-      <td style="text-align: center;">${selectSoporte}</td>
-      <td style="text-align: center;">${selectCategoria}</td>
-      <td style="text-align: center;">${selectMotivo}</td>
-      <td style="text-align: center;">
-        ${puedeEditar ? `<button style="background: #d32f2f; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.75rem;" onclick="eliminarRegistro('${row.id}')" title="Eliminar fila">🗑️</button>` : `<span style="color:#999;" title="Solo lectura">🔒</span>`}
-      </td>
-    `;
-
-    tbody.appendChild(tr);
+  primerLote.forEach(row => {
+    const tr = crearElementoFilaSheet(row, puedeEditar);
+    fragment.appendChild(tr);
   });
 
-  if (!filtro) {
-    if (hayMasRegistrosSupabase) {
-      actualizarEstadoScrollLoader(false, `📜 Mostrando ${listaLimpiezas.length} limpiezas recientes. Desliza hacia abajo o toca aquí para cargar más días anteriores...`);
-    } else {
-      actualizarEstadoScrollLoader(false, `✅ Se ha cargado todo el historial (${listaLimpiezas.length} registros).`);
-    }
-  } else {
-    actualizarEstadoScrollLoader(false, "");
-  }
+  tbody.appendChild(fragment);
+  actualizarMensajeEstadoFooter();
 }
 
 let debounceTimerFiltro = null;
@@ -1305,7 +1396,7 @@ async function actualizarColumna(id, campo, valor, selectElem) {
       if (lbl) lbl.textContent = valor || "";
     }
   } else {
-    renderizarTablaSheet();
+    renderizarTablaSheet(false);
   }
 
   if (vistaActual === "estadisticas") {
