@@ -1,138 +1,127 @@
-# ⚡ Sistema de Limpiezas
+# 📄 Generador de Plantillas BURO & Control de Limpiezas
 
-Aplicación web integral para la automatización, generación, procesamiento y control de registros de limpiezas de facturación (**Notas de Crédito**, **Notas de Débito** y **Acometidas**), con historial sincronizado en la nube, métricas en tiempo real y plantillas operativas.
-
----
-
-## 🚀 Características Principales
-
-### 🧾 1. Generador de Notas de Crédito (NC)
-- Procesamiento inteligente de tablas copiadas directamente desde hojas de cálculo o sistemas de facturación con columnas: `Factura`, `Billing Account` y `Monto a Pagar`.
-- Asignación de **Raíz principal** y **Cédula**.
-- Soporte para múltiples **Raíces extras**, cada una con su propia tabla de datos.
-- Generación automática de registros formateados (formato `CM,908,...`) listos para el portapapeles.
-- Guardado y actualización automática en base de datos (**Supabase**) sin duplicar facturas.
-
-### 📄 2. Generador de Notas de Débito (ND)
-- Procesamiento estructurado por columnas (`Raíz`, `Billing`, `Monto`, `Factura`, `Cédula`).
-- Clasificación por comentario de operación:
-  - *Reversión Proyecto Venta Servicio Móvil*
-  - *Reversiones Híbridos, Incubadora, etc.*
-  - *Limpieza NC 200*
-- Detección automática de raíces ND y adición dinámica de reglas y raíces extras.
-- Generación y copiado directo en formato `IN,911,...`.
-
-### 🔌 3. Generador de Acometidas
-- Procesamiento ultra rápido de datos de acometida completa.
-- Normalización de montos y conteo en tiempo real de registros procesados.
-
-### 📂 4. Historial de Limpiezas
-- **Sincronización en tiempo real** con la base de datos de Supabase.
-- **Filtros avanzados:**
-  - 📅 **Por fecha:** selector visual con Flatpickr.
-  - 🏷️ **Por tipo:** filtro por `NC200`, `ND200`, `ND300` o todos.
-  - 🔍 **Por Cédula(s):** permite buscar por una cédula o ingresar múltiples cédulas separadas por comas o espacios.
-- **Interacción intuitiva:**
-  - Clic en una fila para seleccionar automáticamente todos los registros asociados a la misma raíz.
-  - Casilla en el encabezado para marcar o desmarcar todos los registros visibles.
-  - Botón **➡️ Usar en ND** para trasladar los registros seleccionados directamente al generador de ND.
-- **Eliminación segura con alerta de confirmación:**
-  - Botón general **🗑️ Borrar limpiezas** para eliminar los registros marcados.
-  - Botón individual **🗑️** en cada fila para borrar registros puntuales.
-  - **Alerta modal de confirmación** previa a la eliminación que detalla la cantidad de registros o número de factura a borrar, evitando eliminaciones accidentales.
-
-### 📊 5. Estadísticas & Ranking
-- Conexión a la vista/procedimiento de ranking en Supabase.
-- Indicadores clave (**KPIs**): Agente líder, cantidad de agentes activos y total de cédulas únicas procesadas.
-- **Podio Top 3** de agentes.
-- **Gráfica comparativa interactiva** (Chart.js) comparando cédulas únicas vs. total de registros.
-- Tabla detallada con posiciones y desglose por usuario.
-
-### 📁 6. Plantillas Operativas (OneMarketer)
-- Acceso con un solo clic a plantillas estandarizadas para agilizar la gestión de casos:
-  - *Notas de Crédito*
-  - *Autorización*
-  - *Cancelación*
-  - *Despacho*
-  - *Error de Aprovisionamiento*
-  - *Cambio de SIM*
-  - *Casos Q-flow*
-  - *Rechazos*
-
-### 🎨 7. Personalización Visual & Temas
-- 11 temas de color disponibles: *Azul, Verde, Morado, Rojo, Rosado, Amarillo, Vino, Naranja, Beige, Lima y RGB*.
-- Soporte para **imagen de fondo personalizada** cargada desde tu equipo.
-- Control deslizante para regular la **oscuridad/contraste** del fondo y garantizar legibilidad.
-- Guardado de preferencias de tema asociadas a la cuenta del usuario en Supabase.
-
-### 🔐 8. Seguridad y Control de Acceso
-- Pantalla de inicio de sesión (*Auth Gate*) integrada con **Supabase Auth**.
-- Verificación de permisos en la lista de usuarios autorizados (`autorizados`).
+Sistema web integral de alta productividad (SPA) diseñado para la generación ágil de plantillas BURO, gestión en tiempo real de la **Hoja de Control de Limpiezas**, analítica con tabla dinámica interactiva, sincronización en la nube con **Supabase**, autenticación por roles y un motor de personalización visual avanzado.
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📸 Módulos Principales de la Aplicación
+
+1. **📄 Generador de Plantillas**:
+   - **Índice Lateral de Acceso Rápido**: Explorador categorizado (`✅ Procede`, `⛔ No Procede`, `🚫 Rechazos`) con sistema de favoritos (`★`).
+   - **Scroll Independiente**: Desplazamiento vertical propio en la lista de plantillas; la pantalla principal permanece estática.
+   - **Selección al Clic**: Activación instantánea al hacer clic en cualquier parte de la fila o casilla de la plantilla.
+   - **Fijación Dinámica (Pin)**: Permite anclar la tarjeta del generador para mantenerla visible en pantalla mientras se navega el índice.
+   - **Formatos Automáticos**: Reemplazo inteligente de variables (gestión, cliente, cédula, monto formateado en colones ¢, fechas y penalidades por terminal ligado).
+   - **Opciones de Limpieza de Saldos**: Detección de reversiones y casilla REC (generar formato sin subir a la hoja).
+
+2. **📊 Hoja de Control de Limpiezas (Sheets UI)**:
+   - Tabla interactiva estilo hoja de cálculo para seguimiento de casos en tiempo real.
+   - **Edición Rápida (0ms)** con menús desplegables tipo píldora para `Soporte`, `Categoría` y `Motivo`.
+   - **Copiado Inmediato**: Un clic sobre cualquier cédula la copia directo al portapapeles.
+   - **Búsqueda & Filtros en Vivo**: Filtrado instantáneo por número de cédula, agente o estado.
+   - **Exportación CSV**: Descarga directa de la base de registros en formato compatible con Excel.
+
+3. **📈 Métricas & Tabla Dinámica (Estadísticas)**:
+   - Indicadores KPI clave en tiempo real: total de limpiezas, casos atendidos, pendientes y montos gestionados.
+   - **Tabla Dinámica (Pivot)** interactiva con desglose por agente, categoría de soporte y fecha.
+   - Gráficos visuales de distribución y rendimiento.
+
+4. **🧮 Calculadora Flotante Integrada**:
+   - Herramienta para cálculo rápido de sumas de saldos y penalidades.
+   - Posibilidad de **arrastrar (Drag & Drop)** por la pantalla.
+   - **Control de Visibilidad**: Botón de activación/desactivación en la barra lateral, interruptor en personalización y botón de cierre directo (`✕`) en la cabecera.
+   - Plegado rápido con un clic en su título.
+
+5. **🎨 Motor de Personalización (Theme Engine)**:
+   - **Modos Claro y Oscuro**: Ajuste dinámico de contraste (texto blanco nítido en modo oscuro y texto oscuro en modo claro).
+   - **Paleta de Colores de Acento**: Selector visual y código HEX para cambiar el color de acento del sistema en tiempo real.
+   - **Opacidad y Tinte de Cajas**: Ajuste de transparencia de formularios y tablas sin desenfoque (vidrio nítido 100%).
+   - **Fondo Personalizado**: Carga de imágenes con compresión local en Canvas y deslizador de oscuridad (0% - 90%).
+
+6. **🔒 Autenticación & Control de Acceso (RBAC)**:
+   - Inicio de sesión seguro con usuario y contraseña.
+   - Roles definidos:
+     - **Administrador / Editor**: Modificación de estados, motivos, gestión de limpiezas y administración de usuarios.
+     - **Lector / Solicitante**: Generación de plantillas, subida de casos y consulta en modo lectura.
+   - Panel de administración para altas, asignación de roles y reseteo de credenciales.
+
+---
+
+## 📁 Estructura del Código Fuente
+
+El proyecto sigue una arquitectura modular en JavaScript nativo (Vanilla ES6+) sin dependencias pesadas:
 
 ```text
-Sistema-Limpiezas-main/
+Sistema limpiezas/
 │
-├── index.html              # Interfaz principal de la aplicación y modales
-├── README.md               # Documentación general del sistema
+├── 📄 index.html              # Estructura principal SPA, barra superior, sidebar y modales
+├── 📄 README.md                # Documentación técnica del sistema
+├── 📄 supabase_schema.sql      # Tablas SQL, índices y políticas de seguridad RLS
 │
-├── css/
-│   └── styles.css          # Estilos globales, diseño responsive y temas visuales
+├── 📂 css/
+│   └── 🎨 styles.css          # Sistema de diseño, temas Dark/Light, cards de vidrio y animaciones
 │
-├── img/
-│   └── favicon.png         # Icono y logotipo de la aplicación
-│
-└── js/
-    ├── app.js              # Inicialización general, reloj/fecha en vivo y eventos del tema
-    ├── generators.js       # Lógica de procesamiento y algoritmos de generación (NC, ND, Acometida)
-    ├── historial.js        # Gestión de filtros, selección masiva, traslados a ND y modales de borrado
-    ├── supabase.js         # Cliente de Supabase, autenticación, queries, realtime y CRUD de limpiezas
-    ├── estadisticas.js     # Métricas, podio y renderizado de gráficos con Chart.js
-    ├── navigation.js       # Sistema de navegación entre páginas del panel lateral
-    ├── plantillas.js       # Plantillas predefinidas para OneMarketer
-    ├── theme.js            # Lógica de cambio y almacenamiento de paletas de color y fondos
-    └── helpers.js          # Utilidades (toasts, formateo de montos, portapapeles)
+└── 📂 js/
+    ├── ⚙️ config.js           # Parámetros globales, credenciales Supabase y formatos
+    ├── 🔔 notifications.js    # Sistema de notificaciones emergentes Toast y alertas
+    ├── 👤 auth.js             # Autenticación, control de sesiones y gestión de usuarios
+    ├── 📋 limpiezas.js        # Lógica de la Hoja de Control, tabla en vivo y exportador CSV
+    ├── 📈 estadisticas.js     # Cálculos KPI, tabla dinámica pivot y gráficos
+    ├── 📝 plantillas.js       # Diccionario de plantillas BURO, accesos rápidos y favoritos
+    ├── 🎛️ ui.js               # Control de sidebar, reloj, temas, fondo, pin y calculadora
+    └── 🚀 app.js              # Inicialización general (DOMContentLoaded) y event listeners
 ```
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## 🛠️ Configuración de Supabase (Base de Datos en la Nube)
 
-- **Frontend:** HTML5 semántico, CSS3 moderno (Variables CSS, Flexbox, Grid, Glassmorphism).
-- **JavaScript:** Vanilla ES6+ modular (`type="module"` para servicios Supabase).
-- **Base de Datos & Backend:** [Supabase](https://supabase.com/) (PostgreSQL, Supabase Auth, Realtime Postgres Changes).
-- **Librerías externas:**
-  - [Chart.js](https://www.chartjs.org/) (Gráficos interactivos de estadísticas).
-  - [Flatpickr](https://flatpickr.js.org/) (Selector de fecha y calendario).
-
----
-
-## 💻 Guía de Inicio Rápido
-
-1. **Abrir la aplicación:**
-   - Puedes abrir directamente el archivo `index.html` en un navegador moderno (Chrome, Edge, Firefox, Safari).
-   - Para un rendimiento óptimo de las funciones de portapapeles y módulos ES6, se recomienda servirlo mediante un servidor local (por ejemplo la extensión **Live Server** de VS Code o ejecutando `npx serve .`).
-
-2. **Acceso:**
-   - Ingresa tu usuario y contraseña en el cuadro de inicio de sesión.
-   - El sistema validará tus credenciales contra la lista de usuarios autorizados.
-
-3. **Uso de Generadores:**
-   - Pega tu tabla o datos brutos en el área correspondiente.
-   - Haz clic en **⚡ Generar y Copiar**. El resultado quedará listo en tu portapapeles y se almacenará en el historial.
-
-4. **Filtrar y Gestionar el Historial:**
-   - Ve a la sección **Historial**.
-   - Usa los campos superiores para filtrar por fecha, tipo o una/múltiples cédulas.
-   - Para transferir datos a ND, marca los registros deseados y pulsa **➡️ Usar en ND**.
-   - Para eliminar registros, márcalos con las casillas y pulsa **🗑️ Borrar limpiezas**, o usa el botón individual **🗑️** en la columna de acción. Confirma en la alerta modal para completar la eliminación.
+1. Crea una cuenta o ingresa a [Supabase](https://supabase.com).
+2. Crea un nuevo proyecto.
+3. Dirígete a la pestaña **SQL Editor** y ejecuta el script [`supabase_schema.sql`](supabase_schema.sql).
+4. Copia tu **Project URL** y tu **API Anon Key** desde *Project Settings > API*.
+5. Abre la aplicación web y actualiza las credenciales en `js/config.js` o mediante el modal de configuración de la barra de estado.
 
 ---
 
-## 👤 Autor
+## 👥 Credenciales Iniciales Demo
 
-**Antuan Mora Zuñiga**  
-© 2026 Sistema de Limpiezas. Todos los derechos reservados.
+| Usuario | Contraseña | Rol Asignado |
+| :--- | :--- | :--- |
+| `admin` | `admin123` | Administrador |
+| `cristofer` | `123456` | Editor |
+| `antuan` | `123456` | Editor |
+| `adriel` | `123456` | Editor |
+| `fabricio` | `123456` | Editor |
+| `enoc` | `123456` | Editor |
+| `solicitante` | `123456` | Solicitante (Lector) |
+
+---
+
+## 🌐 Despliegue en Producción (GitHub Pages / Vercel / Netlify)
+
+Al tratarse de una solución 100% Client-Side:
+1. Sube los archivos a tu repositorio en GitHub.
+2. Ve a **Settings** > **Pages**.
+3. En **Branch**, selecciona `main` (o `master`) y la carpeta `/ (root)`.
+4. Guarda los cambios. Tu sistema estará disponible de forma inmediata y segura en la web.
+
+---
+
+## 📜 Historial de Versiones Recientes
+
+- **v2.9 (17/10/2026)**:
+  - Scroll independiente en el índice de Acceso Rápido con cabecera fija y pantalla estática.
+  - Botón completo para activar/desactivar la calculadora desde el sidebar, cabecera (`✕`) y personalización.
+  - Corrección de contraste en modo oscuro (texto blanco con sombra) y modo claro (texto oscuro limpio).
+- **v2.8 (13/10/2026)**:
+  - Botón de Fijado (**Pin**) del generador para scroll cómodo.
+  - Rediseño de botones estilo cápsula píldora.
+  - Selección de plantilla al hacer clic en cualquier parte de la fila.
+- **v2.7 (13/10/2026)**:
+  - Sincronización de tarjetas de vidrio con paleta de acento y deslizador de opacidad.
+  - Eliminación total de desenfoque (blur) para máxima nitidez.
+
+---
+
+© 2026 Generador de Plantillas BURO & Control de Limpiezas. Todos los derechos reservados.

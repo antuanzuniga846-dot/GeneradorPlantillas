@@ -1,642 +1,833 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Limpiezas</title>
-  <!-- Favicon normal -->
-  <link rel="icon" type="image/png" href="img/favicon.png">
-  <!-- Styles CSS -->
-  <link rel="stylesheet" href="css/styles.css">
-  <!-- Para iPhone / Apple -->
-  <link rel="apple-touch-icon" href="img/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Plantillas BURO & Control de Limpiezas</title>
+
+  
+  <!-- Supabase JS Client & Chart.js desde CDN -->
+  <script src="js/libs/supabase.js"></script>
+  <script src="js/libs/chart.js"></script>
+
+  <!-- Estilos CSS Modulares -->
+  <link rel="stylesheet" href="css/styles.css?v=3.0">
+
+  <!-- Estilos prioritarios para Píldoras de Soporte -->
+  <style>
+    .pill-soporte-maria,
+    button.sheet-pill-btn.pill-soporte-maria,
+    .sheet-dropdown-item.pill-soporte-maria,
+    .sheet-select option.pill-soporte-maria,
+    .pill-soporte-adriel,
+    button.sheet-pill-btn.pill-soporte-adriel,
+    .sheet-dropdown-item.pill-soporte-adriel,
+    .sheet-select option.pill-soporte-adriel { 
+      background: #f8bbd0 !important; 
+      background-color: #f8bbd0 !important;
+      color: #ffffff !important; 
+      font-weight: bold !important; 
+      border-color: transparent !important; 
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 2px #000 !important; 
+    }
+  </style>
 </head>
-
 <body>
-<!-- AUTH GATE -->
-<div id="authGate" style="position:fixed; inset:0; display:none; place-items:center; padding:18px; background:rgba(0,0,0,.55); backdrop-filter: blur(10px); z-index:99999;">
-  <div style="width:min(520px, 100%); border:1px solid rgba(255,255,255,.14); border-radius:18px; padding:16px; background:rgba(255,255,255,.08); box-shadow: 0 18px 55px rgba(0,0,0,.55);">
-    <h3 style="margin:0 0 6px;">Iniciar sesión</h3>
-    <p style="margin:0 0 14px; color:rgba(232,241,255,.72); font-size:12px;">Acceso al Sistema de Limpiezas</p>
 
-    <label>Usuario</label>
-    <input id="authUser" type="text" placeholder="Usuario">
+  <!-- Notificaciones Flotantes Persistentes -->
+  <div id="toastContainer"></div>
 
-    <label style="margin-top:10px;">Contraseña</label>
-    <input id="authPass" type="password" placeholder="••••••••" />
+  <!-- ========================================= -->
+  <!-- BARRA SUPERIOR CON BOTONES DE NAVEGACIÓN  -->
+  <!-- ========================================= -->
+  <!-- LAYOUT PRINCIPAL CON SIDEBAR RETRAÍBLE -->
+  <div class="app-layout">
 
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-      <button class="btn btnPrimary" type="button" onclick="authLogin()">Entrar</button>
-      <button class="btn btnPrimary" type="button" onclick="authRegister()">Crear cuenta</button>
-      <button class="btn btnPrimary" type="button" onclick="authLogout()">Salir</button>
-    </div>
-
-    <div style="margin-top:10px; color:rgba(232,241,255,.72); font-size:12px;" id="authMsg"></div>
-  </div>
-</div>
-
-<!-- BACKDROP OVERLAY PARA MÓVILES -->
-<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
-
-  <div class="app" id="appContainer">
-
-    <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <div class="logo">
-          <img src="img/favicon.png" alt="Logo">
-          <span class="brand-text">Sistema de Limpiezas</span>
+    <!-- ========================================= -->
+    <!-- BARRA LATERAL RETRAÍBLE (SIDEBAR)         -->
+    <!-- ========================================= -->
+    <aside id="appSidebar" class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <span class="sidebar-brand-icon">⚡</span>
+          <div class="sidebar-brand-info">
+            <span class="sidebar-brand-title">Generador de Plantillas</span>
+            <span class="sidebar-brand-sub">Control BURO</span>
+          </div>
         </div>
-        <!-- Botón para cerrar en móvil / contraer -->
-        <button type="button" class="btn-sidebar-close" onclick="toggleSidebar()" title="Ocultar menú">✕</button>
       </div>
 
-      <div class="nav">
-        <button type="button" class="navBtn active" data-page="home" onclick="go('home')">
-          <span class="icon">🏠</span> <span class="nav-text">Inicio</span>
+      <nav class="sidebar-nav">
+        <button id="navItemGenerador" class="sidebar-nav-btn active" onclick="cambiarVista('generador')" title="Generador de Plantillas">
+          <span class="nav-icon">📄</span>
+          <span class="nav-label">Generador de Plantillas</span>
+        </button>
+        <button id="navItemHoja" class="sidebar-nav-btn" onclick="cambiarVista('hoja')" title="Hoja de Control de Limpiezas">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Hoja de Control</span>
+        </button>
+        <button id="navItemEstadisticas" class="sidebar-nav-btn" onclick="cambiarVista('estadisticas')" title="Métricas & Tabla Dinámica">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">Estadísticas</span>
+        </button>
+        <button id="sidebarBtnCalculadora" class="sidebar-nav-btn active" onclick="toggleVisibilidadCalculadora()" title="Activar / Desactivar Calculadora">
+          <span class="nav-icon">🧮</span>
+          <span class="nav-label">Calculadora</span>
         </button>
 
-        <button type="button" class="navBtn" data-page="gen-nc" onclick="go('gen-nc')">
-          <span class="icon">🧾</span> <span class="nav-text">Generador NC</span>
+        <div class="sidebar-separator"></div>
+
+        <button class="sidebar-nav-btn" onclick="abrirModalNotasParche()" title="Historial y Notas del Parche">
+          <span class="nav-icon">📜</span>
+          <span class="nav-label">Notas del Parche</span>
+        </button>
+        <button id="sidebarBtnAdmin" class="sidebar-nav-btn" onclick="abrirModalAdminUsuarios()" style="display:none;" title="Gestión de Usuarios y Permisos">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Usuarios</span>
+        </button>
+        <button id="sidebarBtnPersonalizar" class="sidebar-nav-btn" onclick="toggleThemePanel(event)" title="Personalizar tema, colores y fondo">
+          <span class="nav-icon">🎨</span>
+          <span class="nav-label">Personalizar</span>
         </button>
 
-        <button type="button" class="navBtn" data-page="gen-nd" onclick="go('gen-nd')">
-          <span class="icon">📄</span> <span class="nav-text">Generador ND</span>
-        </button>
+        <div class="sidebar-separator"></div>
 
-        <button type="button" class="navBtn" data-page="gen-acometida" onclick="go('gen-acometida')">
-          <span class="icon">📄</span> <span class="nav-text">Acometidas</span>
+        <button class="sidebar-nav-btn btn-sidebar-logout" onclick="cerrarSesionUsuario()" title="Cerrar Sesión">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">Salir</span>
         </button>
+      </nav>
 
-        <button type="button" class="navBtn" data-page="historial" onclick="go('historial')">
-          <span class="icon">📂</span> <span class="nav-text">Historial</span>
-        </button>
-
-        <button type="button" class="navBtn" data-page="estadisticas" onclick="go('estadisticas')">
-          <span class="icon">📊</span> <span class="nav-text">Estadísticas</span>
-        </button>
-
-        <button type="button" class="navBtn" data-page="plantillas" onclick="go('plantillas')">
-          <span class="icon">📁</span> <span class="nav-text">Plantillas</span>
-        </button>
-      </div>
-
-      <div class="sideFooter">
-        <div class="pill"><span class="dot"></span><span class="footer-status">Estado: Listo</span></div>
-        <div class="footer-copy" style="margin-top:10px;">Antuan Mora Zuñiga © 2026.</div>
+      <div class="sidebar-footer">
+        <div class="sidebar-db-badge" title="Estado de Supabase">
+          <span class="db-dot" id="dbDot"></span>
+          <span class="sidebar-db-text" id="dbStatusText">Supabase Online</span>
+        </div>
+        <div class="sidebar-signature">Antuan Mora Zúñiga © 2026</div>
       </div>
     </aside>
 
-    <main class="main">
-      <div class="topbar">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <!-- BOTÓN HAMBURGUESA / DESPLEGAR -->
-          <button type="button" class="btn-toggle-sidebar" id="toggleSidebarBtn" onclick="toggleSidebar()" aria-label="Alternar menú lateral" title="Menú lateral">
-            <span class="toggle-icon">☰</span>
-          </button>
-          <div>
-            <h2 id="pageTitle">Inicio</h2>
-            <div class="sub" id="pageSub">Panel de control y accesos rápidos.</div>
-          </div>
-        </div>
-        <div class="meta">
-          <div id="metaFecha">Fecha: --/--/----</div>
-          <div id="metaHora">Hora: --:--</div>
-        </div>
+    <!-- Panel Flotante de Personalización (Sidebar) -->
+    <div class="theme-panel" id="themePanel" style="display:none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">
+        <h4 style="margin: 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; color: var(--text-primary);">
+          <span>🎨</span> Personalizar
+        </h4>
+        <button type="button" onclick="cerrarThemePanel()" style="background: none; border: none; color: var(--text-muted); font-size: 1.15rem; cursor: pointer; padding: 2px 6px; line-height: 1;">✕</button>
       </div>
 
-      <div class="content">
-        <section class="page active" id="page-home">
-          <div class="home-container">
-            <!-- HERO BANNER BIENVENIDA -->
-            <div class="hero-card">
-              <div class="hero-content">
-                <h1>👋 ¡Bienvenido al Sistema de Limpiezas!</h1>
-                <p>Plataforma integral para la generación de formatos masivos, reversión de notas de débito, acometidas, gestión y control del historial de saldos.</p>
-                <div class="hero-badges">
-                  <span class="hero-badge"><span class="dot"></span>Sistema Operativo</span>
-                  <span class="hero-badge">⚡ Generación Rápida (.txt)</span>
-                  <span class="hero-badge">🔒 Conexión Segura Supabase</span>
-                  <span class="hero-badge">📥 Exportación CSV Disponible</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- TARJETAS DE MÓDULOS DE ACCESO RÁPIDO -->
-            <div class="modules-grid">
-              <div class="module-card" onclick="go('gen-nc')">
-                <div>
-                  <div class="module-icon-wrap">🧾</div>
-                  <h4>Generador NC <span style="font-size:12px; color:var(--accent1);">CM,908</span></h4>
-                  <p>Genera el formato de Notas de Crédito para Recuperación de Clientes Proyecto de Ventas Móvil y gestión de raíces extras.</p>
-                </div>
-                <button class="btn btnPrimary module-btn-action" type="button">Abrir Generador NC →</button>
-              </div>
-
-              <div class="module-card" onclick="go('gen-nd')">
-                <div>
-                  <div class="module-icon-wrap">📄</div>
-                  <h4>Generador ND <span style="font-size:12px; color:var(--accent1);">IN,911</span></h4>
-                  <p>Genera formatos de Notas de Débito, reversiones móviles e incubadora y limpiezas ND300 con autocarga por cédula.</p>
-                </div>
-                <button class="btn btnPrimary module-btn-action" type="button">Abrir Generador ND →</button>
-              </div>
-
-              <div class="module-card" onclick="go('gen-acometida')">
-                <div>
-                  <div class="module-icon-wrap">⚡</div>
-                  <h4>Acometidas <span style="font-size:12px; color:var(--accent1);">Formato</span></h4>
-                  <p>Limpia y estructura listados de acometidas con cédula y nombre para un procesamiento ágil y sin duplicados.</p>
-                </div>
-                <button class="btn btnPrimary module-btn-action" type="button">Abrir Acometidas →</button>
-              </div>
-
-              <div class="module-card" onclick="go('historial')">
-                <div>
-                  <div class="module-icon-wrap">📂</div>
-                  <h4>Historial & Filtros <span style="font-size:12px; color:var(--accent1);">CSV</span></h4>
-                  <p>Consulta registros guardados por rangos de fecha, filtra por cédulas, descarga reportes en CSV y envía datos a ND.</p>
-                </div>
-                <button class="btn btnPrimary module-btn-action" type="button">Ver Historial →</button>
-              </div>
-
-              <div class="module-card" onclick="go('estadisticas')">
-                <div>
-                  <div class="module-icon-wrap">📊</div>
-                  <h4>Estadísticas <span style="font-size:12px; color:var(--accent1);">Ranking</span></h4>
-                  <p>Revisa el ranking en tiempo real de cédulas únicas procesadas por agente, podio y gráficas comparativas de rendimiento.</p>
-                </div>
-                <button class="btn btnPrimary module-btn-action" type="button">Ver Ranking →</button>
-              </div>
-
-              <div class="module-card" onclick="go('plantillas')">
-                <div>
-                  <div class="module-icon-wrap">📁</div>
-                  <h4>Plantillas <span style="font-size:12px; color:var(--accent1);">OneMarketer</span></h4>
-                  <p>Accede rápidamente a plantillas oficiales: autorizaciones, cancelaciones, despachos, cambios de SIM y rechazos.</p>
-                </div>
-                <button class="btn btnPrimary module-btn-action" type="button">Ver Plantillas →</button>
-              </div>
-            </div>
-
-            <!-- PERSONALIZACIÓN VISUAL Y TEMA -->
-            <div class="card" style="margin-top:4px;">
-              <div class="cardHeader">
-                <div>
-                  <h3>🎨 Personalización y Apariencia</h3>
-                  <span>Configura tu paleta de colores preferida y fondo de pantalla</span>
-                </div>
-              </div>
-              <div class="cardBody">
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:24px; align-items:start;">
-                  <!-- COLORES -->
-                  <div>
-                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:8px;">Color personalizado y paleta</label>
-                    <div style="margin-bottom:14px; max-width:280px;">
-                      <span style="font-size:11px; color:var(--muted); font-weight:600; display:block; margin-bottom:6px;">Color personalizado:</span>
-                      <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="position:relative; width:40px; height:38px; flex-shrink:0;">
-                          <div id="colorSwatchPreview" style="width:100%; height:100%; border-radius:8px; border:2px solid var(--stroke); background-color:var(--accent1); cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.25); transition:transform 0.15s ease, border-color 0.15s ease;" title="Haz clic para elegir color"></div>
-                          <input type="color" id="accentColorPicker" value="#00d8f5" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer;" oninput="actualizarColorAcento(this.value)">
-                        </div>
-                        <input 
-                          type="text" 
-                          id="accentColorInput" 
-                          value="#00D8F5" 
-                          maxlength="7" 
-                          placeholder="#00D8F5" 
-                          style="font-family:ui-monospace, monospace; font-size:13px; font-weight:700; text-transform:uppercase; padding:8px 10px; height:38px; letter-spacing:0.5px; flex:1;"
-                          oninput="actualizarColorDesdeTexto(this.value)"
-                        >
-                      </div>
-                    </div>
-
-                    <span style="font-size:11px; color:var(--muted); font-weight:600; display:block; margin-bottom:8px;">Paleta de colores sugeridos:</span>
-                    <div style="display:flex; gap:9px; flex-wrap:wrap; align-items:center;" id="paletteContainer">
-                      <button type="button" class="color-preset-btn" data-theme="azul" style="background:#00d8f5;" title="Azul / Cyan" onclick="seleccionarPresetColor('azul')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="verde" style="background:#22c55e;" title="Verde" onclick="seleccionarPresetColor('verde')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="morado" style="background:#c084fc;" title="Morado" onclick="seleccionarPresetColor('morado')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="rojo" style="background:#ef4444;" title="Rojo" onclick="seleccionarPresetColor('rojo')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="rosado" style="background:#f472b6;" title="Rosado" onclick="seleccionarPresetColor('rosado')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="amarillo" style="background:#facc15;" title="Amarillo" onclick="seleccionarPresetColor('amarillo')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="naranja" style="background:#f97316;" title="Naranja" onclick="seleccionarPresetColor('naranja')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="cafe" style="background:#8b6f4e;" title="Café / Marrón" onclick="seleccionarPresetColor('cafe')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="vino" style="background:#922053;" title="Vino" onclick="seleccionarPresetColor('vino')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="beige" style="background:#e0d8c3;" title="Beige" onclick="seleccionarPresetColor('beige')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="verde_lima" style="background:#a3e635;" title="Lima" onclick="seleccionarPresetColor('verde_lima')"></button>
-                      <button type="button" class="color-preset-btn" data-theme="rgb" style="background:linear-gradient(135deg, #ef4444, #facc15, #22c55e, #00d8f5, #c084fc);" title="Arcoíris RGB Animado" onclick="seleccionarPresetColor('rgb')"></button>
-                    </div>
-                  </div>
-
-                  <!-- FONDO PERSONALIZADO -->
-                  <div>
-                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:8px;">🖼️ Imagen de fondo personalizada</label>
-                    <div class="hintText" style="margin-bottom:12px;">Sube una imagen de tu equipo para usarla como fondo del sistema.</div>
-
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                      <input type="file" id="bgImageInput" accept="image/*" style="display:none;" onchange="manejarSubidaFondo(event)">
-                      
-                      <button class="btn btnPrimary" type="button" onclick="document.getElementById('bgImageInput').click()">
-                        📁 Seleccionar imagen
-                      </button>
-
-                      <button class="btn btnGhost" type="button" id="removeBgBtn" onclick="quitarFondoPersonalizado()" style="display:none;">
-                        🗑️ Quitar fondo
-                      </button>
-                    </div>
-
-                    <div id="bgAdjustWrap" style="margin-top:14px; display:none;">
-                      <div style="display:flex; justify-content:space-between; max-width:280px; margin-bottom:4px;">
-                        <label style="font-size:11.5px; margin:0;">Oscuridad del fondo:</label>
-                        <span id="bgDarknessVal" style="font-size:11.5px; color:var(--accent1); font-weight:700;">75%</span>
-                      </div>
-                      <input 
-                        type="range" 
-                        id="bgDarknessSlider" 
-                        min="20" 
-                        max="95" 
-                        value="75" 
-                        oninput="ajustarOscuridadFondo(this.value)" 
-                        style="width:100%; max-width:280px; accent-color:var(--accent1); cursor:pointer;"
-                      >
-                    </div>
-                  </div>
-                </div>
-
-                <div style="margin-top:20px; border-top:1px solid var(--stroke); padding-top:14px;">
-                  <button id="saveThemeBtn" class="btn btnPrimary">
-                    💾 Guardar tema
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="page" id="page-gen-acometida">
-          <div class="card">
-            <div class="cardHeader">
-              <h3>Generador Acometida</h3>
-              <span>Formato Acometida</span>
-            </div>
-
-            <div class="cardBody">
-              <div class="formGrid">
-                <div style="grid-column: 1 / -1;">
-                  <label>Acometida Completa</label>
-                  <textarea id="data_acometida"></textarea>
-                </div>
-
-                <div style="grid-column: 1 / -1;">
-                  <label>Resultado (Acometida)</label>
-                  <textarea id="resultado_acometida" readonly></textarea>
-                </div>
-              </div>
-
-              <div class="actions">
-                <div class="btnRow">
-                  <button class="btn btnPrimary" onclick="generarAcometidaUltra()">⚡ Generar</button>
-                  <button class="btn btnPrimary" onclick="copiarResultado('acometida')">📋 Copiar</button>
-                  <button class="btn btnPrimary" id="btnLimpiar_acometida" onclick="limpiarTodo('acometida')">🧹 Limpiar</button>
-                </div>
-                <div class="statLine">
-                  <span class="pill"><span class="dot"></span>Registros: <b id="count_acometida">0</b></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="page" id="page-gen-nc">
-          <div class="card">
-            <div class="cardHeader">
-              <h3>Generador NC</h3>
-              <span>CM,908,... (Recuperación)</span>
-            </div>
-
-            <div class="cardBody">
-              <div class="formGrid">
-                <div>
-                  <label>Raíz principal</label>
-                  <input id="raiz_nc" type="text" placeholder="Ej: 1.1180330">
-                </div>
-
-                <div>
-                  <label>Cédula</label>
-                  <input id="cedula" type="text" placeholder="Ej: 702840496">
-                </div>
-
-                <div style="grid-column: 1 / -1;">
-                  <label>Tabla principal (NC)</label>
-                  <textarea id="data_nc"></textarea>
-                </div>
-
-                <div style="grid-column: 1 / -1;">
-                  <div style="display: flex; align-items: center; justify-content: end; gap: 10px; margin-bottom: 10px;">
-                    <button class="btn btnPrimary" onclick="generarPlantilla('nc')">⚡ Generar</button>
-                    <button class="btn btnPrimary" id="btnLimpiar_nc" onclick="limpiarTodo('nc')">🧹 Limpiar</button>
-                    <button class="btn btnPrimary" onclick="pasarRaizAExtra('nc')">➕ Agregar raíz extra</button>
-                  </div>
-                  <div class="ruleTop">
-                    <div>
-                      <label style="margin:0;">Raíces extras (NC)</label>
-                      <div class="hintText">Cada raíz extra trae su propia tabla completa.</div>
-                    </div>
-                  </div>
-                  <div class="rulesWrap" id="rules_nc"></div>
-                </div>
-
-                <div style="grid-column: 1 / -1;">
-                  <label>Resultado (NC)</label>
-                  <textarea id="resultado_nc" readonly></textarea>
-                </div>
-              </div>
-
-              <div class="actions">
-                <div class="statLine">
-                  <span class="pill"><span class="dot"></span>Registros: <b id="count_nc">0</b></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="page" id="page-gen-nd">
-          <div class="card">
-            <div class="cardHeader">
-              <h3>Generador ND</h3>
-              <span>IN,911,... (Reversión)</span>
-            </div>
-
-            <div class="cardBody">
-              <div class="formGrid">
-                <div>
-                  <label>Tipo</label>
-                  <input value="ND" disabled>
-                  <div class="hintText">Este generador siempre crea ND.</div>
-                </div>
-
-                <div>
-                  <label>Comentario ND</label>
-                  <select id="tipo_nd">
-                    <option value="reversion">Reversión Proyecto Venta Servicio Móvil</option>
-                    <option value="reversionIncu">Reversiones Hibridos, Incubadora, etc...</option>
-                    <option value="limpieza">Limpieza NC 200</option>
-                  </select>
-                </div>
-
-                <div style="grid-column: 1 / -1;">
-                  <label>Tabla principal (ND)</label>
-                  <textarea id="data_nd"
-                    onblur="buscarRaicesNDAutomatico()"
-                    placeholder="1.1180330 1235446 28809.00 00012020303203 119760472"></textarea>
-                </div>
-
-                <div style="grid-column: 1 / -1; display:none;">
-                  <div class="rulesWrap" id="rules_nd"></div>
-                </div>
-
-                <div style="grid-column: 1 / -1;">
-                  <label>Resultado (ND)</label>
-                  <textarea id="resultado_nd" readonly></textarea>
-                </div>
-              </div>
-
-              <div class="actions">
-                <div class="btnRow">
-                  <button class="btn btnPrimary" onclick="generarPlantilla('nd')">⚡ Generar</button>
-                  <button class="btn btnPrimary" onclick="copiarResultado('nd')">📋 Copiar</button>
-                  <button class="btn btnPrimary" id="btnLimpiar_nd" onclick="limpiarTodo('nd')">🧹 Limpiar</button>
-                </div>
-                <div class="statLine">
-                  <span class="pill"><span class="dot"></span>Registros: <b id="count_nd">0</b></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="page" id="page-historial">
-          <div class="card">
-            <div class="cardHeader">
-              <h3>Historial de Limpiezas</h3>
-              <span>Selecciona y reutiliza para ND</span>
-            </div>
-
-            <div class="cardBody">
-              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;">
-                <input id="fechaFiltro" style="max-width:180px;" placeholder="📅 Seleccionar fecha" />
-
-                <select id="tipoFiltro" onchange="cargarHistorial(true)" style="max-width:160px;">
-                  <option value="">Todos los tipos</option>
-                  <option value="NC200">NC200</option>
-                  <option value="ND200">ND200</option>
-                  <option value="ND300">ND300</option>
-                </select>
-
-                <input id="cedulaFiltro" style="max-width:180px;" placeholder="🔍 Filtrar por cédula(s)..." />
-
-                <button class="btn btnPrimary" type="button" onclick="aplicarFiltros()">Filtrar</button>
-                <button class="btn btnPrimary" type="button" onclick="limpiarFiltros()">🧹 Limpiar</button>
-                <button class="btn btnPrimary" type="button" onclick="cargarHistorial(true)">🔄 Recargar</button>
-                <button class="btn btnPrimary" type="button" onclick="usarSeleccionParaND()">➡️ Usar en ND</button>
-                <button class="btn btnPrimary" type="button" id="btnDescargarCSV" onclick="descargarCSVHistorial()" title="Descargar como CSV los registros cargados">📥 Descargar CSV</button>
-                <button class="btn btnDanger" type="button" id="btnBorrarLimpiezas" onclick="confirmarBorrarLimpiezas()">🗑️ Borrar limpiezas</button>
-                <button class="btn btnPrimary" type="button" id="btnDepurarRaices" onclick="confirmarDepurarRaicesDuplicadas()" title="Elimina limpiezas antiguas si la misma raíz fue subida después">⚡ Depurar raíces duplicadas</button>
-              </div>
-
-              <div style="max-height:450px; overflow:auto;">
-                <table id="tablaHistorialContenedor" style="width:100%; font-size:12px; border-collapse:collapse;">
-                  <thead>
-                    <tr style="text-align:left; border-bottom:1px solid rgba(255,255,255,.2);">
-                      <th style="width:36px; padding:8px 4px; text-align:center;">
-                        <input type="checkbox" id="chkSelectAllHist" title="Seleccionar todas" onchange="toggleSelectAllHist(this.checked)">
-                      </th>
-                      <th>Factura</th>
-                      <th>Billing</th>
-                      <th>Monto</th>
-                      <th>Raíz</th>
-                      <th>Tipo</th>
-                      <th>Fecha</th>
-                      <th>Cédula</th>
-                      <th>Usuario</th>
-                      <th style="text-align:center; width:50px;">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tablaHistorial"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="page" id="page-estadisticas">
-  <div class="grid">
-    <div class="card" style="grid-column: span 12;">
-      <div class="cardHeader">
-        <div>
-          <h3>🏆 Ranking de Limpiezas (Cédulas Únicas)</h3>
-          <span>Calculado en tiempo real desde Supabase</span>
-        </div>
-        <div>
-          <button class="btn btnGhost" type="button" onclick="cargarEstadisticas(true)">🔄 Recargar Datos</button>
-        </div>
-      </div>
+      <h4>Tema</h4>
+      <label><input type="radio" name="modoTema" value="light" id="temaClaro" onchange="setModoTema('light')"> ☀️ Claro</label>
+      <label><input type="radio" name="modoTema" value="dark" id="temaOscuro" onchange="setModoTema('dark')"> 🌙 Oscuro</label>
       
-      <div class="cardBody">
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom: 20px;">
-          <div class="kpi" style="grid-column:auto;">
-            <div class="label">🥇 Agente Líder</div>
-            <div class="value" id="kpiLider" style="font-size:20px;">--</div>
-            <div class="hint" id="kpiLiderCount">0 cédulas únicas</div>
-          </div>
-          <div class="kpi" style="grid-column:auto;">
-            <div class="label">👥 Agentes Activos</div>
-            <div class="value" id="kpiTotalAgentes">0</div>
-            <div class="hint">Con limpiezas registradas</div>
-          </div>
-          <div class="kpi" style="grid-column:auto;">
-            <div class="label">📄 Cédulas Únicas Procesadas</div>
-            <div class="value" id="kpiTotalCedulas">0</div>
-            <div class="hint">Total sumado de agentes</div>
+      <h4>Color de acento</h4>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="color" id="colorPicker" value="#0078d7" oninput="setAccentColor(this.value)" title="Elegir color" style="width:40px; height:34px; border:none; border-radius:4px; cursor:pointer;">
+        <input type="text" id="colorHex" value="#0078D7" maxlength="7" oninput="setAccentColorFromHex(this.value)" placeholder="#0078D7" style="margin:0; padding:6px 8px; font-size:0.85rem;">
+      </div>
+
+      <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🪟 Opacidad Formulario & Tablas</h4>
+      <div>
+        <label style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Opacidad:</span>
+          <span id="inputOpacityVal" style="font-weight: bold; color: var(--accent);">50%</span>
+        </label>
+        <input 
+          type="range" 
+          id="inputOpacitySlider" 
+          min="0" 
+          max="100" 
+          value="50" 
+          oninput="ajustarOpacidadCampos(this.value)" 
+          style="width: 100%; accent-color: var(--accent); cursor: pointer;"
+        >
+      </div>
+
+      <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🖼️ Fondo personalizado</h4>
+      <input type="file" id="bgImageInput" accept="image/*" style="display:none;" onchange="manejarSubidaFondo(event)">
+      
+      <button type="button" class="btn-fondo" onclick="document.getElementById('bgImageInput').click()">📁 Subir imagen</button>
+      <button type="button" class="btn-fondo btn-fondo-quitar" id="removeBgBtn" onclick="quitarFondoPersonalizado()" style="display:none;">🗑️ Quitar fondo</button>
+
+      <div id="bgAdjustWrap" style="margin-top: 10px; display: none;">
+        <label style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Oscuridad fondo:</span>
+          <span id="bgDarknessVal" style="font-weight: bold; color: var(--accent);">40%</span>
+        </label>
+        <input 
+          type="range" 
+          id="bgDarknessSlider" 
+          min="0" 
+          max="90" 
+          value="40" 
+          oninput="ajustarOscuridadFondo(this.value)" 
+          style="width: 100%; accent-color: var(--accent); cursor: pointer;"
+        >
+      </div>
+
+      <h4 style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">🧮 Herramientas</h4>
+      <label style="cursor: pointer;">
+        <input type="checkbox" id="chkToggleCalculadora" checked onchange="toggleVisibilidadCalculadora(this.checked)" style="width: auto; margin: 0;">
+        <span>Mostrar Calculadora</span>
+      </label>
+    </div>
+
+    <!-- ÁREA PRINCIPAL -->
+    <div class="app-main">
+
+      <!-- ========================================= -->
+      <!-- BARRA SUPERIOR (HEADER)                   -->
+      <!-- ========================================= -->
+      <header class="top-navbar">
+        <div class="topbar-left">
+          <button type="button" id="btnToggleSidebar" class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Colapsar / Expandir menú lateral">
+            <span class="hamburger-icon">☰</span>
+          </button>
+          <div class="topbar-heading">
+            <h1 id="topbarViewTitle" class="topbar-title">Generador de Plantillas</h1>
+            <p id="topbarViewSubtitle" class="topbar-subtitle">Genera y copia formatos de trámite para gestiones BURO</p>
           </div>
         </div>
 
-        <!-- Podio Top 3 -->
-        <div id="podiumContainer" class="podium-grid"></div>
+        <div class="topbar-right">
+          <div class="topbar-clock-box">
+            <span id="topbarFecha" class="topbar-clock-date">Fecha: 13/10/2026</span>
+            <span id="topbarHora" class="topbar-clock-time">Hora: 10:00 a.m.</span>
+          </div>
+
+          <div class="topbar-user-pill">
+            <span class="user-avatar">👤</span>
+            <span id="lblUsuarioUser" class="user-name">Usuario</span>
+            <span id="lblRolActual" class="role-badge role-reader">Lector</span>
+          </div>
+
+          <span id="lblUsuarioNombre" style="display:none;">Usuario</span>
+          <div id="dbStatusBadge" style="display:none;"></div>
+        </div>
+      </header>
+
+      <!-- CONTENIDO DE LAS VISTAS -->
+      <main class="app-content">
+
+  <!-- ======================================================= -->
+  <!-- VISTA 1: GENERADOR DE PLANTILLAS                       -->
+  <!-- ======================================================= -->
+  <div id="vistaGenerador">
+    <div class="flex-container">
+      
+      <!-- Índice lateral -->
+      <div class="indice-lateral">
+        <div class="indice-lateral-header">
+          <h3 class="box-titulo">📌 Acceso Rápido</h3>
+          <label style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.82rem; margin-bottom: 10px; cursor: pointer;">
+            <input type="checkbox" id="toggleFavoritos" checked onchange="renderIndice()" style="width: auto; margin: 0;"> 
+            <span>Mostrar solo favoritos</span>
+          </label>
+        </div>
+        <div class="indice-lateral-scroll">
+          <strong class="indice-section-title">✅ Procede</strong>
+          <ul id="listaProcede"></ul>
+
+          <strong class="indice-section-title">⛔ No Procede</strong>
+          <ul id="listaNoProcede"></ul>
+
+          <div style="margin-top: 10px;">
+            <strong class="indice-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>🚫 Rechazos</span>
+              <button type="button" onclick="toggleSeccion('rechazosLista')" style="font-size: 0.72rem; padding: 2px 7px; border-radius: 5px; border: 1px solid var(--card-border); background: var(--calc-btn-bg); color: var(--text-secondary); cursor: pointer;">mostrar / ocultar</button>
+            </strong>
+            <ul id="rechazosLista" style="display: none;"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generador de plantillas -->
+      <div class="container" id="cardGenerador">
+        <div class="generator-header-bar">
+          <div class="generator-header-left">
+            <span class="generator-header-icon">📄</span>
+            <h2 class="generator-header-title">Generador de Plantillas</h2>
+          </div>
+          <div class="generator-header-right">
+            <button type="button" id="btnPinGenerador" class="btn-pin-generador" onclick="togglePinGenerador()" title="Fijar generador para que baje al hacer scroll y ver las demás plantillas">
+              <span class="pin-icon">📌</span>
+              <span class="pin-text">Fijar</span>
+            </button>
+          </div>
+        </div>
+
+        <label for="plantilla">Seleccionar Plantilla:</label>
+        <select id="plantilla"></select>
+
+        <label for="gestion">Numero de gestion:</label>
+        <div class="campo-wrapper">
+          <input type="text" id="gestion" placeholder="Ej:239393" oninput="this.value = this.value.replace(/\D/g, '');">
+          <span id="gestionError" class="error-msg">*Información Obligatoria*</span>
+        </div>
+
+        <div id="formulario" style="display: none;">
+
+          <label for="nombre">Nombre del Cliente:</label>
+          <div class="campo-wrapper">
+            <input type="text" id="nombre" placeholder="Ej: JUAN PÉREZ" oninput="this.value = this.value.toUpperCase();">
+            <span id="nombreError" class="error-msg">*Información Obligatoria*</span>
+          </div>
+
+          <label for="cedula">Cédula:</label>
+          <div class="campo-wrapper">
+            <input type="text" id="cedula" placeholder="Ej: 123456789" onblur="verificarCedulaEnLimpiezas(this.value)">
+            <span id="cedulaError" class="error-msg">*Información Obligatoria*</span>
+          </div>
+            
+          <div id="montoInput" style="display: none;">
+            <label for="monto">Monto (¢):</label>
+            <div class="campo-wrapper">
+              <input type="text" id="monto" class="monto-input" placeholder="Ej: 25,000.00">
+              <span id="montoError" class="error-msg">*Información Obligatoria*</span>
+            </div>
+          </div>
+          
+          <div id="checkboxes" class="checkbox-section" style="display: none;">
+            <label><input type="radio" name="condicion" id="finaciamiento"> Financiamiento abierto.</label>
+            <label><input type="radio" name="condicion" id="suspendido"> Suspendido</label>
+            <label><input type="radio" name="condicion" id="sinCumplirAno"> Facturas no Cumple año antigüedad</label>
+            <label><input type="radio" name="condicion" id="menos2750"> Normal</label>
+          </div>
+
+          <div id="checkboxesFacturasExtra" class="checkbox-section" style="display: none;">
+            <div class="saldos-extra">
+              <p class="saldos-extra-titulo">💰 Saldos adicionales</p>
+              <label for="montoCeroPagosFP">Saldo Cero Pagos (¢):</label>
+              <input type="text" id="montoCeroPagosFP" class="monto-input" placeholder="Ej: 25,000.00">
+
+              <label for="montoWritteOffFP">Saldo Writte Off (¢):</label>
+              <input type="text" id="montoWritteOffFP" class="monto-input" placeholder="Ej: 25,000.00">
+            </div>
+          </div>
+
+          <div id="checkboxesFacturasServicioActivo" class="checkbox-section" style="display: none;">
+            <div class="saldos-extra" id="grupoSaldosSA">
+              <p class="saldos-extra-titulo">💰 Ingresar el monto correspondiente</p>
+              <label for="montoFacturasPendientesSA">Saldo Facturas Pendientes (¢):</label>
+              <input type="text" id="montoFacturasPendientesSA" class="monto-input" placeholder="Ej: 25,000.00">
+
+              <label for="montoCeroPagosSA">Saldo Cero Pagos (¢):</label>
+              <input type="text" id="montoCeroPagosSA" class="monto-input" placeholder="Ej: 25,000.00">
+
+              <label for="montoWritteOffSA">Saldo Writte Off (¢):</label>
+              <input type="text" id="montoWritteOffSA" class="monto-input" placeholder="Ej: 25,000.00">
+              <span id="saldosSAError" class="error-msg">*Información Obligatoria*</span>
+            </div>
+          </div>
+
+          <!-- SECCIÓN LIMPIEZA DE SALDOS -->
+          <div id="checkboxesLimpiezaSaldos" class="checkbox-section" style="display: none;">
+            <div class="saldos-extra" id="grupoSaldosLS">
+              <p class="saldos-extra-titulo">💰 Ingresar el monto correspondiente</p>
+              <label for="montoFacturasPendientesLS">Facturas Pendientes (¢):</label>
+              <input type="text" id="montoFacturasPendientesLS" class="monto-input" placeholder="Ej: 25,000.00">
+
+              <label for="montoWritteOffLS">Writte Off (¢):</label>
+              <input type="text" id="montoWritteOffLS" class="monto-input" placeholder="Ej: 25,000.00">
+
+              <label for="montoCeroPagosLS">Cero Pagos (¢):</label>
+              <input type="text" id="montoCeroPagosLS" class="monto-input" placeholder="Ej: 25,000.00">
+              <span id="saldosLSError" class="error-msg">*Información Obligatoria*</span>
+            </div>
+
+            <!-- Casilla Reversión -->
+            <div style="margin-top: 10px; background: var(--card-bg); padding: 9px 12px; border-radius: 8px; border: 1px solid var(--card-border); border-left: 3px solid #ff9800;">
+              <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chkReversionLS" style="width: auto; margin: 0;"> 
+                <span>¿Es una Reversión? (Marcar si es una limpieza previamente reversada)</span>
+              </label>
+            </div>
+
+            <!-- Casilla REC -->
+            <div style="margin-top: 8px; background: var(--card-bg); padding: 9px 12px; border-radius: 8px; border: 1px solid var(--card-border); border-left: 3px solid #00bcd4;">
+              <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chkRecLS" style="width: auto; margin: 0;"> 
+                <span>REC (Marcar para generar plantilla sin subir a la hoja de limpiezas)</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="checkboxesCeroPagos" class="checkbox-section" style="display: none;">
+            <label>
+              <input type="checkbox" id="ceroPagosIncubadora"> Cero Pagos Incubadora
+            </label>
+
+            <div class="saldos-extra">
+              <p class="saldos-extra-titulo">💰 Saldos adicionales</p>
+              <label for="montoFacturasPendientesCP">Saldo Facturas Pendientes (¢):</label>
+              <input type="text" id="montoFacturasPendientesCP" class="monto-input" placeholder="Ej: 25,000.00">
+
+              <label for="montoWritteOffCP">Saldo Writte Off (¢):</label>
+              <input type="text" id="montoWritteOffCP" class="monto-input" placeholder="Ej: 25,000.00">
+            </div>
+          </div>
+
+          <div id="checkboxesWriteOffSinTerminal" class="checkbox-section" style="display: none;">
+            <div class="saldos-extra">
+              <p class="saldos-extra-titulo">💰 Saldos adicionales</p>
+              <label for="montoFacturasPendientesWO">Saldo Facturas Pendientes (¢):</label>
+              <input type="text" id="montoFacturasPendientesWO" class="monto-input" placeholder="Ej: 25,000.00">
+
+              <label for="montoCeroPagosWO">Saldo Cero Pagos (¢):</label>
+              <input type="text" id="montoCeroPagosWO" class="monto-input" placeholder="Ej: 25,000.00">
+            </div>
+          </div>
+
+          <div id="writteOffCampos" style="display: none;">
+            <label for="fecha_activacion">Fecha de activación:</label>
+            <div class="campo-wrapper">
+              <input type="text" id="fecha_activacion" placeholder="Ej: 3/7/2013">
+              <span id="fecha_activacionError" class="error-msg">*Información Obligatoria*</span>
+            </div>
+
+            <label for="fecha_expiracion">Fecha de expiración:</label>
+            <div class="campo-wrapper">
+              <input type="text" id="fecha_expiracion" placeholder="Ej: 3/7/2015">
+              <span id="fecha_expiracionError" class="error-msg">*Información Obligatoria*</span>
+            </div>
+
+            <label for="fecha_desactivacion">Fecha de desactivación:</label>
+            <div class="campo-wrapper">
+              <input type="text" id="fecha_desactivacion" placeholder="Ej: 21/11/2013">
+              <span id="fecha_desactivacionError" class="error-msg">*Información Obligatoria*</span>
+            </div>
+
+            <label for="terminal">Terminal ligado:</label>
+            <div class="campo-wrapper">
+              <input type="text" id="terminal" placeholder="Ej: SAMSUNG GALAXY S III ONYX BLACK">
+              <span id="terminalError" class="error-msg">*Información Obligatoria*</span>
+            </div>
+          </div>
+
+          <div id="campoFecha" style="display: none;">
+            <label for="fecha">Fecha de Nota de Crédito:</label>
+            <div class="campo-wrapper">
+              <input type="date" id="fecha">
+              <span id="fechaError" class="error-msg">*Información Obligatoria*</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-action" onclick="generarYProcesarPlantilla()">🧾 Generar Plantilla / 📋 Copiar texto</button>
+
+        <label for="resultado">Texto Generado:</label>
+        <textarea id="resultado"></textarea>
+
+        <button class="btn-action" onclick="copiarTexto()">📋 Copiar al portapapeles</button>
+      </div>
+
+      <!-- Calculadora -->
+      <div class="calculadora" id="cardCalculadora">
+        <div class="calc-header-bar">
+          <h3 class="box-titulo" role="button" tabindex="0" title="Clic para mostrar/ocultar los botones de la calculadora" onclick="toggleCalculadora()" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleCalculadora(); }">🧮 Calculadora</h3>
+          <button type="button" class="btn-cerrar-calc" onclick="toggleVisibilidadCalculadora(false)" title="Desactivar y ocultar calculadora completamente">✕</button>
+        </div>
+        <input type="text" id="calcDisplay">
+        <div class="botones">
+          <button id="buttonCalcu" onclick="appendCalc('7')">7</button>
+          <button id="buttonCalcu" onclick="appendCalc('8')">8</button>
+          <button id="buttonCalcu" onclick="appendCalc('9')">9</button>
+          <button id="buttonCalcu" onclick="appendCalc('/')">÷</button>
+          <button id="buttonCalcu" onclick="appendCalc('4')">4</button>
+          <button id="buttonCalcu" onclick="appendCalc('5')">5</button>
+          <button id="buttonCalcu" onclick="appendCalc('6')">6</button>
+          <button id="buttonCalcu" onclick="appendCalc('*')">×</button>
+          <button id="buttonCalcu" onclick="appendCalc('1')">1</button>
+          <button id="buttonCalcu" onclick="appendCalc('2')">2</button>
+          <button id="buttonCalcu" onclick="appendCalc('3')">3</button>
+          <button id="buttonCalcu" onclick="appendCalc('-')">−</button>
+          <button id="buttonCalcu" onclick="appendCalc('0')">0</button>
+          <button id="buttonCalcu" onclick="appendCalc('.')">.</button>
+          <button id="buttonCalcu" onclick="calculate()">=</button>
+          <button id="buttonCalcu" onclick="appendCalc('+')">+</button>
+          <button id="buttonCalcu" onclick="backspaceCalc()" style="grid-column: span 2;">⌫</button>
+          <button id="buttonCalcu" onclick="clearCalc()" style="grid-column: span 2;">C</button>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- Gráfica -->
-    <div class="card" style="grid-column: span 12;">
-      <div class="cardHeader">
-        <h3>📊 Gráfica Comparativa</h3>
-        <span>Cédulas únicas vs Total de registros</span>
+  <!-- ======================================================= -->
+  <!-- VISTA 2: HOJA DE CONTROL DE LIMPIEZAS (SHEETS UI)       -->
+  <!-- ======================================================= -->
+  <div id="vistaHoja">
+    <div class="sheet-wrapper">
+      <div class="sheet-header-bar">
+        <div class="sheet-header-left">
+          <span class="sheet-header-title">📊 Hoja de Control de Limpiezas</span>
+          <span class="sheet-info-badge">📋 Toca cualquier cédula para copiarla (Editores: marcar en proceso)</span>
+        </div>
+        <div class="sheet-header-right">
+          <input type="text" id="filtroSheet" class="sheet-header-input" style="width: 220px;" placeholder="🔍 Buscar cédula, agente..." oninput="manejarFiltroSheet(this.value)" onkeydown="if(event.key==='Enter') buscarEnSupabaseDirecto()">
+          <button class="btn-header-action btn-header-success" onclick="abrirModalExportarCSV()">📥 Exportar CSV</button>
+          <button class="btn-header-action" onclick="sincronizarConSupabase()" title="Recargar datos de Supabase">🔄 Sincronizar</button>
+        </div>
       </div>
-      <div class="cardBody" style="position: relative; height: 360px; width: 100%;">
-        <canvas id="chartRanking"></canvas>
-      </div>
-    </div>
 
-    <!-- Tabla -->
-    <div class="card" style="grid-column: span 12;">
-      <div class="cardHeader">
-        <h3>📋 Tabla de Posiciones Completa</h3>
-        <span>Desglose por usuario</span>
-      </div>
-      <div class="cardBody" style="max-height: 400px; overflow: auto;">
-        <table style="width:100%; font-size:13px; border-collapse:collapse;" id="tablaRanking">
+      <div class="sheet-table-container">
+        <table class="sheet-table" id="tablaSheet">
           <thead>
-            <tr style="text-align:left; border-bottom:1px solid var(--stroke); color:var(--muted); background:var(--card2);">
-              <th style="padding:10px 14px;">Posición</th>
-              <th style="padding:10px 14px;">Agente / Usuario</th>
-              <th style="padding:10px 14px;">Cédulas Únicas</th>
-              <th style="padding:10px 14px;">Total Registros</th>
-              <th style="padding:10px 14px;">Efectividad</th>
+            <tr>
+              <th>Marca temporal ˅</th>
+              <th>Monto ˅</th>
+              <th>Agente ˅</th>
+              <th class="th-cedula" style="text-align: center; width: 180px; max-width: 190px;">Cédula ˅</th>
+              <th style="text-align: center;">Cero Pagos ˅</th>
+              <th style="text-align: center;">Soporte ˅</th>
+              <th style="text-align: center;">Categoría ˅</th>
+              <th style="text-align: center;">Motivo ˅</th>
+              <th style="text-align: center;">Acciones</th>
             </tr>
           </thead>
-          <tbody id="tablaRankingBody">
-            <tr>
-              <td colspan="5" style="text-align:center; padding:20px; color:var(--muted);">Cargando...</td>
-            </tr>
+          <tbody id="tablaSheetBody">
+            <!-- Filas dinámicas -->
           </tbody>
         </table>
       </div>
     </div>
   </div>
-</section>
 
-        <section class="page" id="page-plantillas">
-          <div class="card">
-            <div class="cardHeader">
-              <h3>Plantillas</h3>
-              <span>Plantillas para OneMarketer</span>
-            </div>
-            <div class="cardBody">
-              <div class="plantillas-lista">
-                <button class="btn btnPrimary" onclick="mostrarPlantilla('nc')">📋 Notas de Crédito</button>
-                <button class="btn btnPrimary" onclick="mostrarPlantilla('autorizacion')">📋 Autorización</button>
-                <button class="btn btnPrimary" onclick="mostrarPlantilla('cancelacion')">📋 Cancelación</button>
-                <button class="btn btnPrimary" onclick="mostrarPlantilla('despacho')">📋 Despacho</button>
-                <button class="btn btnPrimary" onclick="mostrarPlantilla('errordeaprovisionamiento')">📋 Error de Aprovisionamiento</button>
-                <button class="btn btnPrimary" onclick="mostrarPlantilla('cambiodesim')">📋 Cambio de SIM</button>
-                <button class="btn btnPrimary" onclick="mostrarPlantilla('qflow')">📋 Casos Q-flow</button>
-                <button class="btn btnPrimary" onclick="mostrarPlantilla('rechazos')">📋 Rechazos</button>
-              </div>
+  <!-- ======================================================= -->
+  <!-- VISTA 3: MÉTRICAS, GRÁFICAS & TABLA DINÁMICA           -->
+  <!-- ======================================================= -->
+  <div id="vistaEstadisticas" style="display: none;">
+    <div class="sheet-wrapper" style="margin-bottom: 25px;">
+      <!-- Barra superior de Métricas -->
+      <div class="sheet-header-bar">
+        <div class="sheet-header-left">
+          <span class="sheet-header-title">📈 Métricas, Gráfica de Soporte & Tabla Dinámica</span>
+        </div>
 
-              <div id="contenidoPlantilla" style="margin-top:20px;">
-                Selecciona una plantilla...
-              </div>
+        <!-- Filtros de Fecha para Métricas y Tabla Dinámica -->
+        <div class="sheet-header-right">
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoStats('hoy', this)">📅 Hoy</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoStats('mes', this)">📅 Este Mes</button>
+          <button type="button" class="btn-rango-stats active" id="btnStatsTodo" onclick="setRangoRapidoStats('todo', this)">📁 Todo el Historial</button>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <input type="date" id="statsFechaDesde" class="sheet-header-input sheet-date-input" onchange="actualizarEstadisticasYTablaDinamica()" title="Fecha Desde">
+            <span style="color: var(--accent-oncolor); opacity: 0.85; font-size: 0.84rem; font-weight: bold;">a</span>
+            <input type="date" id="statsFechaHasta" class="sheet-header-input sheet-date-input" onchange="actualizarEstadisticasYTablaDinamica()" title="Fecha Hasta">
+          </div>
+          <button class="btn-header-action btn-header-accent" onclick="actualizarEstadisticasYTablaDinamica()" title="Recalcular métricas">🔄 Actualizar</button>
+        </div>
+      </div>
+
+      <div style="padding: 18px 20px;">
+        <!-- Tarjetas KPI -->
+        <div class="stats-kpi-grid">
+          <div class="stats-kpi-card" style="border-left-color: #00bfa5;">
+            <div class="stats-kpi-icon">🎧</div>
+            <div class="stats-kpi-info">
+              <span class="stats-kpi-title">Limpiezas Atendidas</span>
+              <strong class="stats-kpi-val" id="kpiTotalSoporte">0</strong>
+              <span class="stats-kpi-sub">Total con soporte asignado</span>
             </div>
           </div>
-        </section>
+
+          <div class="stats-kpi-card" style="border-left-color: #e53935;">
+            <div class="stats-kpi-icon">⛔</div>
+            <div class="stats-kpi-info">
+              <span class="stats-kpi-title">Total "No Procede"</span>
+              <strong class="stats-kpi-val" id="kpiTotalNoProcede" style="color: #ff5252;">0</strong>
+              <span class="stats-kpi-sub">Casos catalogados no procede</span>
+            </div>
+          </div>
+
+          <div class="stats-kpi-card" style="border-left-color: #ffd600;">
+            <div class="stats-kpi-icon">🏆</div>
+            <div class="stats-kpi-info">
+              <span class="stats-kpi-title">Soporte Líder</span>
+              <strong class="stats-kpi-val" id="kpiSoporteTop" style="color: #ffd600; font-size: 1.3rem;">-</strong>
+              <span class="stats-kpi-sub" id="kpiSoporteTopSub">0 limpiezas</span>
+            </div>
+          </div>
+
+          <div class="stats-kpi-card" style="border-left-color: #64b5f6;">
+            <div class="stats-kpi-icon">👥</div>
+            <div class="stats-kpi-info">
+              <span class="stats-kpi-title">Agentes Evaluados</span>
+              <strong class="stats-kpi-val" id="kpiTotalAgentes">0</strong>
+              <span class="stats-kpi-sub">Agentes con casos No Procede</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 1: GRÁFICA DE CONTEO DE LIMPIEZAS HECHAS POR SOPORTE -->
+        <div style="margin-top: 22px; background: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--card-border); backdrop-filter: none; -webkit-backdrop-filter: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <span>📊 Conteo de Limpiezas Hechas por Soporte</span>
+              </h3>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Conteo total de trámites atendidos por cada resolutor de soporte</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-chart-type active" id="btnChartBar" onclick="setChartType('bar')">📊 Barras</button>
+              <button class="btn-chart-type" id="btnChartDoughnut" onclick="setChartType('doughnut')">🍩 Dona</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: center;" id="gridGraficaSoporte">
+            <div style="position: relative; height: 320px; width: 100%;">
+              <canvas id="chartSoporteLimpiezas"></canvas>
+            </div>
+            <div id="listaResumenSoporte" style="max-height: 320px; overflow-y: auto; background: var(--card-bg); border-radius: 8px; padding: 12px; border: 1px solid var(--card-border);">
+              <!-- Resumen numérico por soporte -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: TABLA DINÁMICA DE NO PROCEDE POR AGENTE Y SOPORTE -->
+        <div style="margin-top: 26px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+                <span>📋 Tabla Dinámica: Casos "No Procede" por Agente y Soporte</span>
+              </h3>
+              <span style="font-size: 0.82rem; color: var(--text-muted);">Distribución de qué agente de soporte otorgó el "No Procede" a cada solicitante</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <input type="text" id="filtroTablaDinamica" class="sheet-header-input" style="width: 200px;" placeholder="🔍 Buscar agente en tabla..." oninput="renderizarTablaDinamicaHTML()">
+              <button class="btn-header-action btn-header-accent" onclick="exportarTablaDinamicaCSV()">📥 Exportar Tabla Dinámica CSV</button>
+            </div>
+          </div>
+
+          <div class="pivot-table-container">
+            <table class="pivot-table" id="tablaDinamica">
+              <thead id="tablaDinamicaThead">
+                <!-- Encabezados dinámicos (Agente, María, Antuan, Enoc, Fabricio, ..., Suma total) -->
+              </thead>
+              <tbody id="tablaDinamicaTbody">
+                <!-- Filas dinámicas -->
+              </tbody>
+              <tfoot id="tablaDinamicaTfoot">
+                <!-- Fila de totales -->
+              </tfoot>
+            </table>
+          </div>
+        </div>
 
       </div>
-    </main>
+    </div>
+  </div>
+      </main>
+    </div>
   </div>
 
-<!-- MODAL DE CONFIRMACIÓN PARA BORRAR -->
-<div id="modalConfirmarBorrado" style="position:fixed; inset:0; display:none; place-items:center; padding:18px; background:rgba(0,0,0,.65); backdrop-filter:blur(8px); z-index:99998;">
-  <div style="width:min(450px, 100%); background:var(--card); border:1px solid rgba(239,68,68,0.4); border-radius:18px; padding:22px; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-      <div style="width:42px; height:42px; border-radius:10px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); display:grid; place-items:center; font-size:20px;">
-        ⚠️
+  <!-- ======================================================= -->
+  <!-- ======================================================= -->
+  <!-- MODAL DE INICIO DE SESIÓN / REGISTRO (AUTH GATE)        -->
+  <!-- ======================================================= -->
+  <div id="modalLogin" class="modal-overlay" style="display: flex; position: fixed; inset: 0; background: rgba(10, 10, 18, 0.94); backdrop-filter: none; -webkit-backdrop-filter: none; z-index: 999999; justify-content: center; align-items: center;">
+    <div class="modal-content login-box" style="box-shadow: 0 0 35px rgba(0, 120, 215, 0.35); border: 2px solid var(--accent); max-width: 440px; width: 92%;">
+      <div style="font-size: 3rem; text-align: center; margin-bottom: 10px;">🔐</div>
+      <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Sistema de Control BURO</h2>
+      <p style="font-size: 0.85rem; color: #bbb; margin-bottom: 16px;">Ingresa tus credenciales para acceder al generador y a la hoja de control.</p>
+
+      <div class="login-tabs">
+        <button id="tabLoginIngreso" class="login-tab-btn active" onclick="cambiarTabLogin('ingreso')">Iniciar Sesión</button>
+        <button id="tabLoginRegistro" class="login-tab-btn" onclick="cambiarTabLogin('registro')">Registrarse</button>
       </div>
-      <div>
-        <h3 style="margin:0; font-size:16px;">Confirmar eliminación</h3>
-        <span style="font-size:12px; color:var(--muted);">Esta acción es irreversible</span>
+
+      <!-- MENSAJE DE ERROR / ESTADO INLINE -->
+      <div id="loginFeedback" style="display: none; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.84rem; font-weight: bold; text-align: left;"></div>
+
+      <!-- FORMULARIO DE INGRESO -->
+      <div id="formIngreso">
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Usuario:</label>
+          <input type="text" id="txtLoginUser" placeholder="ej: sharon.barquero" autocomplete="username" onkeydown="if(event.key==='Enter') document.getElementById('txtLoginPass').focus();">
+        </div>
+
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Contraseña:</label>
+          <div class="password-wrapper">
+            <input type="password" id="txtLoginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') ejecutarLogin();">
+            <span class="password-toggle-icon" onclick="togglePasswordVisibilidad('txtLoginPass', this)">👁️</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font-size: 0.82rem;">
+          <label style="margin:0; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <input type="checkbox" id="chkRecordarSesion" checked style="width:auto; margin:0;"> Recordar mi sesión
+          </label>
+        </div>
+
+        <button class="btn-action" style="margin-top: 10px; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarLogin()">🚀 Entrar al Sistema</button>
+
+        <div style="margin-top: 14px; font-size: 0.76rem; color: #aaa; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; text-align: left; line-height: 1.4;">
+          💡 <strong>Contraseña de agentes:</strong> Tu apellido + <code>123</code> (ej: <code>badilla123</code>, <code>barquero123</code>, <code>zuñiga123</code>).<br>
+          🔑 <strong>Editores / Soporte:</strong> <code>mora123</code>, <code>antuan123</code>, <code>maria123</code>, <code>fabricio123</code>, <code>enoc123</code>, <code>admin123</code>.
+        </div>
+      </div>
+
+      <!-- FORMULARIO DE REGISTRO -->
+      <div id="formRegistro" style="display: none;">
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Nombre Completo:</label>
+          <input type="text" id="txtRegNombre" placeholder="ej: Sharon Barquero">
+        </div>
+
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Usuario (sin espacios):</label>
+          <input type="text" id="txtRegUser" placeholder="ej: sharon.barquero" oninput="this.value = this.value.toLowerCase().replace(/\s+/g, '');">
+        </div>
+
+        <div class="campo-wrapper" style="text-align: left;">
+          <label style="font-size: 0.82rem; margin: 4px 0;">Contraseña:</label>
+          <div class="password-wrapper">
+            <input type="password" id="txtRegPass" placeholder="Crea una contraseña segura">
+            <span class="password-toggle-icon" onclick="togglePasswordVisibilidad('txtRegPass', this)">👁️</span>
+          </div>
+        </div>
+
+        <button class="btn-action" style="margin-top: 14px; background: #2e7d32; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarRegistro()">✨ Crear Cuenta</button>
       </div>
     </div>
-    <div id="modalConfirmarTexto" style="margin:14px 0 20px; font-size:13.5px; line-height:1.5; color:var(--text);">
-      ¿Estás seguro de que deseas eliminar las limpiezas seleccionadas?
-    </div>
-    <div style="display:flex; justify-content:flex-end; gap:10px;">
-      <button class="btn btnGhost" type="button" onclick="cerrarModalConfirmarBorrado()">Cancelar</button>
-      <button class="btn btnDanger" type="button" id="btnEjecutarBorrado" onclick="ejecutarAccionBorradoConfirmada()">Sí, eliminar</button>
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- MODAL: GESTIÓN DE USUARIOS Y PERMISOS (SOLO EDITORES)   -->
+  <!-- ======================================================= -->
+  <div id="modalAdminUsuarios" class="modal-overlay">
+    <div class="modal-content" style="max-width: 580px;">
+      <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <span>👥 Gestión de Usuarios y Permisos</span>
+      </h3>
+      <p style="font-size: 0.82rem; color: #bbb;">Administra los usuarios autorizados, cambia sus contraseñas o asígnales el rol de Editor o Solicitante.</p>
+
+      <div style="background: rgba(0,0,0,0.35); padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.1);">
+        <h4 style="margin: 0 0 8px 0; font-size: 0.85rem; color: var(--accent);">➕ Registrar / Modificar Usuario</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <input type="text" id="txtAdminNuevoUser" placeholder="Usuario (ej: maria)" style="margin:0; font-size:0.85rem;">
+          <input type="text" id="txtAdminNuevoNombre" placeholder="Nombre completo" style="margin:0; font-size:0.85rem;">
+          <input type="text" id="txtAdminNuevoPass" placeholder="Nueva Contraseña" style="margin:0; font-size:0.85rem;">
+          <select id="selAdminNuevoRol" style="margin:0; font-size:0.85rem;">
+            <option value="editor">Editor (Puede modificar hoja)</option>
+            <option value="solicitante" selected>Solicitante (Solo lect/subida)</option>
+          </select>
+        </div>
+        <button class="btn-action" style="margin-top: 8px; padding: 8px;" onclick="guardarUsuarioDesdeAdmin()">Guardar Usuario</button>
+      </div>
+
+      <div style="max-height: 220px; overflow-y: auto; border: 1px solid #444; border-radius: 6px; padding: 6px; background: rgba(0,0,0,0.3);" id="listaUsuariosAdminUI">
+        <!-- Lista de usuarios renderizada dinámicamente -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+        <button class="btn-secondary" onclick="cerrarModalAdminUsuarios()">Cerrar</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Toast -->
-<div id="toast" class="toast" aria-live="polite" aria-atomic="true">
-  <div class="toastIcon" id="toastIcon">✓</div>
-  <div class="toastText">
-    <strong id="toastTitle">Listo</strong>
-    <span id="toastMsg">Acción completada.</span>
+  <!-- Modal Configuración Supabase -->
+  <div id="modalConfigSupabase" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="margin-top: 0;">⚙️ Configuración de Supabase</h3>
+      <p style="font-size: 0.84rem; color: #bbb;">Conecta tu base de datos de Supabase para sincronización en tiempo real y gestión segura de permisos:</p>
+      
+      <label style="font-size: 0.82rem; margin-top: 8px;">Supabase Project URL:</label>
+      <input type="text" id="txtSupabaseUrl" placeholder="https://xyzcompany.supabase.co" style="font-size: 0.85rem;">
+
+      <label style="font-size: 0.82rem; margin-top: 8px;">Supabase Anon Key:</label>
+      <input type="text" id="txtSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-size: 0.85rem;">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+        <button class="btn-secondary" onclick="probarConexionSupabase()" style="border-color: #ab47bc; color: #e1bee7;">🔍 Probar Conexión</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" onclick="cerrarModalConfigSupabase()">Cerrar</button>
+          <button class="btn-primary" onclick="guardarConfigSupabase()">Guardar</button>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <!-- Modal Exportar a CSV con Filtro de Fechas -->
+  <div id="modalExportarCSV" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 480px;">
+      <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <span>📊 Exportar Control de Limpiezas a CSV</span>
+      </h3>
+      <p style="font-size: 0.84rem; color: #ccc; margin-bottom: 14px;">
+        Selecciona un rango de fechas para filtrar la descarga o exporta el historial completo:
+      </p>
 
-<!-- Flatpickr JS -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  flatpickr("#fechaFiltro", {
-    mode: "range",
-    dateFormat: "Y-m-d",
-    allowInput: false,
-    onChange: function(selectedDates, dateStr) {
-      window.fechaSeleccionada = dateStr;
-      if (typeof cargarHistorial === "function") {
-        cargarHistorial(true);
-      }
-    }
-  });
-});
-</script>
+      <div style="background: var(--card-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 12px;">
+        <!-- Botones de Rango Rápido -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoCSV('hoy')">📅 Hoy</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoCSV('mes')">📅 Este Mes</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoCSV('todo')">📁 Todo el Historial</button>
+        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/helpers.js"></script>
-<script src="js/navigation.js"></script>
-<script src="js/generators.js"></script>
-<script src="js/historial.js"></script>
-<script src="js/theme.js"></script>
-<script src="js/plantillas.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/estadisticas.js"></script>
-<script src="js/supabase.js"></script>
-<script src="js/app.js"></script>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">📅 Fecha Desde:</label>
+            <input type="date" id="csvFechaDesde" class="sheet-header-input" style="width: 100%;" oninput="actualizarContadorCSV()">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">📅 Fecha Hasta:</label>
+            <input type="date" id="csvFechaHasta" class="sheet-header-input" style="width: 100%;" oninput="actualizarContadorCSV()">
+          </div>
+        </div>
 
+        <div id="csvInfoRegistros" style="font-size: 0.82rem; color: #90caf9; background: rgba(13, 71, 161, 0.25); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(33, 150, 243, 0.3); text-align: center;">
+          Calculando registros...
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+        <button class="btn-secondary" onclick="cerrarModalExportarCSV()">Cancelar</button>
+        <button class="btn-primary" style="background: #2e7d32; border-color: #2e7d32;" onclick="ejecutarDescargaCSV()">📥 Descargar CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Notas del Parche / Historial de Actualizaciones -->
+  <div id="modalNotasParche" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 680px; max-height: 88vh; display: flex; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 14px;">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.25rem;">
+          <span>📜</span> Historial & Notas del Parche
+        </h3>
+        <button class="btn-secondary" onclick="cerrarModalNotasParche()" style="padding: 4px 10px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;">✕</button>
+      </div>
+      
+      <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
+        Registro cronológico de todas las versiones, nuevas funciones, mejoras de rendimiento y optimizaciones de diseño implementadas en el sistema.
+      </p>
+
+      <div id="contenedorNotasParche" class="patch-notes-container" style="overflow-y: auto; flex: 1; padding-right: 6px;">
+        <!-- Se genera dinámicamente desde ui.js -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--card-border);">
+        <button class="btn-primary" onclick="cerrarModalNotasParche()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <footer style="display: none;">
+    <p>&copy; 2026 Generador de Plantillas BURO & Control de Limpiezas. Hecho en Costa Rica.</p>
+  </footer>
+
+
+  <!-- Menú Flotante Personalizado para Desplegables de la Tabla -->
+  <div id="sheetDropdownMenu"></div>
+
+  <!-- Módulos JavaScript Separados -->
+  <script src="js/config.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/limpiezas.js"></script>
+  <script src="js/estadisticas.js"></script>
+  <script src="js/plantillas.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
