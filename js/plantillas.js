@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // MÓDULO DE GENERACIÓN DE PLANTILLAS
 // ==========================================
 
@@ -34,7 +34,7 @@ const plantillas = {
 
   "CONTROL DE ALTAS": "Buen día,\n\nNo es posible brindar visto bueno debido a que la información del cliente se muestra errónea en el sistema, por favor, enviar el caso a control de altas para su debido análisis y corrección.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
 
-  "NO COINCIDE (CUANDO LA INFORMACIÓN DE LA PLANTILLA NO COINCIDE CON LA FOTOGRAFÍA)": "Buen día,\n\nEl caso se rechaza por no coincidir el documento de identidad con la información adjunta.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+  "NO COINCIDE": "Buen día,\n\nEl caso se rechaza por no coincidir el documento de identidad con la información adjunta.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
 
   "NO LEGIBLE": "Buen día,\n\nEl caso se rechaza por no adjuntar el documento de identidad legible y claro, fundamental para realizar el trámite. \n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
 
@@ -203,8 +203,11 @@ function cambiarPlantilla(seleccionDirecta) {
   const campoCedulaRechazo = document.getElementById("campoCedulaRechazo");
   if (campoCedulaRechazo) {
     const esRechazo = !esConFormulario;
-    campoCedulaRechazo.style.display = esRechazo ? "block" : "none";
-    if (esRechazo) {
+    const noRequiereCedula = seleccion.indexOf("SIN INFORMAC") !== -1 || seleccion.indexOf("NO COINCIDE") !== -1;
+    campoCedulaRechazo.style.display = (esRechazo && !noRequiereCedula) ? "block" : "none";
+    if (noRequiereCedula) {
+      marcarError("cedulaRechazo", false);
+    } else if (esRechazo) {
       const cedRegular = document.getElementById("cedula")?.value.trim() || "";
       const inpRechazo = document.getElementById("cedulaRechazo");
       if (inpRechazo && cedRegular && !inpRechazo.value) {
@@ -537,7 +540,7 @@ const plantillasRechazos = [
   { valor: "DOCUMENTO DETERIORADO", etiqueta: "DOCUMENTO DETERIORADO" },
   { valor: "DOCUMENTO VENCIDO", etiqueta: "DOCUMENTO VENCIDO" },
   { valor: "FECHA SIN FORMATO", etiqueta: "FECHA SIN FORMATO" },
-  { valor: "NO COINCIDE (CUANDO LA INFORMACIÓN DE LA PLANTILLA NO COINCIDE CON LA FOTOGRAFÍA)", etiqueta: "NO COINCIDE" },
+  { valor: "NO COINCIDE", etiqueta: "NO COINCIDE" },
   { valor: "NO LEGIBLE", etiqueta: "NO LEGIBLE" },
   { valor: "RECHAZO POR CÉDULA NO LEGIBLE", etiqueta: "RECHAZO POR CÉDULA" },
   { valor: "SIN CÉDULA", etiqueta: "SIN CÉDULA" },

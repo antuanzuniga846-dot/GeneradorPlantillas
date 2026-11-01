@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // MÓDULO DE CONTROL DE LIMPIEZAS & SINCRONIZACIÓN
 // ==========================================
 
@@ -884,7 +884,7 @@ function extraerDatosParaHistorial(seleccion, esRec, esReversion) {
   const nombreVal = document.getElementById("nombre")?.value.trim() || "";
   const cedulaRegular = document.getElementById("cedula")?.value.trim() || "";
   const cedulaRechazo = document.getElementById("cedulaRechazo")?.value.trim() || "";
-  const docVal = cedulaRegular || cedulaRechazo;
+  let docVal = cedulaRegular || cedulaRechazo;
 
   let montoVal = "";
   let condicionesVal = "";
@@ -931,9 +931,18 @@ function extraerDatosParaHistorial(seleccion, esRec, esReversion) {
     const f = document.getElementById("fecha")?.value.trim() || "";
     if (f) condicionesVal = `Fecha NC: ${f}`;
   } else {
-    condicionesVal = seleccion;
+    if (seleccion.includes("NO COINCIDE")) {
+      plantillaNombre = "NO COINCIDE";
+      condicionesVal = "No coincide";
+      if (!docVal) docVal = "SIN DOCUMENTO";
+    } else if (seleccion.indexOf("SIN INFORMAC") !== -1) {
+      plantillaNombre = "SIN INFORMACION";
+      condicionesVal = "Sin informacion";
+      if (!docVal) docVal = "SIN DOCUMENTO";
+    } else {
+      condicionesVal = seleccion;
+    }
   }
-
   return {
     gestion: gestionVal,
     dts: dtsVal,

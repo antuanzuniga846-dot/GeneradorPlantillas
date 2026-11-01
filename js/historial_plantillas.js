@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // MÓDULO: HISTORIAL DE PLANTILLAS (BETA)
 // ==========================================
 
@@ -206,7 +206,10 @@ function parsearFechaParaFiltro(str) {
 }
 
 function obtenerBadgePlantilla(nombre) {
-  const n = String(nombre || "").toUpperCase();
+  let n = String(nombre || "").toUpperCase();
+  if (n.includes("COINCIDE")) {
+    return `<span class="pill-btn" style="background: rgba(255, 152, 0, 0.22); color: #ffb74d; border: 1px solid rgba(255, 152, 0, 0.45); font-weight: bold; padding: 4px 9px;">🚫 NO COINCIDE</span>`;
+  }
   if (n.includes("REC")) {
     return `<span class="pill-btn" style="background: rgba(0, 188, 212, 0.22); color: #80deea; border: 1px solid rgba(0, 188, 212, 0.45); font-weight: bold; padding: 4px 9px;">LIMPIEZA REC</span>`;
   }
@@ -216,7 +219,7 @@ function obtenerBadgePlantilla(nombre) {
   if (n.includes("NO PROCEDE")) {
     return `<span class="pill-btn" style="background: rgba(229, 57, 53, 0.25); color: #ff8a80; border: 1px solid rgba(229, 57, 53, 0.5); font-weight: bold; padding: 4px 9px;">⛔ NO PROCEDE</span>`;
   }
-  if (n.includes("RECHAZO") || n.includes("CÉDULA") || n.includes("DOCUMENTO") || n.includes("CAPTURA") || n.includes("ESQUINAS") || n.includes("SPAM") || n.includes("CONTACTO") || n.includes("SIN")) {
+  if (n.includes("RECHAZO") || n.includes("CÉDULA") || n.includes("CEDULA") || n.includes("DOCUMENTO") || n.includes("CAPTURA") || n.includes("ESQUINAS") || n.includes("SPAM") || n.includes("CONTACTO") || n.includes("SIN")) {
     return `<span class="pill-btn" style="background: rgba(255, 152, 0, 0.22); color: #ffb74d; border: 1px solid rgba(255, 152, 0, 0.45); font-weight: bold; padding: 4px 9px;">🚫 ${escapeHTML(nombre)}</span>`;
   }
   if (n.includes("VISTO BUENO")) {
@@ -227,7 +230,6 @@ function obtenerBadgePlantilla(nombre) {
   }
   return `<span class="pill-btn" style="background: rgba(171, 71, 188, 0.22); color: #ce93d8; border: 1px solid rgba(171, 71, 188, 0.45); font-weight: bold; padding: 4px 9px;">📋 ${escapeHTML(nombre)}</span>`;
 }
-
 function escapeHTML(str) {
   if (!str) return "";
   return String(str)
@@ -306,7 +308,8 @@ function renderizarTablaHistorial() {
     return;
   }
 
-  const esEditor = (typeof esUsuarioEditor === "function") ? esUsuarioEditor() : false;
+  const puedeEditar = (typeof esEditor === "function" && esEditor()) || (typeof usuarioLogueado !== "undefined" && usuarioLogueado && usuarioLogueado.rol === "editor");
+  const btnVaciar = document.getElementById("btnHistorialBorrarTodo"); if (btnVaciar) btnVaciar.style.display = puedeEditar ? "inline-block" : "none";
 
   tbody.innerHTML = filtrados.map(r => {
     const montoDisplay = r.monto && r.monto !== "-" 
@@ -317,26 +320,34 @@ function renderizarTablaHistorial() {
       ? `<span style="font-size: 0.82rem; line-height: 1.35; display: inline-block;">${escapeHTML(r.condiciones)}</span>` 
       : `<span style="color: var(--text-muted);">-</span>`;
 
-    const botonEliminar = `
+    const botonEliminar = puedeEditar ? `
       <button type="button" class="btn-sheet-del" onclick="eliminarRegistroHistorial('${r.id}')" title="Eliminar registro del historial">🗑️</button>
-    `;
+    ` : "";
+
+    const rawMonto = r.monto && r.monto !== "-" ? r.monto : "-";
+    const rawCond = r.condiciones || "-";
+    const rawDts = r.dts || "-";
+    const rawAgente = r.agente || "-";
+    const rawGestion = r.gestion || "-";
+    const rawCedula = r.cedula || "-";
+    const rawPlant = r.plantilla ? (r.plantilla.includes("COINCIDE") ? "NO COINCIDE" : r.plantilla) : "-";
 
     return `
       <tr>
-        <td style="font-family: monospace; font-size: 0.82rem; white-space: nowrap; color: var(--text-secondary);">${escapeHTML(r.marca_temporal || "-")}</td>
-        <td style="text-align: center; font-weight: bold; color: var(--text-primary);"><span style="background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 4px;">${escapeHTML(r.gestion || "-")}</span></td>
-        <td style="font-weight: 600; color: #64b5f6;"><span title="Distribuidor / Agencia">${escapeHTML(r.dts || "-")}</span></td>
-        <td class="td-cedula" style="text-align: center;">
-          <span class="cedula-copy-pill" onclick="copiarCedulaHistorial('${escapeHTML(r.cedula)}')" title="Clic para copiar documento">${escapeHTML(r.cedula || "-")}</span>
+        <td style="font-family: monospace; font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-secondary);" title="${escapeHTML(r.marca_temporal || "-")}">${escapeHTML(r.marca_temporal || "-")}</td>
+        <td style="text-align: center; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary);" title="Gestión: ${escapeHTML(rawGestion)}"><span style="background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 4px;">${escapeHTML(rawGestion)}</span></td>
+        <td style="font-weight: 600; color: #64b5f6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="DTS: ${escapeHTML(rawDts)}">${escapeHTML(rawDts)}</td>
+        <td class="td-cedula" style="text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span class="cedula-copy-pill" onclick="copiarCedulaHistorial('${escapeHTML(rawCedula)}')" title="Cédula: ${escapeHTML(rawCedula)} (Clic para copiar)">${escapeHTML(rawCedula)}</span>
         </td>
-        <td style="white-space: nowrap;">
-          <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem;">
-            <span>👤</span> ${escapeHTML(r.agente || "-")}
+        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Agente: ${escapeHTML(rawAgente)}">
+          <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <span>👤</span> ${escapeHTML(rawAgente)}
           </span>
         </td>
-        <td>${obtenerBadgePlantilla(r.plantilla)}</td>
-        <td style="max-width: 280px; word-break: break-word;">${condicionesDisplay}</td>
-        <td style="text-align: right; white-space: nowrap;">${montoDisplay}</td>
+        <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Plantilla: ${escapeHTML(rawPlant)}">${obtenerBadgePlantilla(r.plantilla)}</td>
+        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(rawCond)}">${condicionesDisplay}</td>
+        <td style="text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="Monto: ${escapeHTML(rawMonto)}">${montoDisplay}</td>
         <td style="text-align: center; white-space: nowrap;">
           <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
             <button type="button" class="btn-sheet-action" onclick="copiarDetalleHistorial('${r.id}')" title="Copiar resumen al portapapeles">📋</button>
@@ -373,7 +384,8 @@ function copiarDetalleHistorial(id) {
   });
 }
 
-async function eliminarRegistroHistorial(id) {
+function eliminarRegistroHistorial(id) {
+  const puedeEditar = (typeof esEditor === "function" && esEditor()) || (typeof usuarioLogueado !== "undefined" && usuarioLogueado && usuarioLogueado.rol === "editor"); if (!puedeEditar) { if (typeof notificar === "function") notificar("error", "Acceso Denegado", "Solo los editores autorizados pueden eliminar registros del historial."); return; }
   const reg = listaHistorialPlantillas.find(r => r.id === id);
   if (!reg) return;
 
@@ -455,7 +467,8 @@ function exportarHistorialPlantillasCSV() {
     notificar("success", "CSV Descargado", `Se exportaron <strong>${listaHistorialPlantillas.length}</strong> registros del historial.`);
   }
 }
-async function vaciarHistorialPlantillas() {
+function vaciarHistorialPlantillas() {
+  const puedeEditar = (typeof esEditor === "function" && esEditor()) || (typeof usuarioLogueado !== "undefined" && usuarioLogueado && usuarioLogueado.rol === "editor"); if (!puedeEditar) { if (typeof notificar === "function") notificar("error", "Acceso Denegado", "Solo los editores autorizados pueden vaciar el historial."); return; }
   if (!listaHistorialPlantillas || listaHistorialPlantillas.length === 0) {
     if (typeof notificar === "function") notificar("info", "Historial Vacío", "No hay registros en el historial.");
     return;

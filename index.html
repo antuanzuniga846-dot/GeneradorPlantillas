@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -634,7 +634,7 @@
           <input type="text" id="filtroHistorial" class="sheet-header-input" style="width: 200px;" placeholder="🔍 Buscar cédula, gestión, DTS..." oninput="filtrarHistorialPlantillas()">
           <button class="btn-header-action btn-header-success" onclick="exportarHistorialPlantillasCSV()">📥 Exportar CSV</button>
           <button class="btn-header-action" onclick="cargarHistorialSupabase()" title="Recargar historial">🔄 Sincronizar</button>
-          <button class="btn-header-action" style="background: rgba(229, 57, 53, 0.22); border-color: rgba(229, 57, 53, 0.45); color: #ff8a80;" onclick="vaciarHistorialPlantillas()" title="Borrar todo el historial">🗑️ Borrar Todo</button>
+          <button class="btn-header-action" id="btnHistorialBorrarTodo" style="display: none; background: rgba(229, 57, 53, 0.22); border-color: rgba(229, 57, 53, 0.45); color: #ff8a80;" onclick="vaciarHistorialPlantillas()" title="Borrar todo el historial">🗑️ Borrar Todo</button>
         </div>
       </div>
 
@@ -643,18 +643,18 @@
       </div>
 
       <div class="sheet-table-container">
-        <table class="sheet-table" id="tablaHistorial">
+        <table class="sheet-table" id="tablaHistorial" style="table-layout: fixed; width: 100%;">
           <thead>
             <tr>
-              <th style="width: 150px;">Fecha / Hora</th>
-              <th style="width: 110px; text-align: center;">Gestión</th>
-              <th style="width: 140px;">DTS (Distribuidor)</th>
-              <th class="th-cedula" style="text-align: center; width: 150px;">Cédula / Documento</th>
-              <th style="width: 130px;">Agente</th>
-              <th style="width: 180px;">Plantilla</th>
-              <th>Detalle / Condiciones</th>
-              <th style="width: 140px; text-align: right;">Monto</th>
-              <th style="width: 80px; text-align: center;">Acciones</th>
+              <th style="width: 140px; min-width: 140px; max-width: 140px;">Fecha / Hora</th>
+              <th style="width: 95px; min-width: 95px; max-width: 95px; text-align: center;">Gesti&oacute;n</th>
+              <th style="width: 135px; min-width: 135px; max-width: 135px;">DTS (Distribuidor)</th>
+              <th class="th-cedula" style="text-align: center; width: 135px; min-width: 135px; max-width: 135px;">C&eacute;dula / Documento</th>
+              <th style="width: 120px; min-width: 120px; max-width: 120px;">Agente</th>
+              <th style="width: 140px; min-width: 140px; max-width: 140px;">Plantilla</th>
+              <th style="width: 250px; min-width: 250px; max-width: 250px;">Detalle / Condiciones</th>
+              <th style="width: 120px; min-width: 120px; max-width: 120px; text-align: right;">Monto</th>
+              <th style="width: 75px; min-width: 75px; max-width: 75px; text-align: center;">Acciones</th>
             </tr>
           </thead>
           <tbody id="tablaHistorialBody">
