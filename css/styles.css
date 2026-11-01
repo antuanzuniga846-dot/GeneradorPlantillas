@@ -2007,7 +2007,7 @@ button.sheet-pill-btn.pill-soporte-adriel,
 }
 .btn-rango-stats.active {
   background: var(--accent) !important;
-  color: var(--accent-oncolor) !important;
+  color: #111 !important;
   border-color: var(--accent) !important;
   box-shadow: 0 0 12px var(--accent) !important;
 }

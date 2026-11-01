@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // MÓDULO DE INTERFAZ DE USUARIO, CALCULADORA Y TEMA
 // ==========================================
 
@@ -85,6 +85,8 @@ function cambiarVista(vista) {
     if (topTitle) topTitle.textContent = "Historial de Plantillas (BETA)";
     if (topSubtitle) topSubtitle.textContent = "Auditoría y registro independiente de trámites (Visto Bueno, No Procede, Rechazos, REC, NC)";
     if (typeof renderizarTablaHistorial === "function") renderizarTablaHistorial();
+    if (typeof cargarHistorialSupabase === "function") cargarHistorialSupabase();
+    if (typeof inicializarScrollHistorial === "function") inicializarScrollHistorial();
   }
 }
 

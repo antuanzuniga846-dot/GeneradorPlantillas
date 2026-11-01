@@ -2,6 +2,15 @@
 // MÓDULO: HISTORIAL DE PLANTILLAS (BETA)
 // ==========================================
 
+const TAMANO_PAGINA_HISTORIAL = 25;
+let _historialOffset = 0;
+let _hayMasHistorialSupabase = true;
+let _cargandoMasHistorial = false;
+let _historialLimiteRender = TAMANO_PAGINA_HISTORIAL;
+let _scrollHistorialIniciado = false;
+let _tickingScrollHistorial = false;
+let _historialRangoActivo = "todo";
+
 let listaHistorialPlantillas = (typeof obtenerLocalStorageSeguro === "function") 
   ? obtenerLocalStorageSeguro(STORAGE_KEY_HISTORIAL_PLANTILLAS, []) 
   : [];
@@ -49,6 +58,7 @@ async function guardarEnHistorialPlantillas(datos) {
 
     // Agregar a lista local
     listaHistorialPlantillas.unshift(registro);
+    _historialOffset++;
     guardarHistorialLocalmente();
 
     // Actualizar vista si está activa
@@ -80,12 +90,18 @@ async function guardarEnHistorialPlantillas(datos) {
 }
 
 // ==========================================
-// CARGA Y SINCRONIZACIÓN CON SUPABASE
+// CARGA Y SINCRONIZACIÓN CON SUPABASE (PAGINADA)
 // ==========================================
-async function cargarHistorialSupabase() {
+async function cargarHistorialSupabase(reiniciar = true) {
   if (typeof supabaseClient === "undefined" || !supabaseClient) {
     renderizarTablaHistorial();
     return;
+  }
+
+  if (reiniciar) {
+    _historialOffset = 0;
+    _hayMasHistorialSupabase = true;
+    _historialLimiteRender = TAMANO_PAGINA_HISTORIAL;
   }
 
   try {
@@ -93,7 +109,7 @@ async function cargarHistorialSupabase() {
       .from("historial_plantillas")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(300);
+      .range(0, TAMANO_PAGINA_HISTORIAL - 1);
 
     if (error) {
       console.warn("Aviso: Error cargando historial_plantillas de Supabase:", error.message);
@@ -102,16 +118,99 @@ async function cargarHistorialSupabase() {
     }
 
     if (Array.isArray(data)) {
-      // Unir datos de Supabase con los locales sin duplicados por ID
-      const mapaIds = new Set(data.map(d => d.id));
-      const localesFaltantes = listaHistorialPlantillas.filter(l => !mapaIds.has(l.id));
-      listaHistorialPlantillas = [...data, ...localesFaltantes];
+      if (data.length < TAMANO_PAGINA_HISTORIAL) {
+        _hayMasHistorialSupabase = false;
+      }
+      _historialOffset = data.length;
+      listaHistorialPlantillas = [...data];
       guardarHistorialLocalmente();
     }
   } catch (err) {
     console.warn("Error en cargarHistorialSupabase:", err);
   } finally {
     renderizarTablaHistorial();
+    inicializarScrollHistorial();
+  }
+}
+
+async function cargarMasHistorialSupabase() {
+  if (_cargandoMasHistorial || !_hayMasHistorialSupabase) return;
+  if (typeof supabaseClient === "undefined" || !supabaseClient) return;
+
+  _cargandoMasHistorial = true;
+  actualizarFilaScrollLoaderHistorial(true);
+
+  try {
+    const desde = _historialOffset;
+    const hasta = desde + TAMANO_PAGINA_HISTORIAL - 1;
+
+    const { data, error } = await supabaseClient
+      .from("historial_plantillas")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .range(desde, hasta);
+
+    if (error) {
+      console.warn("Error al paginar historial en Supabase:", error.message);
+      _cargandoMasHistorial = false;
+      actualizarFilaScrollLoaderHistorial(false);
+      return;
+    }
+
+    if (Array.isArray(data)) {
+      if (data.length < TAMANO_PAGINA_HISTORIAL) {
+        _hayMasHistorialSupabase = false;
+      }
+      _historialOffset += data.length;
+
+      const mapaIds = new Set(listaHistorialPlantillas.map(d => d.id));
+      const nuevos = data.filter(d => !mapaIds.has(d.id));
+      listaHistorialPlantillas = [...listaHistorialPlantillas, ...nuevos];
+      guardarHistorialLocalmente();
+    }
+  } catch (err) {
+    console.warn("Excepción al paginar historial:", err);
+  } finally {
+    _cargandoMasHistorial = false;
+    renderizarTablaHistorial();
+  }
+}
+
+function cargarSiguienteLoteHistorial() {
+  const filtrados = obtenerHistorialFiltrado();
+  if (_historialLimiteRender < filtrados.length) {
+    _historialLimiteRender += TAMANO_PAGINA_HISTORIAL;
+    renderizarTablaHistorial();
+  } else if (_hayMasHistorialSupabase && typeof supabaseClient !== "undefined" && supabaseClient && !_cargandoMasHistorial) {
+    _historialLimiteRender += TAMANO_PAGINA_HISTORIAL;
+    cargarMasHistorialSupabase();
+  }
+}
+
+function inicializarScrollHistorial() {
+  if (_scrollHistorialIniciado) return;
+  const container = document.getElementById("contenedorTablaHistorial");
+  if (!container) return;
+
+  _scrollHistorialIniciado = true;
+  container.addEventListener("scroll", () => {
+    if (!_tickingScrollHistorial) {
+      window.requestAnimationFrame(() => {
+        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 200) {
+          cargarSiguienteLoteHistorial();
+        }
+        _tickingScrollHistorial = false;
+      });
+      _tickingScrollHistorial = true;
+    }
+  }, { passive: true });
+}
+
+function actualizarFilaScrollLoaderHistorial(cargando) {
+  const fila = document.getElementById("historialScrollLoader");
+  if (!fila) return;
+  if (cargando) {
+    fila.innerHTML = `<td colspan="9" style="text-align: center; padding: 14px 10px; color: var(--accent); font-weight: bold; background: rgba(0,0,0,0.18);">⏳ Cargando siguientes 25 registros desde la base de datos...</td>`;
   }
 }
 
@@ -130,6 +229,7 @@ function suscribirRealtimeHistorial() {
             const existe = listaHistorialPlantillas.some(r => r.id === payload.new.id);
             if (!existe) {
               listaHistorialPlantillas.unshift(payload.new);
+              _historialOffset++;
               guardarHistorialLocalmente();
               if (typeof vistaActual !== "undefined" && vistaActual === "historial") {
                 renderizarTablaHistorial();
@@ -153,10 +253,9 @@ function suscribirRealtimeHistorial() {
 // ==========================================
 // RENDERIZADO Y FILTROS DE TABLA HISTORIAL
 // ==========================================
-let _historialRangoActivo = "todo";
-
 function setRangoRapidoHistorial(tipo, btn) {
   _historialRangoActivo = tipo;
+  _historialLimiteRender = TAMANO_PAGINA_HISTORIAL;
   const hoy = new Date();
   const inpDesde = document.getElementById("historialFechaDesde");
   const inpHasta = document.getElementById("historialFechaHasta");
@@ -186,6 +285,7 @@ function setRangoRapidoHistorial(tipo, btn) {
 }
 
 function filtrarHistorialPlantillas() {
+  _historialLimiteRender = TAMANO_PAGINA_HISTORIAL;
   renderizarTablaHistorial();
 }
 
@@ -230,6 +330,7 @@ function obtenerBadgePlantilla(nombre) {
   }
   return `<span class="pill-btn" style="background: rgba(171, 71, 188, 0.22); color: #ce93d8; border: 1px solid rgba(171, 71, 188, 0.45); font-weight: bold; padding: 4px 9px;">📋 ${escapeHTML(nombre)}</span>`;
 }
+
 function escapeHTML(str) {
   if (!str) return "";
   return String(str)
@@ -240,10 +341,7 @@ function escapeHTML(str) {
     .replace(/'/g, "&#039;");
 }
 
-function renderizarTablaHistorial() {
-  const tbody = document.getElementById("tablaHistorialBody");
-  if (!tbody) return;
-
+function obtenerHistorialFiltrado() {
   const txtBuscar = (document.getElementById("filtroHistorial")?.value || "").trim().toLowerCase();
   const filtroTipo = document.getElementById("historialFiltroTipo")?.value || "";
   const fDesdeStr = document.getElementById("historialFechaDesde")?.value || "";
@@ -252,7 +350,8 @@ function renderizarTablaHistorial() {
   const fDesde = fDesdeStr ? new Date(fDesdeStr + "T00:00:00") : null;
   const fHasta = fHastaStr ? new Date(fHastaStr + "T23:59:59") : null;
 
-  let filtrados = listaHistorialPlantillas.filter(r => {
+  return (listaHistorialPlantillas || []).filter(r => {
+    if (!r) return false;
     // Filtro texto
     if (txtBuscar) {
       const match = (r.gestion && r.gestion.toLowerCase().includes(txtBuscar)) ||
@@ -272,7 +371,7 @@ function renderizarTablaHistorial() {
       if (filtroTipo === "LIMPIEZA" && (!p.includes("LIMPIEZA") || p.includes("REC") || c.includes("REC"))) return false;
       if (filtroTipo === "REC" && (!p.includes("REC") && !c.includes("REC"))) return false;
       if (filtroTipo === "NO PROCEDE" && !p.includes("NO PROCEDE")) return false;
-      if (filtroTipo === "RECHAZOS" && (!p.includes("RECHAZO") && !p.includes("DOCUMENTO") && !p.includes("CÉDULA") && !p.includes("CAPTURA") && !p.includes("ESQUINAS") && !p.includes("SPAM") && !p.includes("CONTACTO") && !p.includes("SIN"))) return false;
+      if (filtroTipo === "RECHAZOS" && (!p.includes("RECHAZO") && !p.includes("DOCUMENTO") && !p.includes("CÉDULA") && !p.includes("CEDULA") && !p.includes("CAPTURA") && !p.includes("ESQUINAS") && !p.includes("SPAM") && !p.includes("CONTACTO") && !p.includes("SIN"))) return false;
       if (filtroTipo === "VISTO BUENO" && !p.includes("VISTO BUENO")) return false;
     }
 
@@ -287,14 +386,23 @@ function renderizarTablaHistorial() {
 
     return true;
   });
+}
+
+function renderizarTablaHistorial() {
+  const tbody = document.getElementById("tablaHistorialBody");
+  if (!tbody) return;
+
+  const filtrados = obtenerHistorialFiltrado();
+  const visibles = filtrados.slice(0, _historialLimiteRender);
 
   // Contadores
   const lblContador = document.getElementById("historialContador");
   if (lblContador) {
-    lblContador.innerHTML = `Mostrando: <strong>${filtrados.length}</strong> de ${listaHistorialPlantillas.length} registros`;
+    const sufijoMas = (_hayMasHistorialSupabase || _historialLimiteRender < filtrados.length) 
+      ? ` <span style="font-size: 0.8rem; opacity: 0.75;">(desliza para cargar más)</span>` 
+      : "";
+    lblContador.innerHTML = `Mostrando: <strong>${visibles.length}</strong> de ${filtrados.length} registros cargados${sufijoMas}`;
   }
-
-
 
   if (filtrados.length === 0) {
     tbody.innerHTML = `
@@ -311,7 +419,7 @@ function renderizarTablaHistorial() {
   const puedeEditar = (typeof esEditor === "function" && esEditor()) || (typeof usuarioLogueado !== "undefined" && usuarioLogueado && usuarioLogueado.rol === "editor");
   const btnVaciar = document.getElementById("btnHistorialBorrarTodo"); if (btnVaciar) btnVaciar.style.display = puedeEditar ? "inline-block" : "none";
 
-  tbody.innerHTML = filtrados.map(r => {
+  const filasHTML = visibles.map(r => {
     const montoDisplay = r.monto && r.monto !== "-" 
       ? `<strong style="color: var(--accent);">${escapeHTML(r.monto)}</strong>` 
       : `<span style="color: var(--text-muted);">-</span>`;
@@ -357,6 +465,36 @@ function renderizarTablaHistorial() {
       </tr>
     `;
   }).join("");
+
+  let filaLoader = "";
+  if (_historialLimiteRender < filtrados.length) {
+    const pendientes = filtrados.length - _historialLimiteRender;
+    filaLoader = `
+      <tr id="historialScrollLoader">
+        <td colspan="9" style="text-align: center; padding: 14px 10px; background: rgba(255,255,255,0.02); color: var(--text-muted); font-size: 0.84rem; cursor: pointer;" onclick="cargarSiguienteLoteHistorial()">
+          📜 Mostrando ${visibles.length} de ${filtrados.length}. Desliza o toca aquí para mostrar ${Math.min(TAMANO_PAGINA_HISTORIAL, pendientes)} más...
+        </td>
+      </tr>
+    `;
+  } else if (_hayMasHistorialSupabase && typeof supabaseClient !== "undefined" && supabaseClient) {
+    filaLoader = `
+      <tr id="historialScrollLoader">
+        <td colspan="9" style="text-align: center; padding: 14px 10px; background: rgba(255,255,255,0.02); color: var(--text-muted); font-size: 0.84rem; cursor: pointer;" onclick="cargarSiguienteLoteHistorial()">
+          ${_cargandoMasHistorial ? '⏳ Cargando siguientes 25 registros desde la base de datos...' : '📜 Desliza o toca aquí para cargar más registros anteriores...'}
+        </td>
+      </tr>
+    `;
+  } else if (filtrados.length > TAMANO_PAGINA_HISTORIAL) {
+    filaLoader = `
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 12px; font-size: 0.82rem; color: var(--text-muted); background: rgba(0,0,0,0.1);">
+          ✅ Se cargaron todos los registros (${filtrados.length} en total).
+        </td>
+      </tr>
+    `;
+  }
+
+  tbody.innerHTML = filasHTML + filaLoader;
 }
 
 function copiarCedulaHistorial(cedula) {
@@ -384,8 +522,12 @@ function copiarDetalleHistorial(id) {
   });
 }
 
-function eliminarRegistroHistorial(id) {
-  const puedeEditar = (typeof esEditor === "function" && esEditor()) || (typeof usuarioLogueado !== "undefined" && usuarioLogueado && usuarioLogueado.rol === "editor"); if (!puedeEditar) { if (typeof notificar === "function") notificar("error", "Acceso Denegado", "Solo los editores autorizados pueden eliminar registros del historial."); return; }
+async function eliminarRegistroHistorial(id) {
+  const puedeEditar = (typeof esEditor === "function" && esEditor()) || (typeof usuarioLogueado !== "undefined" && usuarioLogueado && usuarioLogueado.rol === "editor"); 
+  if (!puedeEditar) { 
+    if (typeof notificar === "function") notificar("error", "Acceso Denegado", "Solo los editores autorizados pueden eliminar registros del historial."); 
+    return; 
+  }
   const reg = listaHistorialPlantillas.find(r => r.id === id);
   if (!reg) return;
 
@@ -415,8 +557,25 @@ function eliminarRegistroHistorial(id) {
 // ==========================================
 // EXPORTACIÓN A CSV
 // ==========================================
-function exportarHistorialPlantillasCSV() {
-  if (!listaHistorialPlantillas || listaHistorialPlantillas.length === 0) {
+async function exportarHistorialPlantillasCSV() {
+  let paraExportar = listaHistorialPlantillas;
+
+  if (_hayMasHistorialSupabase && typeof supabaseClient !== "undefined" && supabaseClient) {
+    const confirmar = confirm(`Tienes ${listaHistorialPlantillas.length} registros cargados en pantalla, pero hay más en la base de datos.\n\n¿Deseas descargar TODO el historial completo desde Supabase?`);
+    if (confirmar) {
+      if (typeof notificar === "function") notificar("info", "Consultando", "Descargando historial completo de Supabase...");
+      try {
+        const { data, error } = await supabaseClient.from("historial_plantillas").select("*").order("created_at", { ascending: false });
+        if (!error && Array.isArray(data) && data.length > 0) {
+          paraExportar = data;
+        }
+      } catch (err) {
+        console.warn("Error descargando todo el historial:", err);
+      }
+    }
+  }
+
+  if (!paraExportar || paraExportar.length === 0) {
     if (typeof notificar === "function") {
       notificar("warning", "Sin Datos", "No hay registros en el historial para exportar.");
     }
@@ -437,7 +596,7 @@ function exportarHistorialPlantillasCSV() {
     "Fecha Creación"
   ];
 
-  const filas = listaHistorialPlantillas.map(r => [
+  const filas = paraExportar.map(r => [
     `"${(r.id || "").replace(/"/g, '""')}"`,
     `"${(r.marca_temporal || "").replace(/"/g, '""')}"`,
     `"${(r.gestion || "").replace(/"/g, '""')}"`,
@@ -464,11 +623,16 @@ function exportarHistorialPlantillasCSV() {
   URL.revokeObjectURL(url);
 
   if (typeof notificar === "function") {
-    notificar("success", "CSV Descargado", `Se exportaron <strong>${listaHistorialPlantillas.length}</strong> registros del historial.`);
+    notificar("success", "CSV Descargado", `Se exportaron <strong>${paraExportar.length}</strong> registros del historial.`);
   }
 }
-function vaciarHistorialPlantillas() {
-  const puedeEditar = (typeof esEditor === "function" && esEditor()) || (typeof usuarioLogueado !== "undefined" && usuarioLogueado && usuarioLogueado.rol === "editor"); if (!puedeEditar) { if (typeof notificar === "function") notificar("error", "Acceso Denegado", "Solo los editores autorizados pueden vaciar el historial."); return; }
+
+async function vaciarHistorialPlantillas() {
+  const puedeEditar = (typeof esEditor === "function" && esEditor()) || (typeof usuarioLogueado !== "undefined" && usuarioLogueado && usuarioLogueado.rol === "editor"); 
+  if (!puedeEditar) { 
+    if (typeof notificar === "function") notificar("error", "Acceso Denegado", "Solo los editores autorizados pueden vaciar el historial."); 
+    return; 
+  }
   if (!listaHistorialPlantillas || listaHistorialPlantillas.length === 0) {
     if (typeof notificar === "function") notificar("info", "Historial Vacío", "No hay registros en el historial.");
     return;
@@ -477,6 +641,8 @@ function vaciarHistorialPlantillas() {
   if (!confirmar) return;
 
   listaHistorialPlantillas = [];
+  _historialOffset = 0;
+  _hayMasHistorialSupabase = false;
   guardarHistorialLocalmente();
   renderizarTablaHistorial();
 
