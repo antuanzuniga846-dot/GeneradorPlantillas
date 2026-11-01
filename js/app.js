@@ -80,7 +80,7 @@ if (npCartaElem) {
   });
 }
 
-["gestion", "nombre", "cedula", "monto", "fecha", "fecha_activacion", "fecha_expiracion", "fecha_desactivacion", "terminal"].forEach(id => {
+["gestion", "dts", "cedulaRechazo", "nombre", "cedula", "monto", "fecha", "fecha_activacion", "fecha_expiracion", "fecha_desactivacion", "terminal"].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener("input", () => marcarError(id, false));
 });

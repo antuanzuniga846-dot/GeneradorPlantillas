@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // MÓDULO DE INTERFAZ DE USUARIO, CALCULADORA Y TEMA
 // ==========================================
 
@@ -9,11 +9,13 @@ function cambiarVista(vista) {
   const vGenerador = document.getElementById("vistaGenerador");
   const vHoja = document.getElementById("vistaHoja");
   const vEstadisticas = document.getElementById("vistaEstadisticas");
+  const vHistorial = document.getElementById("vistaHistorial");
 
   // Botones del sidebar
   const navGen = document.getElementById("navItemGenerador");
   const navHoj = document.getElementById("navItemHoja");
   const navEst = document.getElementById("navItemEstadisticas");
+  const navHist = document.getElementById("navItemHistorial");
 
   // Botones tradicionales (compatibilidad)
   const btnGen = document.getElementById("tabBtnGenerador");
@@ -28,9 +30,11 @@ function cambiarVista(vista) {
     if (vGenerador) vGenerador.style.display = "block";
     if (vHoja) vHoja.style.display = "none";
     if (vEstadisticas) vEstadisticas.style.display = "none";
+    if (vHistorial) vHistorial.style.display = "none";
     if (navGen) navGen.classList.add("active");
     if (navHoj) navHoj.classList.remove("active");
     if (navEst) navEst.classList.remove("active");
+    if (navHist) navHist.classList.remove("active");
     if (btnGen) btnGen.classList.add("active");
     if (btnHoj) btnHoj.classList.remove("active");
     if (btnEst) btnEst.classList.remove("active");
@@ -40,9 +44,11 @@ function cambiarVista(vista) {
     if (vGenerador) vGenerador.style.display = "none";
     if (vHoja) vHoja.style.display = "block";
     if (vEstadisticas) vEstadisticas.style.display = "none";
+    if (vHistorial) vHistorial.style.display = "none";
     if (navGen) navGen.classList.remove("active");
     if (navHoj) navHoj.classList.add("active");
     if (navEst) navEst.classList.remove("active");
+    if (navHist) navHist.classList.remove("active");
     if (btnGen) btnGen.classList.remove("active");
     if (btnHoj) btnHoj.classList.add("active");
     if (btnEst) btnEst.classList.remove("active");
@@ -53,15 +59,32 @@ function cambiarVista(vista) {
     if (vGenerador) vGenerador.style.display = "none";
     if (vHoja) vHoja.style.display = "none";
     if (vEstadisticas) vEstadisticas.style.display = "block";
+    if (vHistorial) vHistorial.style.display = "none";
     if (navGen) navGen.classList.remove("active");
     if (navHoj) navHoj.classList.remove("active");
-    if (navEst) navEst.classList.remove("active");
+    if (navEst) navEst.classList.add("active");
+    if (navHist) navHist.classList.remove("active");
     if (btnGen) btnGen.classList.remove("active");
     if (btnHoj) btnHoj.classList.remove("active");
     if (btnEst) btnEst.classList.add("active");
     if (topTitle) topTitle.textContent = "Métricas & Tabla Dinámica";
     if (topSubtitle) topSubtitle.textContent = "Análisis de rendimiento, distribución de soporte y KPIs";
     actualizarEstadisticasYTablaDinamica();
+  } else if (vista === "historial") {
+    if (vGenerador) vGenerador.style.display = "none";
+    if (vHoja) vHoja.style.display = "none";
+    if (vEstadisticas) vEstadisticas.style.display = "none";
+    if (vHistorial) vHistorial.style.display = "block";
+    if (navGen) navGen.classList.remove("active");
+    if (navHoj) navHoj.classList.remove("active");
+    if (navEst) navEst.classList.remove("active");
+    if (navHist) navHist.classList.add("active");
+    if (btnGen) btnGen.classList.remove("active");
+    if (btnHoj) btnHoj.classList.remove("active");
+    if (btnEst) btnEst.classList.remove("active");
+    if (topTitle) topTitle.textContent = "Historial de Plantillas (BETA)";
+    if (topSubtitle) topSubtitle.textContent = "Auditoría y registro independiente de trámites (Visto Bueno, No Procede, Rechazos, REC, NC)";
+    if (typeof renderizarTablaHistorial === "function") renderizarTablaHistorial();
   }
 }
 
@@ -504,10 +527,38 @@ function inicializarTema() {
 // ==========================================
 const NOTAS_DEL_PARCHE = [
   {
+    version: "v3.0 (BETA)",
+    fecha: "01/11/2026",
+    titulo: "Historial de Plantillas (BETA), Registro DTS & Diferenciación de Limpiezas y REC",
+    esActual: true,
+    cambios: [
+      {
+        icono: "📋",
+        texto: "<strong>Historial de Plantillas (BETA):</strong> Módulo independiente para registrar y auditar todos los trámites generados (Limpiezas de saldos, REC, Visto Bueno, No Procede, Rechazos, NC, etc.), con almacenamiento seguro en Supabase y LocalStorage."
+      },
+      {
+        icono: "🧹",
+        texto: "<strong>Integración & Diferenciación de Limpiezas y REC:</strong> Las limpiezas aprobadas suben automáticamente a su hoja de control y también se auditan en el Historial con distintivo <code>🧹 LIMPIEZA (HOJA)</code>, diferenciándose de las condonaciones <code>📦 LIMPIEZA REC</code>."
+      },
+      {
+        icono: "🏢",
+        texto: "<strong>Campo DTS para Distribuidor:</strong> Se añade la casilla obligatoria DTS en todas las plantillas para registrar el distribuidor que remitió la gestión."
+      },
+      {
+        icono: "🆔",
+        texto: "<strong>Cédula Obligatoria en Rechazos:</strong> Los rechazos ahora solicitan de forma obligatoria el número de documento/cédula asociado para su registro y trazabilidad."
+      },
+      {
+        icono: "💰",
+        texto: "<strong>Registro Detallado de Montos y Condiciones:</strong> Guarda automáticamente los montos desglosados (Write Off, Facturas Pendientes, Cero Pagos) y las causales específicas de No Procede o Rechazo."
+      }
+    ]
+  },
+  {
     version: "v2.9",
     fecha: "17/10/2026",
     titulo: "Scroll Independiente en Plantillas, Control de Calculadora & Inversión de Contraste",
-    esActual: true,
+    esActual: false,
     cambios: [
       {
         icono: "📜",

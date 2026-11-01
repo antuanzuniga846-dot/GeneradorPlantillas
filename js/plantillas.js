@@ -195,8 +195,28 @@ function cambiarPlantilla(seleccionDirecta) {
     "CON ACTUALIZACIÓN DE SEGMENTACIÓN",
     "NO SE PUEDE ACTUALIZAR SEGMENTACIÓN"
   ];
+  const esConFormulario = conFormulario.includes(seleccion);
   if (formulario) {
-    formulario.style.display = conFormulario.includes(seleccion) ? "block" : "none";
+    formulario.style.display = esConFormulario ? "block" : "none";
+  }
+
+  const campoCedulaRechazo = document.getElementById("campoCedulaRechazo");
+  if (campoCedulaRechazo) {
+    const esRechazo = !esConFormulario;
+    campoCedulaRechazo.style.display = esRechazo ? "block" : "none";
+    if (esRechazo) {
+      const cedRegular = document.getElementById("cedula")?.value.trim() || "";
+      const inpRechazo = document.getElementById("cedulaRechazo");
+      if (inpRechazo && cedRegular && !inpRechazo.value) {
+        inpRechazo.value = cedRegular;
+      }
+    } else {
+      const cedRechazo = document.getElementById("cedulaRechazo")?.value.trim() || "";
+      const inpRegular = document.getElementById("cedula");
+      if (inpRegular && cedRechazo && !inpRegular.value) {
+        inpRegular.value = cedRechazo;
+      }
+    }
   }
 
   // Resaltar plantilla activa en el índice lateral
@@ -304,6 +324,18 @@ function validarCampos() {
   const gestionVal = document.getElementById("gestion")?.value.trim() || "";
   marcarError("gestion", !gestionVal);
   if (!gestionVal) valido = false;
+
+  const dtsVal = document.getElementById("dts")?.value.trim() || "";
+  marcarError("dts", !dtsVal);
+  if (!dtsVal) valido = false;
+
+  const campoCedulaRechazo = document.getElementById("campoCedulaRechazo");
+  const rechazoVisible = campoCedulaRechazo && campoCedulaRechazo.style.display !== "none";
+  if (rechazoVisible) {
+    const cedulaRechazoVal = document.getElementById("cedulaRechazo")?.value.trim() || "";
+    marcarError("cedulaRechazo", !cedulaRechazoVal);
+    if (!cedulaRechazoVal) valido = false;
+  }
 
   const formularioVisible = document.getElementById("formulario") && document.getElementById("formulario").style.display !== "none";
   if (formularioVisible) {
@@ -445,9 +477,10 @@ function copiarTexto() {
     notificar("success", "Copiado", "Plantilla copiada al portapapeles.");
   }
 
-  ["nombre", "gestion", "cedula", "monto", "fecha"].forEach(id => {
+  ["nombre", "gestion", "dts", "cedula", "cedulaRechazo", "monto", "fecha"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
+    marcarError(id, false);
   });
 
   ["montoFacturasPendientesLS", "montoWritteOffLS", "montoCeroPagosLS"].forEach(id => {

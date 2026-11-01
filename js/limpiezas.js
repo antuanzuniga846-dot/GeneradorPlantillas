@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // MÓDULO DE CONTROL DE LIMPIEZAS & SINCRONIZACIÓN
 // ==========================================
 
@@ -878,6 +878,73 @@ async function subirLimpiezaDesdePlantilla() {
   return true;
 }
 
+function extraerDatosParaHistorial(seleccion, esRec, esReversion) {
+  const gestionVal = document.getElementById("gestion")?.value.trim() || "";
+  const dtsVal = document.getElementById("dts")?.value.trim() || "";
+  const nombreVal = document.getElementById("nombre")?.value.trim() || "";
+  const cedulaRegular = document.getElementById("cedula")?.value.trim() || "";
+  const cedulaRechazo = document.getElementById("cedulaRechazo")?.value.trim() || "";
+  const docVal = cedulaRegular || cedulaRechazo;
+
+  let montoVal = "";
+  let condicionesVal = "";
+  let plantillaNombre = seleccion;
+
+  if (seleccion === "LIMPIEZA DE SALDOS") {
+    const mWO = document.getElementById('montoWritteOffLS')?.value.trim() || "";
+    const mFP = document.getElementById('montoFacturasPendientesLS')?.value.trim() || "";
+    const mCP = document.getElementById('montoCeroPagosLS')?.value.trim() || "";
+    let terminos = [];
+    if (mFP) terminos.push(`FP: ₡${formatMonto(mFP)}`);
+    if (mCP) terminos.push(`CP: ₡${formatMonto(mCP)}`);
+    if (mWO) terminos.push(`WO: ₡${formatMonto(mWO)}`);
+    const totalLimpieza = formatMonto([mFP, mCP, mWO].filter(Boolean).join("+"));
+    montoVal = terminos.length ? `₡${totalLimpieza} (${terminos.join(", ")})` : "-";
+
+    if (esRec) {
+      plantillaNombre = "LIMPIEZA REC";
+      condicionesVal = "Condonación REC";
+    } else if (esReversion) {
+      plantillaNombre = "LIMPIEZA";
+      condicionesVal = "Reversión";
+    } else {
+      plantillaNombre = "LIMPIEZA";
+      condicionesVal = "Condonación";
+    }
+  } else if (seleccion === "NO PROCEDE") {
+    const dNP = obtenerNoProcedeDatos();
+    const conMonto = dNP.montos.filter(m => m.monto);
+    if (conMonto.length) {
+      const total = formatMonto(conMonto.map(m => m.monto).join("+"));
+      const desglose = conMonto.map(m => `${m.etiqueta}: ₡${formatMonto(m.monto)}`).join(", ");
+      montoVal = `₡${total} (${desglose})`;
+    }
+    const partesCond = dNP.condiciones.map(c => c.frase || c.etiqueta);
+    if (dNP.cartaDescargo) {
+      partesCond.push("Carta de Descargo");
+      if (dNP.terminal) partesCond.push(`Terminal: ${dNP.terminal}`);
+    }
+    condicionesVal = partesCond.join(", ");
+  } else if (seleccion === "NC APLICADA") {
+    const m = document.getElementById("monto")?.value.trim() || "";
+    if (m) montoVal = `₡${formatMonto(m)}`;
+    const f = document.getElementById("fecha")?.value.trim() || "";
+    if (f) condicionesVal = `Fecha NC: ${f}`;
+  } else {
+    condicionesVal = seleccion;
+  }
+
+  return {
+    gestion: gestionVal,
+    dts: dtsVal,
+    cedula: docVal,
+    nombre: nombreVal,
+    plantilla: plantillaNombre,
+    monto: montoVal || "-",
+    condiciones: condicionesVal || "-"
+  };
+}
+
 async function generarYProcesarPlantilla() {
   const select = document.getElementById("plantilla");
   const seleccion = select.value;
@@ -907,24 +974,43 @@ async function generarYProcesarPlantilla() {
         return;
       }
 
+      // Capturar datos ANTES de que copiarTexto() limpie los campos
+      const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion);
+      datosHist.condiciones = "Condonación";
+
       if (generarPlantilla()) {
+        if (typeof guardarEnHistorialPlantillas === "function") {
+          guardarEnHistorialPlantillas(datosHist);
+        }
         copiarTexto();
-        notificar("warning", "Plantilla Generada (Sin Subir)", `Plantilla copiada al portapapeles. La cédula <strong>${cedula}</strong> ya estaba en la hoja de cálculo.`);
+        notificar("warning", "Plantilla Generada (Sin Subir)", `Plantilla copiada al portapapeles y registrada en el Historial (BETA). La cédula <strong>${cedula}</strong> ya estaba en la hoja de cálculo.`);
       }
       return;
     }
 
+    // Capturar datos ANTES de que copiarTexto() limpie los campos
+    const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion);
+
     const subido = await subirLimpiezaDesdePlantilla();
     if (subido) {
       if (generarPlantilla()) {
+        if (typeof guardarEnHistorialPlantillas === "function") {
+          guardarEnHistorialPlantillas(datosHist);
+        }
         copiarTexto();
       }
     }
   } else {
+    // Capturar datos ANTES de que copiarTexto() limpie los campos
+    const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion);
+
     if (generarPlantilla()) {
+      if (typeof guardarEnHistorialPlantillas === "function") {
+        guardarEnHistorialPlantillas(datosHist);
+      }
       copiarTexto();
       if (esRec) {
-        notificar("info", "REC - Plantilla Generada", `Plantilla copiada al portapapeles. No se subió a la hoja de control por estar marcada la opción <strong>REC</strong>.`);
+        notificar("info", "REC - Plantilla Generada", `Plantilla copiada al portapapeles y registrada en el Historial (BETA). No se subió a la hoja de limpiezas por ser REC.`);
       }
     }
   }

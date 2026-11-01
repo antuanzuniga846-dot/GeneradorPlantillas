@@ -66,6 +66,10 @@
           <span class="nav-icon">📊</span>
           <span class="nav-label">Hoja de Control</span>
         </button>
+        <button id="navItemHistorial" class="sidebar-nav-btn" onclick="cambiarVista('historial')" title="Historial de Plantillas (BETA)">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Historial (BETA)</span>
+        </button>
         <button id="navItemEstadisticas" class="sidebar-nav-btn" onclick="cambiarVista('estadisticas')" title="Métricas & Tabla Dinámica">
           <span class="nav-icon">📈</span>
           <span class="nav-label">Estadísticas</span>
@@ -265,6 +269,20 @@
           <span id="gestionError" class="error-msg">*Información Obligatoria*</span>
         </div>
 
+        <label for="dts">DTS (Distribuidor):</label>
+        <div class="campo-wrapper">
+          <input type="text" id="dts" placeholder="Ej: AGENCIA SAN JOSÉ / DISTRIBUIDOR" oninput="this.value = this.value.toUpperCase();">
+          <span id="dtsError" class="error-msg">*Información Obligatoria*</span>
+        </div>
+
+        <div id="campoCedulaRechazo" style="display: none;">
+          <label for="cedulaRechazo">Cédula / Documento:</label>
+          <div class="campo-wrapper">
+            <input type="text" id="cedulaRechazo" placeholder="Ej: 123456789">
+            <span id="cedulaRechazoError" class="error-msg">*Información Obligatoria*</span>
+          </div>
+        </div>
+
         <div id="formulario" style="display: none;">
 
           <label for="nombre">Nombre del Cliente:</label>
@@ -441,14 +459,14 @@
         <table class="sheet-table" id="tablaSheet">
           <thead>
             <tr>
-              <th>Marca temporal ˅</th>
-              <th>Monto ˅</th>
-              <th>Agente ˅</th>
-              <th class="th-cedula" style="text-align: center; width: 180px; max-width: 190px;">Cédula ˅</th>
-              <th style="text-align: center;">Cero Pagos ˅</th>
-              <th style="text-align: center;">Soporte ˅</th>
-              <th style="text-align: center;">Categoría ˅</th>
-              <th style="text-align: center;">Motivo ˅</th>
+              <th>Marca temporal</th>
+              <th>Monto</th>
+              <th>Agente</th>
+              <th class="th-cedula" style="text-align: center; width: 180px; max-width: 190px;">Cédula</th>
+              <th style="text-align: center;">Cero Pagos</th>
+              <th style="text-align: center;">Soporte</th>
+              <th style="text-align: center;">Categoría</th>
+              <th style="text-align: center;">Motivo</th>
               <th style="text-align: center;">Acciones</th>
             </tr>
           </thead>
@@ -580,6 +598,69 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- VISTA 4: HISTORIAL DE PLANTILLAS (BETA)                 -->
+  <!-- ======================================================= -->
+  <div id="vistaHistorial" style="display: none;">
+    <div class="sheet-wrapper">
+      <div class="sheet-header-bar">
+        <div class="sheet-header-left">
+          <span class="sheet-header-title">📋 Historial de Plantillas <span style="font-size: 0.72rem; background: #ab47bc; color: #fff; padding: 2px 7px; border-radius: 6px; font-weight: bold; vertical-align: middle; margin-left: 6px;">BETA</span></span>
+          <span class="sheet-info-badge">Trámites y plantillas registradas (Limpiezas de saldos, REC, Visto Bueno, No Procede, Rechazos, etc.)</span>
+        </div>
+        <div class="sheet-header-right">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" class="btn-rango-stats" onclick="setRangoRapidoHistorial('hoy', this)">📅 Hoy</button>
+            <button type="button" class="btn-rango-stats" onclick="setRangoRapidoHistorial('mes', this)">📅 Este Mes</button>
+            <button type="button" class="btn-rango-stats active" id="btnHistorialTodo" onclick="setRangoRapidoHistorial('todo', this)">📁 Todo</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <input type="date" id="historialFechaDesde" class="sheet-header-input sheet-date-input" onchange="filtrarHistorialPlantillas()" title="Fecha Desde">
+            <span style="color: var(--accent-oncolor); opacity: 0.85; font-size: 0.84rem; font-weight: bold;">a</span>
+            <input type="date" id="historialFechaHasta" class="sheet-header-input sheet-date-input" onchange="filtrarHistorialPlantillas()" title="Fecha Hasta">
+          </div>
+          <select id="historialFiltroTipo" class="sheet-header-input" style="width: auto; max-width: 170px;" onchange="filtrarHistorialPlantillas()">
+            <option value="">Todas las Plantillas</option>
+            <option value="LIMPIEZA">Limpiezas</option>
+            <option value="REC">Limpiezas REC</option>
+            <option value="NO PROCEDE">No Procede</option>
+            <option value="RECHAZOS">Rechazos</option>
+            <option value="VISTO BUENO">Visto Bueno</option>
+          </select>
+          <input type="text" id="filtroHistorial" class="sheet-header-input" style="width: 200px;" placeholder="🔍 Buscar cédula, gestión, DTS..." oninput="filtrarHistorialPlantillas()">
+          <button class="btn-header-action btn-header-success" onclick="exportarHistorialPlantillasCSV()">📥 Exportar CSV</button>
+          <button class="btn-header-action" onclick="cargarHistorialSupabase()" title="Recargar historial">🔄 Sincronizar</button>
+          <button class="btn-header-action" style="background: rgba(229, 57, 53, 0.22); border-color: rgba(229, 57, 53, 0.45); color: #ff8a80;" onclick="vaciarHistorialPlantillas()" title="Borrar todo el historial">🗑️ Borrar Todo</button>
+        </div>
+      </div>
+
+      <div style="padding: 10px 16px; background: rgba(0,0,0,0.18); border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; font-size: 0.84rem;">
+        <span id="historialContador" style="color: var(--text-secondary);">Mostrando: <strong>0</strong> registros</span>
+      </div>
+
+      <div class="sheet-table-container">
+        <table class="sheet-table" id="tablaHistorial">
+          <thead>
+            <tr>
+              <th style="width: 150px;">Fecha / Hora</th>
+              <th style="width: 110px; text-align: center;">Gestión</th>
+              <th style="width: 140px;">DTS (Distribuidor)</th>
+              <th class="th-cedula" style="text-align: center; width: 150px;">Cédula / Documento</th>
+              <th style="width: 130px;">Agente</th>
+              <th style="width: 180px;">Plantilla</th>
+              <th>Detalle / Condiciones</th>
+              <th style="width: 140px; text-align: right;">Monto</th>
+              <th style="width: 80px; text-align: center;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaHistorialBody">
+            <!-- Filas dinámicas -->
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -795,6 +876,7 @@
   <script src="js/limpiezas.js"></script>
   <script src="js/estadisticas.js"></script>
   <script src="js/plantillas.js"></script>
+  <script src="js/historial_plantillas.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
 </body>

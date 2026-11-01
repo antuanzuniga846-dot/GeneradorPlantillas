@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // CONFIGURACIÓN GLOBAL, SUPABASE & CONSTANTES
 // ==========================================
 
@@ -29,6 +29,8 @@ function inicializarSupabase() {
       suscribirRealtimeSupabase();
       cargarUsuariosDesdeSupabase();
       cargarDatosDesdeSupabase();
+      if (typeof suscribirRealtimeHistorial === "function") suscribirRealtimeHistorial();
+      if (typeof cargarHistorialSupabase === "function") cargarHistorialSupabase();
     } catch (e) {
       console.warn("Supabase init error:", e);
       if (dot) dot.className = "db-dot offline";
@@ -88,6 +90,7 @@ const STORAGE_KEY_AUTH = "sesionAuthBuro_v5";
 const STORAGE_KEY_USERS = "dbUsuariosBuro_v5";
 const STORAGE_KEY_SHEET = "registroLimpiezasSheet_v5";
 const STORAGE_KEY_USERS_V6 = "dbUsuariosBuro_v6";
+const STORAGE_KEY_HISTORIAL_PLANTILLAS = "historialPlantillasBuro_v1";
 
 // Base de datos de usuarios local inicial / de respaldo (28 agentes + soporte)
 const USUARIOS_INICIALES = [

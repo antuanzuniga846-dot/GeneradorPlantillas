@@ -115,3 +115,29 @@ BEGIN
 EXCEPTION
     WHEN duplicate_object THEN NULL;
 END $$;
+
+-- 5. TABLA DE HISTORIAL DE PLANTILLAS (BETA)
+CREATE TABLE IF NOT EXISTS public.historial_plantillas (
+    id TEXT PRIMARY KEY,
+    marca_temporal TEXT NOT NULL,
+    gestion TEXT NOT NULL,
+    dts TEXT NOT NULL,
+    cedula TEXT NOT NULL,
+    nombre TEXT DEFAULT '',
+    agente TEXT NOT NULL,
+    plantilla TEXT NOT NULL,
+    monto TEXT DEFAULT '',
+    condiciones TEXT DEFAULT '',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.historial_plantillas ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Acceso publico historial_plantillas" ON public.historial_plantillas;
+CREATE POLICY "Acceso publico historial_plantillas" ON public.historial_plantillas FOR ALL USING (true) WITH CHECK (true);
+
+DO $$
+BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.historial_plantillas;
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
