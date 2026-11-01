@@ -1,42 +1,59 @@
-// ==========================================
+﻿// ==========================================
 // MÓDULO DE GENERACIÓN DE PLANTILLAS
 // ==========================================
 
 const plantillas = {
   "CON ACTUALIZACIÓN DE SEGMENTACIÓN": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Adicional les comento, que las referencias crediticias, así como la segmentación del cliente se actualizaron correctamente\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "NC APLICADA": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para la venta nueva cédula {cedula}, a nombre del cliente {nombre}, con base a la política de excepción para la apertura de ventas el mismo se le aplicó una nota de crédito el pasado {fechaNC}, por el monto de ¢ {monto}.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
+
   "NO SE PUEDE ACTUALIZAR SEGMENTACIÓN": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para venta nueva, cédula {cedula}, a nombre de {nombre}, base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Adicional les comento, que las referencias crediticias del cliente se actualizaron correctamente. En cuanto a la modificación de segmentación del cliente, debe de solicitarse por medio de caso Qflow, a control de altas\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "VISTO BUENO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, con base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Las referencias crediticias fueron actualizadas correctamente.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
-  "VISTO BUENO ACTIVO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, con base a las evidencias adjuntas, el cliente evidencia servicio activo y a la fecha de revisión no cuenta con facturas vencidas.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
-  "VISTO BUENO CARTA DE DESCARGO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para carta de descargo, cédula {cedula}, a nombre del cliente {nombre}, con base a las evidencias adjuntas, el mismo cumplió con los pagos correspondientes con la empresa. Las referencias crediticias fueron actualizadas correctamente.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
-  "LIMPIEZA DE SALDOS": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nEstimados Sres.\n\nSe procede con visto bueno para la venta nueva, cédula {cedula}, a nombre del cliente {nombre}, con base a la política de excepción para la apertura de ventas se le aplicó una nota de crédito {limpiezaSaldosFrase}. Las referencias crediticias y la segmentación del cliente se actualizaron correctamente.{notaLS}\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "CERO PAGOS": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre},ya que registra saldos bajo el Código NOTA DE CREDITO POR CLIENTE CERO PAGOS{ceroPagosIncubadoraTexto} CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR, el monto pendiente es de ¢{monto}.{ceroPagosAdicionalTexto}\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "CERO PAGOS(CON TERMINAL)": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre},ya que registra saldos bajo el Código NOTA DE CREDITO POR CLIENTE CERO PAGOS CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR, el monto pendiente es de  ¢{monto}.\n\nEl cliente tiene penalidad por retiro anticipado, no se encuentra evidencia del pago en ONBASE o interacciones anteriores que los respalden.\n\n    I. Fecha de activación: {fecha_activacion}\n    II. Fecha de expiración: {fecha_expiracion}\n    III. Fecha de desactivación: {fecha_desactivacion}\n    IV. Terminal ligado: {terminal}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "WRITTE OFF(CON TERMINAL)": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, ya que cuenta con saldos bajo el Código NOTA DE CRÉDITO POR CLIENTE WRITTE OFF, CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR, el monto pendiente es de ¢{monto}.\n\nEl cliente tiene penalidad por retiro anticipado, no se encuentra evidencia del pago en ONBASE o interacciones anteriores que los respalden.\n\n    I. Fecha de activación: {fecha_activacion}\n    II. Fecha de expiración: {fecha_expiracion}\n    III. Fecha de desactivación: {fecha_desactivacion}\n    IV. Terminal ligado: {terminal}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "WRITTE OFF(SIN TERMINAL)": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, del cliente {nombre}, cédula {cedula}, ya que cuenta con saldos bajo el Código NOTA DE CREDITO POR CLIENTE WRITTE OFF, CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR, el monto pendiente es de ¢{monto}.{writteOffAdicionalTexto}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "SIN FORMALIZACION": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, del cliente {nombre}, cédula {cedula}, ya que no hay evidencia en ONBASE de la baja de los equipos DTH, ni gestión o caso Qflow. Adicional, registra saldos bajo el Código NOTA DE CREDITO POR CLIENTE WRITTE OFF, CASO VISTO CON GERENCIA DE OPERACIONES Y FINANCIERA DE CR,el monto pendiente es de ¢ {monto}.\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "TERMINAL LIGADO (FINANCIAMIENTO Y FACTURAS PENDIENTES)": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, ya que existen facturas pendientes y no hay evidencia de pago o interacciones anteriores que lo respalden.\n\nFacturas pendientes: ¢ {monto} \n\nAdicional, muestra penalidad por retiro anticipado y no se hay evidencia del pago en ONBASE o interacciones anteriores que lo respalden.\n\n    I. Fecha de activación: {fecha_activacion}\n    II. Fecha de expiración: {fecha_expiracion}\n    III. Fecha de desactivación: {fecha_desactivacion}\n    IV. Terminal ligado: {terminal}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "TERMINAL LIGADO (SOLO DEBE FINACIAMIENTO)": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, a nombre del cliente {nombre}, ya que el cliente muestra las siguientes penalidades por retiro anticipado pendiente, ya que no se encuentra evidencia del pago en ONBASE o interacciones anteriores que los respalden.\n\n    I. Fecha de activación: {fecha_activacion}\n    II. Fecha de expiración: {fecha_expiracion}\n    III. Fecha de desactivación: {fecha_desactivacion}\n    IV. Terminal ligado: {terminal}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "FACTURAS PENDIENTES": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva, cédula {cedula}, nombre del cliente {nombre}, ya que cuenta con FACTURAS PENDIENTES y no hay evidencia de pago o interacciones anteriores que lo respalden.\n\nFacturas pendientes: ¢{monto}. {facturasPendientesTexto}\n{facturasAdicionalTexto}\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
-  "SALDO PENDIENTE SERVICIO ACTIVO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nNo procede visto bueno para venta nueva en base a la ACTUALIZACIÓN de la POLÍTICA indicada por OPERACIONES COMERCIALES, cédula {cedula}, nombre del cliente {nombre}, ya que el cliente cuenta con SERVICIO ACTIVO y mantiene {facturasSAFrase} sin evidencia de pago o interacciones anteriores que lo respalden. La condonación procede únicamente cuando todas las raíces se encuentran totalmente desactivas y no existe ningún servicio activo asociado. En caso de que el cliente mantenga un servicio activo en cualquiera de sus raíces, la condonación NO procede.\n\nSi mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
+
+  "VISTO BUENO CARTA DE DESCARGO": "Fecha:{fecha}\nHora:{hora}\n\nAPTO PARA CARTA DE DESCARGO ✅\n\nCliente: {nombre}\nIdentificación: {cedula}\nSe valida que el cliente no mantiene saldos pendientes y cumple las condiciones.\nPuede continuar con el proceso de inmediato.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es: {gestion}\nAnte cualquier duda o inconveniente puedes comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
+  "VISTO BUENO": "Fecha:{fecha}\nHora:{hora}\n\nAPTO PARA VENTA ✅\n\nCliente: {nombre}\nIdentificación: {cedula}\nSe valida que el cliente no mantiene saldos pendientes y cumple las condiciones para contratación.\nPuede continuar con el proceso de venta de inmediato.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es: {gestion}\nAnte cualquier duda o inconveniente puedes comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
+
+
+  "NO PROCEDE": "",
+
+  "NC APLICADA": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nSe procede con visto bueno para la venta nueva cédula {cedula}, a nombre del cliente {nombre}, con base a la política de excepción para la apertura de ventas el mismo se le aplicó una nota de crédito el pasado {fechaNC}, por el monto de ¢ {monto}.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
+
+  "LIMPIEZA DE SALDOS": "Fecha:{fecha}\nHora:{hora}\n\nCONDONACIÓN APROBADA ✅\n\nCliente: {nombre}\nIdentificación: {cedula}\nMonto a condonar: ₡{montoCondonar}{desgloseLS}\nSe valida que el cliente cumple con todas las condiciones establecidas para la condonación de saldo.\nPuede continuar con el proceso de venta.{vigenciaLS}\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es: {gestion}\nAnte cualquier duda o inconveniente puedes comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   // RECHAZOS 
   "DOCUMENTO ALTERADO": "Buen día,\n\nEl caso se rechaza debido a sospechas de alteración en el documento de identidad.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "RECHAZO POR CÉDULA NO LEGIBLE": "Buen día,\n\nEl caso se rechaza por no adjuntar el documento de identidad legible y claro, fundamental para realizar el trámite.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "RECHAZO POR CONTRATO ACTIVO": "Buen día,\n\nNo procede el análisis, el cliente tiene servicios activos. El análisis de buró no aplica para segundas ni terceras ventas, únicamente para clientes desactivados en su totalidad.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!",
+
   "CÉDULA AMBAS CARAS": " Buen día,\n\nEl caso se rechaza por no adjuntar el documento de identidad por ambas caras, fundamental para realizar el trámite \n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",   
+
   "CAPTURA DE PANTALLA": "Buen día,\n\nEl caso se rechaza debido a que el documento de identidad adjunto está en pdf, escaneo, fotocopia, captura de pantalla o emplasticado y no corresponde a una fotografía del documento original, por lo que no es posible validar su autenticidad. Les solicitamos adjuntar una fotografía legible y clara del documento de identidad original para proceder con el análisis.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "CUATRO ESQUINAS": "Buen día,\n\nEl caso se rechaza debido a que en la fotografía adjunta no se aprecia el documento de identidad en su totalidad, ya que se muestra recortado o incompleto. Para continuar con el debido análisis del cliente, es necesario contar con una fotografía clara y completa del documento, en la que puedan apreciarse las cuatro esquinas del mismo.\n\nLes solicitamos adjuntar nuevamente el documento cumpliendo con lo antes indicado.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
-  "CONTROL DE ALTAS": "Buen día,\n\nNo es posible brindar visto bueno debido a que la identificación del cliente se muestra errónea en el sistema, por favor, enviar el caso a control de altas para su debido análisis y corrección.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
+  "CONTROL DE ALTAS": "Buen día,\n\nNo es posible brindar visto bueno debido a que la información del cliente se muestra errónea en el sistema, por favor, enviar el caso a control de altas para su debido análisis y corrección.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "NO COINCIDE (CUANDO LA INFORMACIÓN DE LA PLANTILLA NO COINCIDE CON LA FOTOGRAFÍA)": "Buen día,\n\nEl caso se rechaza por no coincidir el documento de identidad con la información adjunta.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "NO LEGIBLE": "Buen día,\n\nEl caso se rechaza por no adjuntar el documento de identidad legible y claro, fundamental para realizar el trámite. \n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "SIN CÉDULA": " Buen día,\n\nEl caso se rechaza por no adjuntar el documento de identidad, fundamental para realizar el trámite.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "SIN INFORMACIÓN": "Buen día,\n\nEl caso se rechaza por no venir la plantilla completa. Deben completarla y enviarla junto con la cédula del cliente por ambos lados.\n\nBuenas tardes\n\nSu apoyo con la validación del caso \n\nNombre del cliente: xxxxxxxxxxx\n\nCédula del cliente: xxxxxxxxxxx\n\n**Solicitud visto bueno**\n\nAdjuntar documento de identidad por ambos lados (legible) \n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "CONTACTO": "Buen día,\n\nPara brindarle una mejor atención, me brinda por favor su nombre completo y a cuál agente autorizado pertenece\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "SIN REGISTROS": "Buen día,\n\nEl análisis no procede ya que el cliente no posee registros con Claro.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!. ",
+
   "DOCUMENTO VENCIDO": "Buen día,\n\nEl análisis no procede ya que el documento de identidad no se encuentra vigente, \n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día! ",
+
   "DOCUMENTO DETERIORADO": "Buen día,\n\nEl caso se rechaza por remitir un documento de identidad deteriorado, necesario en buen estado ya que es fundamental para proceder con el análisis.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "DOCUMENTO CON MANCHAS": "Buen día,\n\nEl caso se rechaza por motivo que el documento de identidad remitido presenta manchas que afectan su nitidez y legibilidad de la información.\nFavor enviar documento de identidad en condiciones claras y legibles para proceder con el análisis.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "SPAM": "Buen día,\n\nEl caso se rechaza debido a que el uso de mensajes en forma de spam no es necesario para el análisis del cliente.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+
   "FECHA SIN FORMATO": "Fecha:{fecha}\nHora:{hora}\n\nBuen día,\n\nEl caso se rechaza por motivo que el documento presenta alteraciones físicas y no coincide con Migracion y Extranjeria. \n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!."
 };
 
@@ -60,6 +77,91 @@ function actualizarLista() {
   });
 }
 
+// ---- NO PROCEDE ----
+const NP_MONTOS = [
+  { clave: "ceroPagos", etiqueta: "Cero Pagos" },
+  { clave: "facturasPendientes", etiqueta: "Facturas Pendientes" },
+  { clave: "saldoWritteOff", etiqueta: "Saldo WritteOff" }
+];
+
+const NP_CONDICIONES = [
+  { clave: "facturasMenoresAno", etiqueta: "Factura menor a 1 año", frase: "factura menor a un año", motivo: "mantiene una o varias facturas con antigüedad menor a 1 año" },
+  { clave: "suspendido", etiqueta: "Suspendido", frase: "servicio suspendido", motivo: "mantiene un servicio suspendido" },
+  { clave: "montoFueraRango", etiqueta: "Monto fuera de rango", frase: "monto fuera de rango", motivo: "mantiene un monto fuera del rango permitido", auto: true },
+  { clave: "financiamientoPendiente", etiqueta: "Financiamiento pendiente", frase: "un financiamiento pendiente", motivo: "mantiene un financiamiento pendiente" },
+  { clave: "servicioActivo", etiqueta: "Servicio activo", frase: "servicio activo", motivo: "mantiene un servicio activo en alguna raíz" }
+];
+
+const NP_MOTIVOS_MONTO = {
+  ceroPagos: "mantiene un cero pagos",
+  ceroPagosIncubadora: "mantiene un cero pagos incubadora",
+  facturasPendientes: "mantiene facturas pendientes",
+  saldoWritteOff: "mantiene un saldo WritteOff"
+};
+
+const NP_RANGO_MIN = 2750;
+const NP_RANGO_MAX = 63000;
+
+function sumarMontoTexto(texto) {
+  return String(texto || "").split("+").reduce((acc, t) => acc + (t.trim() ? parseMontoTermino(t) : 0), 0);
+}
+
+function totalFueraDeRango(montos) {
+  const conMonto = montos.filter(m => m.monto);
+  if (!conMonto.length) return false;
+  const total = conMonto.reduce((acc, m) => acc + sumarMontoTexto(m.monto), 0);
+  return total > NP_RANGO_MAX || total < NP_RANGO_MIN;
+}
+
+function obtenerNoProcedeDatos() {
+  const incubadora = document.getElementById("np_incubadora")?.checked || false;
+  const montos = NP_MONTOS
+    .map(m => ({ clave: m.clave, etiqueta: m.etiqueta, monto: document.getElementById("npMonto_" + m.clave)?.value.trim() || "" }))
+    .filter(m => m.monto || (m.clave === "ceroPagos" && incubadora));
+  montos.forEach(m => {
+    if (m.clave === "ceroPagos" && incubadora) m.etiqueta = "Cero Pagos Incubadora";
+  });
+  const fueraRango = totalFueraDeRango(montos);
+  const condiciones = NP_CONDICIONES.filter(c => c.auto ? fueraRango : document.getElementById("np_" + c.clave)?.checked);
+  const cartaDescargo = document.getElementById("np_cartaDescargo")?.checked || false;
+  const fecha_activacion = document.getElementById("fecha_activacion")?.value.trim() || "";
+  const fecha_expiracion = document.getElementById("fecha_expiracion")?.value.trim() || "";
+  const fecha_desactivacion = document.getElementById("fecha_desactivacion")?.value.trim() || "";
+  const terminal = document.getElementById("terminal")?.value.trim() || "";
+  return { incubadora, montos, condiciones, cartaDescargo, fecha_activacion, fecha_expiracion, fecha_desactivacion, terminal };
+}
+
+function construirNoProcede(d) {
+  const conMonto = d.montos.filter(m => m.monto);
+  const total = formatMonto(conMonto.map(m => m.monto).join("+"));
+
+  const titulo = d.cartaDescargo ? "NO APTA PARA CARTA DE DESCARGO ❌" : "NO APLICA ❌";
+  let t = "Fecha:{fecha}\nHora:{hora}\n\n" + titulo + "\n\nCliente: {nombre}\nIdentificación: {cedula}\n";
+  if (conMonto.length === 1) {
+    t += "Monto adeudado: ₡" + total + " (" + conMonto[0].etiqueta + ")\n";
+  } else if (conMonto.length > 1) {
+    t += "Monto adeudado: ₡" + total + "\n";
+    t += conMonto.map(m => m.etiqueta + ": ₡" + formatMonto(m.monto)).join("\n") + "\n";
+  }
+  if (d.condiciones.length) {
+    const fr = d.condiciones.map(c => c.frase);
+    const lista = fr.length > 1 ? fr.slice(0, -1).join(", ") + " y " + fr[fr.length - 1] : fr[0];
+    t += "⚠️ Cliente cuenta con " + lista + ". ⚠️\n";
+  }
+
+  if (d.cartaDescargo && (d.fecha_activacion || d.fecha_expiracion || d.fecha_desactivacion || d.terminal)) {
+    t += "\nEl cliente tiene penalidad por retiro anticipado, no se encuentra evidencia del pago en ONBASE o interacciones anteriores que los respalden.\n\n";
+    t += `    I. Fecha de activación: ${d.fecha_activacion}\n`;
+    t += `    II. Fecha de expiración: ${d.fecha_expiracion}\n`;
+    t += `    III. Fecha de desactivación: ${d.fecha_desactivacion}\n`;
+    t += `    IV. Terminal ligado: ${d.terminal}\n\n`;
+    t += "Si mantienen evidencia que demuestre lo contrario, favor hacerla llegar para validar nuevamente el caso.\n";
+  }
+
+  t += "\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es: {gestion}\nAnte cualquier duda o inconveniente puedes comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!" + (d.cartaDescargo ? "" : ".");
+  return t;
+}
+
 function cambiarPlantilla(seleccionDirecta) {
   const select = document.getElementById("plantilla");
   const seleccion = (seleccionDirecta !== undefined ? seleccionDirecta : (select ? select.value : "")).trim();
@@ -67,78 +169,34 @@ function cambiarPlantilla(seleccionDirecta) {
     select.value = seleccion;
   }
 
-  const writteOffCampos = document.getElementById("writteOffCampos");
-  const checkboxes = document.getElementById("checkboxes");
-  const checkboxesFacturasExtra = document.getElementById("checkboxesFacturasExtra");
-  const checkboxesFacturasServicioActivo = document.getElementById("checkboxesFacturasServicioActivo");
   const checkboxesLimpiezaSaldos = document.getElementById("checkboxesLimpiezaSaldos");
-  const checkboxesCeroPagos = document.getElementById("checkboxesCeroPagos");
-  const checkboxesWriteOffSinTerminal = document.getElementById("checkboxesWriteOffSinTerminal");
+  const checkboxesNoProcede = document.getElementById("checkboxesNoProcede");
   const formulario = document.getElementById("formulario");
   const campoFecha = document.getElementById("campoFecha");
   const montoInput = document.getElementById("montoInput");
 
-  if (checkboxes) checkboxes.style.display = (seleccion === "FACTURAS PENDIENTES") ? "block" : "none";
-  if (checkboxesFacturasExtra) checkboxesFacturasExtra.style.display = (seleccion === "FACTURAS PENDIENTES") ? "block" : "none";
-  if (checkboxesFacturasServicioActivo) checkboxesFacturasServicioActivo.style.display = (seleccion === "SALDO PENDIENTE SERVICIO ACTIVO") ? "block" : "none";
   if (checkboxesLimpiezaSaldos) checkboxesLimpiezaSaldos.style.display = (seleccion === "LIMPIEZA DE SALDOS") ? "block" : "none";
-  if (checkboxesCeroPagos) checkboxesCeroPagos.style.display = (seleccion === "CERO PAGOS") ? "block" : "none";
-  if (checkboxesWriteOffSinTerminal) checkboxesWriteOffSinTerminal.style.display = (seleccion === "WRITTE OFF(SIN TERMINAL)") ? "block" : "none";
+  if (checkboxesNoProcede) checkboxesNoProcede.style.display = (seleccion === "NO PROCEDE") ? "block" : "none";
   if (campoFecha) campoFecha.style.display = (seleccion === "NC APLICADA") ? "block" : "none";
+  if (montoInput) montoInput.style.display = (seleccion === "NC APLICADA") ? "block" : "none";
 
+  const camposCD = document.getElementById("camposCartaDescargo");
+  const npCarta = document.getElementById("np_cartaDescargo");
+  if (camposCD) {
+    camposCD.style.display = (seleccion === "NO PROCEDE" && npCarta && npCarta.checked) ? "block" : "none";
+  }
+
+  const conFormulario = [
+    "NO PROCEDE",
+    "NC APLICADA",
+    "VISTO BUENO",
+    "VISTO BUENO CARTA DE DESCARGO",
+    "LIMPIEZA DE SALDOS",
+    "CON ACTUALIZACIÓN DE SEGMENTACIÓN",
+    "NO SE PUEDE ACTUALIZAR SEGMENTACIÓN"
+  ];
   if (formulario) {
-    if (
-      seleccion === "WRITTE OFF(CON TERMINAL)" ||
-      seleccion === "CERO PAGOS(CON TERMINAL)" ||
-      seleccion === "SIN FORMALIZACION" ||
-      seleccion === "TERMINAL LIGADO (FINANCIAMIENTO Y FACTURAS PENDIENTES)" ||
-      seleccion === "NC APLICADA" ||
-      seleccion === "CERO PAGOS" ||
-      seleccion === "VISTO BUENO" ||
-      seleccion === "VISTO BUENO CARTA DE DESCARGO" ||
-      seleccion === "VISTO BUENO ACTIVO" ||
-      seleccion === "WRITTE OFF(SIN TERMINAL)" ||
-      seleccion === "LIMPIEZA DE SALDOS" ||
-      seleccion === "FACTURAS PENDIENTES"||
-      seleccion === "SALDO PENDIENTE SERVICIO ACTIVO"||
-      seleccion === "TERMINAL LIGADO (SOLO DEBE FINACIAMIENTO)"||
-      seleccion === "CON ACTUALIZACIÓN DE SEGMENTACIÓN"||
-      seleccion === "NO SE PUEDE ACTUALIZAR SEGMENTACIÓN"
-    ) {
-      formulario.style.display = "block";
-    } else {
-      formulario.style.display = "none";
-    }
-  }
-
-  if (writteOffCampos) {
-    if (
-      seleccion === "CERO PAGOS(CON TERMINAL)" ||
-      seleccion === "WRITTE OFF(CON TERMINAL)" ||
-      seleccion === "TERMINAL LIGADO (FINANCIAMIENTO Y FACTURAS PENDIENTES)" ||
-      seleccion === "TERMINAL LIGADO (SOLO DEBE FINACIAMIENTO)"
-    ) {
-      writteOffCampos.style.display = "block";
-    } else {
-      writteOffCampos.style.display = "none";
-    }
-  }
-
-  if (montoInput) {
-    if (  
-      seleccion === "CERO PAGOS(CON TERMINAL)" ||
-      seleccion === "WRITTE OFF(CON TERMINAL)" ||
-      seleccion === "TERMINAL LIGADO (FINANCIAMIENTO Y FACTURAS PENDIENTES)" ||
-      seleccion === "SIN FORMALIZACION" ||
-      seleccion === "NC APLICADA" ||
-      seleccion === "CERO PAGOS" ||
-      seleccion === "WRITTE OFF(SIN TERMINAL)" ||
-      seleccion === "FACTURAS PENDIENTES"
-    ) {
-      montoInput.style.display = "block";
-    } else {
-      montoInput.style.display = "none";
-    }
+    formulario.style.display = conFormulario.includes(seleccion) ? "block" : "none";
   }
 
   // Resaltar plantilla activa en el índice lateral
@@ -243,56 +301,63 @@ function marcarErrorGrupo(grupoId, errorId, hayError) {
 function validarCampos() {
   let valido = true;
 
-  const gestionVal = document.getElementById("gestion").value.trim();
+  const gestionVal = document.getElementById("gestion")?.value.trim() || "";
   marcarError("gestion", !gestionVal);
   if (!gestionVal) valido = false;
 
-  const formularioVisible = document.getElementById("formulario").style.display !== "none";
+  const formularioVisible = document.getElementById("formulario") && document.getElementById("formulario").style.display !== "none";
   if (formularioVisible) {
-    const nombreVal = document.getElementById("nombre").value.trim();
+    const nombreVal = document.getElementById("nombre")?.value.trim() || "";
     marcarError("nombre", !nombreVal);
     if (!nombreVal) valido = false;
 
-    const cedulaVal = document.getElementById("cedula").value.trim();
+    const cedulaVal = document.getElementById("cedula")?.value.trim() || "";
     marcarError("cedula", !cedulaVal);
     if (!cedulaVal) valido = false;
   }
 
-  const montoVisible = document.getElementById("montoInput").style.display !== "none";
+  const montoVisible = document.getElementById("montoInput") && document.getElementById("montoInput").style.display !== "none";
   if (montoVisible) {
-    const montoVal = document.getElementById("monto").value.trim();
+    const montoVal = document.getElementById("monto")?.value.trim() || "";
     marcarError("monto", !montoVal);
     if (!montoVal) valido = false;
   }
 
-  const writteOffVisible = document.getElementById("writteOffCampos").style.display !== "none";
-  if (writteOffVisible) {
+  const campoFechaVisible = document.getElementById("campoFecha") && document.getElementById("campoFecha").style.display !== "none";
+  if (campoFechaVisible) {
+    const fechaVal = document.getElementById("fecha")?.value.trim() || "";
+    marcarError("fecha", !fechaVal);
+    if (!fechaVal) valido = false;
+  }
+
+  const grupoNP = document.getElementById("checkboxesNoProcede");
+  const grupoNPVisible = grupoNP && grupoNP.style.display !== "none";
+  if (grupoNPVisible) {
+    const dNP = obtenerNoProcedeDatos();
+    const hayAlgo = dNP.montos.length > 0 || dNP.condiciones.length > 0;
+    marcarErrorGrupo("grupoNoProcede", "noProcedeError", !hayAlgo);
+    if (!hayAlgo) valido = false;
+  }
+
+  const camposCD = document.getElementById("camposCartaDescargo");
+  const camposCDVisible = camposCD && camposCD.style.display !== "none";
+  if (camposCDVisible) {
     ["fecha_activacion", "fecha_expiracion", "fecha_desactivacion", "terminal"].forEach(id => {
-      const val = document.getElementById(id).value.trim();
+      const el = document.getElementById(id);
+      const val = el ? el.value.trim() : "";
       marcarError(id, !val);
       if (!val) valido = false;
     });
   }
 
-  const campoFechaVisible = document.getElementById("campoFecha").style.display !== "none";
-  if (campoFechaVisible) {
-    const fechaVal = document.getElementById("fecha").value.trim();
-    marcarError("fecha", !fechaVal);
-    if (!fechaVal) valido = false;
-  }
-
-  const grupoSAVisible = document.getElementById("checkboxesFacturasServicioActivo").style.display !== "none";
-  if (grupoSAVisible) {
-    const algunoSA = ["montoFacturasPendientesSA", "montoCeroPagosSA", "montoWritteOffSA"]
-      .some(id => document.getElementById(id).value.trim());
-    marcarErrorGrupo("grupoSaldosSA", "saldosSAError", !algunoSA);
-    if (!algunoSA) valido = false;
-  }
-
-  const grupoLSVisible = document.getElementById("checkboxesLimpiezaSaldos").style.display !== "none";
+  const grupoLS = document.getElementById("checkboxesLimpiezaSaldos");
+  const grupoLSVisible = grupoLS && grupoLS.style.display !== "none";
   if (grupoLSVisible) {
     const algunoLS = ["montoFacturasPendientesLS", "montoWritteOffLS", "montoCeroPagosLS"]
-      .some(id => document.getElementById(id).value.trim());
+      .some(id => {
+        const el = document.getElementById(id);
+        return el && el.value.trim();
+      });
     marcarErrorGrupo("grupoSaldosLS", "saldosLSError", !algunoLS);
     if (!algunoLS) valido = false;
   }
@@ -318,120 +383,55 @@ function generarPlantilla() {
   const horaFormateada = `${horaNum}:${minutos} ${periodo}`;
   const fechaFormateada = `${dia}/${mes}/${anio}`;
 
-  const gestion = document.getElementById("gestion").value.trim().toUpperCase();
-  const nombre = document.getElementById("nombre").value.trim().toUpperCase();
-  const cedula = document.getElementById("cedula").value.trim();
-  const monto = document.getElementById("monto").value.trim();
-  const terminal = document.getElementById("terminal").value.trim();
-  const fecha_activacion = document.getElementById("fecha_activacion").value.trim();
-  const fecha_expiracion = document.getElementById("fecha_expiracion").value.trim();
-  const fecha_desactivacion = document.getElementById("fecha_desactivacion").value.trim();
+  const gestion = document.getElementById("gestion")?.value.trim().toUpperCase() || "";
+  const nombre = document.getElementById("nombre")?.value.trim().toUpperCase() || "";
+  const cedula = document.getElementById("cedula")?.value.trim() || "";
+  const monto = document.getElementById("monto")?.value.trim() || "";
 
-  let fechaInput = document.getElementById("fecha").value.trim();
+  let fechaInput = document.getElementById("fecha")?.value.trim() || "";
   let fecha = "";
   if (fechaInput) {
     const partes = fechaInput.split("-");
     fecha = `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 
-  const suspendido = document.getElementById('suspendido').checked;
-  const sinCumplirAno = document.getElementById('sinCumplirAno').checked;
-  const menos2750 = document.getElementById('menos2750').checked;
-  const finaciamiento = document.getElementById('finaciamiento').checked;
-  const ceroPagosIncubadora = document.getElementById('ceroPagosIncubadora').checked;
+  // ---- Limpieza de saldos ----
+  const montoFacturasPendientesLS = document.getElementById('montoFacturasPendientesLS')?.value.trim() || "";
+  const montoWritteOffLS = document.getElementById('montoWritteOffLS')?.value.trim() || "";
+  const montoCeroPagosLS = document.getElementById('montoCeroPagosLS')?.value.trim() || "";
+  const tiposLS = [
+    { etiqueta: "Facturas Pendientes", monto: montoFacturasPendientesLS },
+    { etiqueta: "Cero Pagos", monto: montoCeroPagosLS },
+    { etiqueta: "Writte Off", monto: montoWritteOffLS }
+  ].filter(t => t.monto);
+  const totalLS = formatMonto(tiposLS.map(t => t.monto).join("+"));
+  const montoCondonar = totalLS;
+  let vigenciaLS = "";
+  if (montoFacturasPendientesLS) {
+    vigenciaLS = "\n\n⚠️ Importante: La condonación tendrá una vigencia de 5 días naturales. Si la contratación no se completa dentro de este plazo, la deuda será reversada automáticamente.";
+    if (montoWritteOffLS || montoCeroPagosLS) vigenciaLS += " Aplica únicamente para el monto de Facturas Pendientes.";
+  }
+  const desgloseLS = tiposLS.length
+    ? "\nConcepto: " + tiposLS.map(t => `${t.etiqueta} ₡${formatMonto(t.monto)}`).join(", ")
+    : "";
 
-  let facturasPendientesTexto = "";
-  if (suspendido) facturasPendientesTexto += "servicio está suspendido. ";
-  if (sinCumplirAno) facturasPendientesTexto += "las facturas no cumple con el año antigüedad. ";
-  if (finaciamiento) facturasPendientesTexto += "Adicional cliente no aplica para limpieza tiene Financiamiento abierto. ";
-  if (menos2750) facturasPendientesTexto += "";
+  let base = plantillas[plantillaKey] || "";
+  let montoFinal = formatMonto(monto);
+  let desglose = "";
 
-  let ceroPagosIncubadoraTexto = "";
-  if (ceroPagosIncubadora) ceroPagosIncubadoraTexto = " INCUBADORA";
-
-  const montoCeroPagosFP = document.getElementById('montoCeroPagosFP').value.trim();
-  const montoWritteOffFP = document.getElementById('montoWritteOffFP').value.trim();
-  let facturasAdicionalPartes = [];
-  if (montoCeroPagosFP) facturasAdicionalPartes.push(`CERO PAGOS por un monto de ¢${formatMonto(montoCeroPagosFP)}`);
-  if (montoWritteOffFP) facturasAdicionalPartes.push(`WRITTE OFF por un monto de ¢${formatMonto(montoWritteOffFP)}`);
-  let facturasAdicionalTexto = facturasAdicionalPartes.length ? `Adicionalmente, el cliente cuenta con ${facturasAdicionalPartes.join(" y ")}.` : "";
-
-  const montoFacturasPendientesCP = document.getElementById('montoFacturasPendientesCP').value.trim();
-  const montoWritteOffCP = document.getElementById('montoWritteOffCP').value.trim();
-  let ceroPagosAdicionalPartes = [];
-  if (montoFacturasPendientesCP) ceroPagosAdicionalPartes.push(`FACTURAS PENDIENTES por un monto de ¢${formatMonto(montoFacturasPendientesCP)}`);
-  if (montoWritteOffCP) ceroPagosAdicionalPartes.push(`WRITTE OFF por un monto de ¢${formatMonto(montoWritteOffCP)}`);
-  let ceroPagosAdicionalTexto = ceroPagosAdicionalPartes.length ? ` Adicionalmente, el cliente cuenta con ${ceroPagosAdicionalPartes.join(" y ")}.` : "";
-
-  const montoFacturasPendientesWO = document.getElementById('montoFacturasPendientesWO').value.trim();
-  const montoCeroPagosWO = document.getElementById('montoCeroPagosWO').value.trim();
-  let writteOffAdicionalPartes = [];
-  if (montoFacturasPendientesWO) writteOffAdicionalPartes.push(`FACTURAS PENDIENTES por un monto de ¢${formatMonto(montoFacturasPendientesWO)}`);
-  if (montoCeroPagosWO) writteOffAdicionalPartes.push(`CERO PAGOS por un monto de ¢${formatMonto(montoCeroPagosWO)}`);
-  let writteOffAdicionalTexto = writteOffAdicionalPartes.length ? ` Adicionalmente, el cliente cuenta con ${writteOffAdicionalPartes.join(" y ")}.` : "";
-
-  const montoFacturasPendientesSA = document.getElementById('montoFacturasPendientesSA').value.trim();
-  const montoCeroPagosSA = document.getElementById('montoCeroPagosSA').value.trim();
-  const montoWritteOffSA = document.getElementById('montoWritteOffSA').value.trim();
-  let facturasSAPartes = [];
-  if (montoFacturasPendientesSA) facturasSAPartes.push(`FACTURAS PENDIENTES por un monto de ¢${formatMonto(montoFacturasPendientesSA)}`);
-  if (montoCeroPagosSA) facturasSAPartes.push(`CERO PAGOS por un monto de ¢${formatMonto(montoCeroPagosSA)}`);
-  if (montoWritteOffSA) facturasSAPartes.push(`WRITTE OFF por un monto de ¢${formatMonto(montoWritteOffSA)}`);
-
-  let facturasSAFrase = "";
-  if (facturasSAPartes.length === 0) facturasSAFrase = "saldos pendientes";
-  else if (facturasSAPartes.length === 1) facturasSAFrase = facturasSAPartes[0];
-  else {
-    const ultimo = facturasSAPartes[facturasSAPartes.length - 1];
-    const resto = facturasSAPartes.slice(0, -1).join(", ");
-    facturasSAFrase = `${resto} y ${ultimo}`;
+  if (plantillaKey === "NO PROCEDE") {
+    base = construirNoProcede(obtenerNoProcedeDatos());
   }
 
-  const montoFacturasPendientesLS = document.getElementById('montoFacturasPendientesLS').value.trim();
-  const montoWritteOffLS = document.getElementById('montoWritteOffLS').value.trim();
-  const montoCeroPagosLS = document.getElementById('montoCeroPagosLS').value.trim();
-  let limpiezaSaldosPartes = [];
-  if (montoFacturasPendientesLS) limpiezaSaldosPartes.push(`por el monto de ¢${formatMonto(montoFacturasPendientesLS)} en FACTURAS PENDIENTES`);
-  if (montoCeroPagosLS) limpiezaSaldosPartes.push(`por el monto de ¢${formatMonto(montoCeroPagosLS)} en CERO PAGOS`);
-  if (montoWritteOffLS) limpiezaSaldosPartes.push(`por el monto de ¢${formatMonto(montoWritteOffLS)} en WRITTE OFF`);
-
-  let limpiezaSaldosFrase = "";
-  if (limpiezaSaldosPartes.length === 1) limpiezaSaldosFrase = limpiezaSaldosPartes[0];
-  else if (limpiezaSaldosPartes.length > 1) {
-    const ultimo = limpiezaSaldosPartes[limpiezaSaldosPartes.length - 1];
-    const resto = limpiezaSaldosPartes.slice(0, -1).join(", ");
-    limpiezaSaldosFrase = `${resto} y ${ultimo}`;
-  }
-
-  const hayFP_LS = !!montoFacturasPendientesLS;
-  const hayOtroLS = !!(montoWritteOffLS || montoCeroPagosLS);
-  let notaLS = "";
-  if (hayFP_LS && hayOtroLS) {
-    notaLS = "\n\nNOTA: Si la venta no se concreta, deben solicitar la anulación de la nota de crédito hoy mismo por medio del WhatsApp 70024600, opción Soporte Comercial. Aplica única y exclusivamente para montos de FACTURAS PENDIENTES.";
-  } else if (hayFP_LS && !hayOtroLS) {
-    notaLS = "\n\nNOTA: Si la venta no se concreta, deben solicitar la anulación de la nota de crédito hoy mismo por medio del WhatsApp 70024600, opción Soporte Comercial.";
-  }
-
-  let texto = plantillas[plantillaKey]
-  .replace("{nombre}", nombre)
-  .replace("{gestion}", gestion)
-  .replace("{fecha}", fechaFormateada)
-  .replace("{hora}", horaFormateada)
-  .replace("{cedula}", cedula)
-  .replace("{monto}", formatMonto(monto))
-  .replace("{fecha_activacion}", fecha_activacion)
-  .replace("{fecha_expiracion}", fecha_expiracion)
-  .replace("{fecha_desactivacion}", fecha_desactivacion)
-  .replace("{terminal}", terminal)
-  .replace("{fechaNC}", fecha)
-  .replace("{facturasPendientesTexto}", facturasPendientesTexto)
-  .replace("{facturasAdicionalTexto}", facturasAdicionalTexto)
-  .replace("{ceroPagosAdicionalTexto}", ceroPagosAdicionalTexto)
-  .replace("{writteOffAdicionalTexto}", writteOffAdicionalTexto)
-  .replace("{facturasSAFrase}", facturasSAFrase)
-  .replace("{limpiezaSaldosFrase}", limpiezaSaldosFrase)
-  .replace("{notaLS}", notaLS)
-  .replace("{ceroPagosIncubadoraTexto}", ceroPagosIncubadoraTexto);
+  const valores = {
+    nombre, gestion, cedula,
+    fecha: fechaFormateada,
+    hora: horaFormateada,
+    monto: montoFinal,
+    fechaNC: fecha,
+    montoCondonar, desgloseLS, vigenciaLS, desglose
+  };
+  const texto = base.replace(/\{(\w+)\}/g, (m, k) => (k in valores ? valores[k] : m));
 
   document.getElementById("resultado").value = texto || "Selecciona una plantilla válida.";
   return true;
@@ -439,30 +439,44 @@ function generarPlantilla() {
 
 function copiarTexto() {
   const texto = document.getElementById("resultado");
-  texto.select();
-  document.execCommand("copy");
-  notificar("success", "Copiado", "Plantilla copiada al portapapeles.");
+  if (texto) {
+    texto.select();
+    document.execCommand("copy");
+    notificar("success", "Copiado", "Plantilla copiada al portapapeles.");
+  }
 
-  document.getElementById("nombre").value = "";
-  document.getElementById("gestion").value = "";
-  document.getElementById("cedula").value = "";
-  if (document.getElementById("monto")) document.getElementById("monto").value = "";
-  if (document.getElementById("fecha_activacion")) document.getElementById("fecha_activacion").value = "";
-  if (document.getElementById("fecha_expiracion")) document.getElementById("fecha_expiracion").value = "";
-  if (document.getElementById("fecha_desactivacion")) document.getElementById("fecha_desactivacion").value = "";
-  if (document.getElementById("terminal")) document.getElementById("terminal").value = "";
-  if (document.getElementById("fecha")) document.getElementById("fecha").value = "";
+  ["nombre", "gestion", "cedula", "monto", "fecha"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
 
-  const radios = document.querySelectorAll("input[type='radio']");
-  radios.forEach(r => r.checked = false);
+  ["montoFacturasPendientesLS", "montoWritteOffLS", "montoCeroPagosLS"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
 
-  if (document.getElementById("ceroPagosIncubadora")) document.getElementById("ceroPagosIncubadora").checked = false;
   if (document.getElementById("chkReversionLS")) document.getElementById("chkReversionLS").checked = false;
   if (document.getElementById("chkRecLS")) document.getElementById("chkRecLS").checked = false;
 
-  const montoExtraIds = ["montoCeroPagosFP", "montoWritteOffFP", "montoFacturasPendientesCP", "montoWritteOffCP", "montoFacturasPendientesWO", "montoCeroPagosWO", "montoFacturasPendientesSA", "montoCeroPagosSA", "montoWritteOffSA", "montoFacturasPendientesLS", "montoWritteOffLS", "montoCeroPagosLS"];
-  montoExtraIds.forEach(id => {
-    if (document.getElementById(id)) document.getElementById(id).value = "";
+  NP_MONTOS.forEach(m => {
+    const el = document.getElementById("npMonto_" + m.clave);
+    if (el) el.value = "";
+  });
+  const npInc = document.getElementById("np_incubadora");
+  if (npInc) npInc.checked = false;
+  const npCarta = document.getElementById("np_cartaDescargo");
+  if (npCarta) npCarta.checked = false;
+  NP_CONDICIONES.forEach(c => {
+    const el = document.getElementById("np_" + c.clave);
+    if (el) el.checked = false;
+  });
+
+  const camposCD = document.getElementById("camposCartaDescargo");
+  if (camposCD) camposCD.style.display = "none";
+  ["fecha_activacion", "fecha_expiracion", "fecha_desactivacion", "terminal"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+    marcarError(id, false);
   });
 }
 
@@ -470,25 +484,13 @@ function copiarTexto() {
 // ÍNDICE Y LISTAS DE ACCESO RÁPIDO
 // ==========================================
 const plantillasProcede = [
-  "CON ACTUALIZACIÓN DE SEGMENTACIÓN",
-  "NC APLICADA",
-  "NO SE PUEDE ACTUALIZAR SEGMENTACIÓN",
   "VISTO BUENO",
-  "VISTO BUENO ACTIVO",
   "VISTO BUENO CARTA DE DESCARGO",
   "LIMPIEZA DE SALDOS"
 ];
 
 const plantillasNoProcede = [
-  "CERO PAGOS",
-  "CERO PAGOS(CON TERMINAL)",
-  "FACTURAS PENDIENTES",
-  "SALDO PENDIENTE SERVICIO ACTIVO",
-  "SIN FORMALIZACION",
-  "TERMINAL LIGADO (FINANCIAMIENTO Y FACTURAS PENDIENTES)",
-  "TERMINAL LIGADO (SOLO DEBE FINACIAMIENTO)",
-  "WRITTE OFF(CON TERMINAL)",
-  "WRITTE OFF(SIN TERMINAL)"
+  "NO PROCEDE"
 ];
 
 const plantillasRechazos = [

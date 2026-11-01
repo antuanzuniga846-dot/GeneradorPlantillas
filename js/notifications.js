@@ -1,8 +1,69 @@
-// ==========================================
-// NOTIFICACIONES FLOTANTES (INTELIGENTES)
+﻿// ==========================================
+// NOTIFICACIONES FLOTANTES (INTELIGENTES) Y DE ESCRITORIO
 // ==========================================
 
 let ultimasCedulasNotificadas = new Set();
+
+// Pedir permiso para notificaciones de escritorio en la primera interacción
+function inicializarPermisoNotificaciones() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    const pedir = () => {
+      Notification.requestPermission();
+      document.removeEventListener("click", pedir);
+      document.removeEventListener("keydown", pedir);
+    };
+    document.addEventListener("click", pedir, { once: true });
+    document.addEventListener("keydown", pedir, { once: true });
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", inicializarPermisoNotificaciones);
+} else {
+  inicializarPermisoNotificaciones();
+}
+
+function notificarEscritorio(titulo, mensajeHtmlOTexto) {
+  if (!("Notification" in window)) return;
+
+  const textoPlano = (mensajeHtmlOTexto || "")
+    .replace(/<br\s*[\/]?>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+
+  const tituloPlano = (titulo || "Aviso de Limpieza")
+    .replace(/<[^>]*>/g, "")
+    .trim();
+
+  const mostrar = () => {
+    try {
+      const n = new Notification(tituloPlano, {
+        body: textoPlano,
+        icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚠️</text></svg>",
+        requireInteraction: false
+      });
+      setTimeout(() => {
+        try { n.close(); } catch (_) {}
+      }, 9500);
+      n.onclick = () => {
+        window.focus();
+        try { n.close(); } catch (_) {}
+      };
+    } catch (e) {
+      console.warn("No se pudo mostrar la notificación de escritorio:", e);
+    }
+  };
+
+  if (Notification.permission === "granted") {
+    mostrar();
+  } else if (Notification.permission === "default") {
+    Notification.requestPermission().then(perm => {
+      if (perm === "granted") mostrar();
+    });
+  }
+}
 
 function notificar(tipo, titulo, mensaje, duracionManual = null) {
   const container = document.getElementById("toastContainer");
@@ -10,7 +71,7 @@ function notificar(tipo, titulo, mensaje, duracionManual = null) {
 
   const toast = document.createElement("div");
 
-  // Detección: Alertas de limpieza realizada o atendida duran más tiempo
+  // Detección: Alertas de limpieza realizada o atendida
   const tLower = (titulo || "").toLowerCase();
   const mLower = (mensaje || "").toLowerCase();
   const esLimpiezaRealizada = 
@@ -21,10 +82,18 @@ function notificar(tipo, titulo, mensaje, duracionManual = null) {
     tLower.includes("limpieza realizada") ||
     tLower.includes("limpieza atendida") ||
     tLower.includes("ya realizada") ||
+    tLower.includes("ya subida") ||
     mLower.includes("ya se realizó") ||
     mLower.includes("fue actualizada") ||
     mLower.includes("atendida por") ||
-    mLower.includes("ya fue atendida");
+    mLower.includes("ya fue atendida") ||
+    mLower.includes("ya se encuentra registrada") ||
+    mLower.includes("ya estaba en la hoja");
+
+  // Si es alerta de que la limpieza ya está realizada, disparar también notificación nativa de escritorio
+  if (esLimpiezaRealizada) {
+    notificarEscritorio(titulo, mensaje);
+  }
 
   // Tiempo de permanencia: Limpiezas realizadas duran 9.5s, las demás duran 3.2s
   let tiempoVisibleMs = 3200;

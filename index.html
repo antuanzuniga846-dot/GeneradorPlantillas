@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -287,39 +287,6 @@
             </div>
           </div>
           
-          <div id="checkboxes" class="checkbox-section" style="display: none;">
-            <label><input type="radio" name="condicion" id="finaciamiento"> Financiamiento abierto.</label>
-            <label><input type="radio" name="condicion" id="suspendido"> Suspendido</label>
-            <label><input type="radio" name="condicion" id="sinCumplirAno"> Facturas no Cumple año antigüedad</label>
-            <label><input type="radio" name="condicion" id="menos2750"> Normal</label>
-          </div>
-
-          <div id="checkboxesFacturasExtra" class="checkbox-section" style="display: none;">
-            <div class="saldos-extra">
-              <p class="saldos-extra-titulo">💰 Saldos adicionales</p>
-              <label for="montoCeroPagosFP">Saldo Cero Pagos (¢):</label>
-              <input type="text" id="montoCeroPagosFP" class="monto-input" placeholder="Ej: 25,000.00">
-
-              <label for="montoWritteOffFP">Saldo Writte Off (¢):</label>
-              <input type="text" id="montoWritteOffFP" class="monto-input" placeholder="Ej: 25,000.00">
-            </div>
-          </div>
-
-          <div id="checkboxesFacturasServicioActivo" class="checkbox-section" style="display: none;">
-            <div class="saldos-extra" id="grupoSaldosSA">
-              <p class="saldos-extra-titulo">💰 Ingresar el monto correspondiente</p>
-              <label for="montoFacturasPendientesSA">Saldo Facturas Pendientes (¢):</label>
-              <input type="text" id="montoFacturasPendientesSA" class="monto-input" placeholder="Ej: 25,000.00">
-
-              <label for="montoCeroPagosSA">Saldo Cero Pagos (¢):</label>
-              <input type="text" id="montoCeroPagosSA" class="monto-input" placeholder="Ej: 25,000.00">
-
-              <label for="montoWritteOffSA">Saldo Writte Off (¢):</label>
-              <input type="text" id="montoWritteOffSA" class="monto-input" placeholder="Ej: 25,000.00">
-              <span id="saldosSAError" class="error-msg">*Información Obligatoria*</span>
-            </div>
-          </div>
-
           <!-- SECCIÓN LIMPIEZA DE SALDOS -->
           <div id="checkboxesLimpiezaSaldos" class="checkbox-section" style="display: none;">
             <div class="saldos-extra" id="grupoSaldosLS">
@@ -352,55 +319,56 @@
             </div>
           </div>
 
-          <div id="checkboxesCeroPagos" class="checkbox-section" style="display: none;">
-            <label>
-              <input type="checkbox" id="ceroPagosIncubadora"> Cero Pagos Incubadora
-            </label>
+          <!-- SECCIÓN NO PROCEDE -->
+          <div id="checkboxesNoProcede" class="checkbox-section" style="display: none;">
+            <div class="saldos-extra" id="grupoNoProcede">
+              <p class="saldos-extra-titulo">⛔ Ingresar el monto correspondiente</p>
+              <label for="npMonto_ceroPagos">Cero Pagos (¢):</label>
+              <input type="text" id="npMonto_ceroPagos" class="monto-input" placeholder="Ej: 25,000.00">
+              <label><input type="checkbox" id="np_incubadora"> Es Cero Pagos Incubadora</label>
 
-            <div class="saldos-extra">
-              <p class="saldos-extra-titulo">💰 Saldos adicionales</p>
-              <label for="montoFacturasPendientesCP">Saldo Facturas Pendientes (¢):</label>
-              <input type="text" id="montoFacturasPendientesCP" class="monto-input" placeholder="Ej: 25,000.00">
+              <label for="npMonto_facturasPendientes">Facturas Pendientes (¢):</label>
+              <input type="text" id="npMonto_facturasPendientes" class="monto-input" placeholder="Ej: 25,000.00">
 
-              <label for="montoWritteOffCP">Saldo Writte Off (¢):</label>
-              <input type="text" id="montoWritteOffCP" class="monto-input" placeholder="Ej: 25,000.00">
-            </div>
-          </div>
+              <label for="npMonto_saldoWritteOff">Saldo WritteOff (¢):</label>
+              <input type="text" id="npMonto_saldoWritteOff" class="monto-input" placeholder="Ej: 25,000.00">
 
-          <div id="checkboxesWriteOffSinTerminal" class="checkbox-section" style="display: none;">
-            <div class="saldos-extra">
-              <p class="saldos-extra-titulo">💰 Saldos adicionales</p>
-              <label for="montoFacturasPendientesWO">Saldo Facturas Pendientes (¢):</label>
-              <input type="text" id="montoFacturasPendientesWO" class="monto-input" placeholder="Ej: 25,000.00">
+              <p class="saldos-extra-titulo" style="margin-top: 16px;">☑️ Condiciones adicionales (una o varias)</p>
+              <label><input type="checkbox" id="np_facturasMenoresAno"> Factura menor a 1 año</label>
+              <label><input type="checkbox" id="np_suspendido"> Suspendido</label>
+              <label><input type="checkbox" id="np_financiamientoPendiente"> Financiamiento pendiente</label>
+              <label><input type="checkbox" id="np_servicioActivo"> Servicio activo</label>
+              <label><input type="checkbox" id="np_cartaDescargo"> Carta de descargo</label>
 
-              <label for="montoCeroPagosWO">Saldo Cero Pagos (¢):</label>
-              <input type="text" id="montoCeroPagosWO" class="monto-input" placeholder="Ej: 25,000.00">
-            </div>
-          </div>
+              <!-- Campos adicionales para Carta de descargo -->
+              <div id="camposCartaDescargo" style="display: none; margin-top: 10px; padding: 12px 14px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--card-border); border-left: 3px solid var(--accent);">
+                <p class="saldos-extra-titulo">📄 Datos de Carta de descargo</p>
 
-          <div id="writteOffCampos" style="display: none;">
-            <label for="fecha_activacion">Fecha de activación:</label>
-            <div class="campo-wrapper">
-              <input type="text" id="fecha_activacion" placeholder="Ej: 3/7/2013">
-              <span id="fecha_activacionError" class="error-msg">*Información Obligatoria*</span>
-            </div>
+                <label for="fecha_activacion">Fecha de activación:</label>
+                <div class="campo-wrapper">
+                  <input type="text" id="fecha_activacion" placeholder="Ej: 3/7/2013">
+                  <span id="fecha_activacionError" class="error-msg">*Información Obligatoria*</span>
+                </div>
 
-            <label for="fecha_expiracion">Fecha de expiración:</label>
-            <div class="campo-wrapper">
-              <input type="text" id="fecha_expiracion" placeholder="Ej: 3/7/2015">
-              <span id="fecha_expiracionError" class="error-msg">*Información Obligatoria*</span>
-            </div>
+                <label for="fecha_expiracion">Fecha de expiración:</label>
+                <div class="campo-wrapper">
+                  <input type="text" id="fecha_expiracion" placeholder="Ej: 3/7/2015">
+                  <span id="fecha_expiracionError" class="error-msg">*Información Obligatoria*</span>
+                </div>
 
-            <label for="fecha_desactivacion">Fecha de desactivación:</label>
-            <div class="campo-wrapper">
-              <input type="text" id="fecha_desactivacion" placeholder="Ej: 21/11/2013">
-              <span id="fecha_desactivacionError" class="error-msg">*Información Obligatoria*</span>
-            </div>
+                <label for="fecha_desactivacion">Fecha de desactivación:</label>
+                <div class="campo-wrapper">
+                  <input type="text" id="fecha_desactivacion" placeholder="Ej: 21/11/2013">
+                  <span id="fecha_desactivacionError" class="error-msg">*Información Obligatoria*</span>
+                </div>
 
-            <label for="terminal">Terminal ligado:</label>
-            <div class="campo-wrapper">
-              <input type="text" id="terminal" placeholder="Ej: SAMSUNG GALAXY S III ONYX BLACK">
-              <span id="terminalError" class="error-msg">*Información Obligatoria*</span>
+                <label for="terminal">Terminal ligado:</label>
+                <div class="campo-wrapper">
+                  <input type="text" id="terminal" placeholder="Ej: SAMSUNG GALAXY S III ONYX BLACK">
+                  <span id="terminalError" class="error-msg">*Información Obligatoria*</span>
+                </div>
+              </div>
+              <span id="noProcedeError" class="error-msg">*Ingrese al menos un monto o seleccione una condición*</span>
             </div>
           </div>
 

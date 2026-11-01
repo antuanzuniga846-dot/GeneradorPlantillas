@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // INICIALIZACIÓN PRINCIPAL & LISTENERS DE EVENTOS
 // ==========================================
 
@@ -47,17 +47,40 @@ document.querySelectorAll('.monto-input').forEach(el => {
 });
 
 // Limpieza de estados de error en inputs
-["montoFacturasPendientesSA", "montoCeroPagosSA", "montoWritteOffSA"].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener("input", () => marcarErrorGrupo("grupoSaldosSA", "saldosSAError", false));
-});
-
 ["montoFacturasPendientesLS", "montoWritteOffLS", "montoCeroPagosLS"].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener("input", () => marcarErrorGrupo("grupoSaldosLS", "saldosLSError", false));
 });
 
-["gestion", "nombre", "cedula", "monto", "fecha_activacion", "fecha_expiracion", "fecha_desactivacion", "terminal", "fecha"].forEach(id => {
+if (typeof NP_MONTOS !== "undefined") {
+  NP_MONTOS.forEach(m => {
+    const el = document.getElementById("npMonto_" + m.clave);
+    if (el) el.addEventListener("input", () => marcarErrorGrupo("grupoNoProcede", "noProcedeError", false));
+  });
+}
+
+if (typeof NP_CONDICIONES !== "undefined") {
+  ["np_incubadora", ...NP_CONDICIONES.filter(c => !c.auto).map(c => "np_" + c.clave)].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("change", () => marcarErrorGrupo("grupoNoProcede", "noProcedeError", false));
+  });
+}
+
+const npCartaElem = document.getElementById("np_cartaDescargo");
+if (npCartaElem) {
+  npCartaElem.addEventListener("change", function () {
+    const camposCD = document.getElementById("camposCartaDescargo");
+    if (camposCD) {
+      camposCD.style.display = this.checked ? "block" : "none";
+    }
+    if (!this.checked) {
+      ["fecha_activacion", "fecha_expiracion", "fecha_desactivacion", "terminal"].forEach(id => marcarError(id, false));
+    }
+    marcarErrorGrupo("grupoNoProcede", "noProcedeError", false);
+  });
+}
+
+["gestion", "nombre", "cedula", "monto", "fecha", "fecha_activacion", "fecha_expiracion", "fecha_desactivacion", "terminal"].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener("input", () => marcarError(id, false));
 });
