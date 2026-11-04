@@ -2775,4 +2775,77 @@ button.sheet-pill-btn.pill-soporte-adriel,
   box-shadow: 0 6px 18px rgba(0, 120, 215, 0.45);
 }
 
+/* ========================================================= */
+/* ESTILOS GLOBALES DE BARRAS DE SCROLL MODERNAS (SLIM/DARK) */
+/* ========================================================= */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent, #0078d7);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Scrollbars estilizados para listas de métricas, notas del parche y modales */
+#listaRankingAgentes,
+#listaPlantillasMasUsadas,
+.custom-scroll-container,
+.patch-notes-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--accent-rgb, 0, 120, 215), 0.4) rgba(0, 0, 0, 0.25);
+}
+
+#listaRankingAgentes::-webkit-scrollbar,
+#listaPlantillasMasUsadas::-webkit-scrollbar,
+.custom-scroll-container::-webkit-scrollbar,
+.patch-notes-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+#listaRankingAgentes::-webkit-scrollbar-track,
+#listaPlantillasMasUsadas::-webkit-scrollbar-track,
+.custom-scroll-container::-webkit-scrollbar-track,
+.patch-notes-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+}
+
+#listaRankingAgentes::-webkit-scrollbar-thumb,
+#listaPlantillasMasUsadas::-webkit-scrollbar-thumb,
+.custom-scroll-container::-webkit-scrollbar-thumb,
+.patch-notes-container::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-rgb, 0, 120, 215), 0.4);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+#listaRankingAgentes::-webkit-scrollbar-thumb:hover,
+#listaPlantillasMasUsadas::-webkit-scrollbar-thumb:hover,
+.custom-scroll-container::-webkit-scrollbar-thumb:hover,
+.patch-notes-container::-webkit-scrollbar-thumb:hover {
+  background: var(--accent, #0078d7);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb, 0, 120, 215), 0.6);
+}
+
+
 
