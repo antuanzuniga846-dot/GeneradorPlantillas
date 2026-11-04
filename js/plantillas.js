@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // MÓDULO DE GENERACIÓN DE PLANTILLAS
 // ==========================================
 
@@ -548,6 +548,7 @@ function copiarTexto() {
 
   if (document.getElementById("chkReversionLS")) document.getElementById("chkReversionLS").checked = false;
   if (document.getElementById("chkRecLS")) document.getElementById("chkRecLS").checked = false;
+  if (document.getElementById("chkNullLS")) document.getElementById("chkNullLS").checked = false;
 
   NP_MONTOS.forEach(m => {
     const el = document.getElementById("npMonto_" + m.clave);
@@ -766,6 +767,15 @@ async function recuperarUltimaGestionAgente() {
   if (ultima.rawWO && document.getElementById('montoWritteOffLS')) {
     document.getElementById('montoWritteOffLS').value = ultima.rawWO;
   }
+  const condStr = String(ultima.condiciones || "");
+  const esRev = ultima.rawReversion || condStr.includes("Reversión") || condStr.includes("Reversion");
+  const esR = ultima.rawRec || condStr.includes("REC") || String(ultima.plantilla || "").includes("REC");
+  const esN = ultima.rawNull || condStr.includes("NULL");
+  if (document.getElementById("chkReversionLS")) document.getElementById("chkReversionLS").checked = Boolean(esRev);
+  if (document.getElementById("chkRecLS")) document.getElementById("chkRecLS").checked = Boolean(esR);
+  if (document.getElementById("chkNullLS")) document.getElementById("chkNullLS").checked = Boolean(esN);
+
+
 
   if (typeof notificar === "function") {
     notificar("success", "Gestión Recuperada", `Se cargaron los datos de la gestión <strong>${ultima.gestion || ""}</strong> (${ultima.plantilla || ""}).`);

@@ -60,7 +60,9 @@ function formatearDetalleHistorial(str) {
     "reclamo en trámite": "Reclamo en Trámite",
     "antiguedad": "Antigüedad",
     "antigüedad": "Antigüedad",
-    "carta de descargo": "Carta de Descargo"
+    "carta de descargo": "Carta de Descargo",
+    "null": "NULL (No se puede realizar limpieza)",
+    "null (no se puede realizar limpieza)": "NULL (No se puede realizar limpieza)"
   };
 
   const keyMinus = s.toLowerCase();
@@ -75,7 +77,7 @@ function formatearDetalleHistorial(str) {
 
   // Capitalización estándar limpia (Title Case)
   const palabrasMenores = new Set(["de", "a", "en", "por", "un", "una", "y", "o", "el", "la", "los", "las", "con", "del", "al"]);
-  const siglas = new Set(["REC", "NC", "DTS", "WO", "FP", "CP", "ID", "LS"]);
+  const siglas = new Set(["REC", "NC", "DTS", "WO", "FP", "CP", "ID", "LS", "NULL"]);
 
   return s.split(/\s+/).map((palabra, idx) => {
     const limpia = palabra.toUpperCase();

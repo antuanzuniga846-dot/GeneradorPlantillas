@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // INICIALIZACIÓN PRINCIPAL & LISTENERS DE EVENTOS
 // ==========================================
 
@@ -47,10 +47,33 @@ document.querySelectorAll('.monto-input').forEach(el => {
 });
 
 // Limpieza de estados de error en inputs
+
+// Exclusividad mutua para casillas de Limpieza de Saldos (ReversiÃ³n, REC, NULL)
+const chkReversionLS = document.getElementById("chkReversionLS");
+const chkRecLS = document.getElementById("chkRecLS");
+const chkNullLS = document.getElementById("chkNullLS");
+
+[chkReversionLS, chkRecLS, chkNullLS].forEach(chk => {
+  if (chk) {
+    chk.addEventListener("change", function () {
+      if (this.checked) {
+        if (this !== chkReversionLS && chkReversionLS) chkReversionLS.checked = false;
+        if (this !== chkRecLS && chkRecLS) chkRecLS.checked = false;
+        if (this !== chkNullLS && chkNullLS) chkNullLS.checked = false;
+      }
+    });
+  }
+});
+
 ["montoFacturasPendientesLS", "montoWritteOffLS", "montoCeroPagosLS"].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener("input", () => marcarErrorGrupo("grupoSaldosLS", "saldosLSError", false));
 });
+
+const chkNullErrorElem = document.getElementById("chkNullLS");
+if (chkNullErrorElem) {
+  chkNullErrorElem.addEventListener("change", () => marcarErrorGrupo("grupoSaldosLS", "saldosLSError", false));
+}
 
 if (typeof NP_MONTOS !== "undefined") {
   NP_MONTOS.forEach(m => {

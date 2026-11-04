@@ -791,6 +791,14 @@ async function subirLimpiezaDesdePlantilla() {
     return false;
   }
 
+  if (document.getElementById("chkNullLS")?.checked) {
+    return false;
+  }
+
+  if (document.getElementById("chkRecLS")?.checked) {
+    return false;
+  }
+
   if (!validarCampos()) {
     notificar("error", "Campos Incompletos", "Por favor completa los campos obligatorios antes de subir.");
     return false;
@@ -878,13 +886,17 @@ async function subirLimpiezaDesdePlantilla() {
   return true;
 }
 
-function extraerDatosParaHistorial(seleccion, esRec, esReversion) {
+function extraerDatosParaHistorial(seleccion, esRec, esReversion, esNull) {
   const gestionVal = document.getElementById("gestion")?.value.trim() || "";
   const dtsVal = document.getElementById("dts")?.value.trim() || "";
   const nombreVal = document.getElementById("nombre")?.value.trim() || "";
   const cedulaRegular = document.getElementById("cedula")?.value.trim() || "";
   const cedulaRechazo = document.getElementById("cedulaRechazo")?.value.trim() || "";
   let docVal = cedulaRegular || cedulaRechazo;
+
+  if (typeof esNull === "undefined") {
+    esNull = document.getElementById("chkNullLS")?.checked || false;
+  }
 
   let montoVal = "";
   let condicionesVal = "";
@@ -901,7 +913,10 @@ function extraerDatosParaHistorial(seleccion, esRec, esReversion) {
     const totalLimpieza = formatMonto([mFP, mCP, mWO].filter(Boolean).join("+"));
     montoVal = terminos.length ? `₡${totalLimpieza} (${terminos.join(", ")})` : "-";
 
-    if (esRec) {
+    if (esNull) {
+      plantillaNombre = "LIMPIEZA";
+      condicionesVal = "NULL (No se puede realizar limpieza)";
+    } else if (esRec) {
       plantillaNombre = "LIMPIEZA REC";
       condicionesVal = "Condonación REC";
     } else if (esReversion) {
@@ -953,7 +968,10 @@ function extraerDatosParaHistorial(seleccion, esRec, esReversion) {
     condiciones: condicionesVal || "-",
     rawFP: (seleccion === "LIMPIEZA DE SALDOS") ? (document.getElementById('montoFacturasPendientesLS')?.value.trim() || "") : "",
     rawCP: (seleccion === "LIMPIEZA DE SALDOS") ? (document.getElementById('montoCeroPagosLS')?.value.trim() || "") : "",
-    rawWO: (seleccion === "LIMPIEZA DE SALDOS") ? (document.getElementById('montoWritteOffLS')?.value.trim() || "") : ""
+    rawWO: (seleccion === "LIMPIEZA DE SALDOS") ? (document.getElementById('montoWritteOffLS')?.value.trim() || "") : "",
+    rawRec: Boolean(esRec),
+    rawReversion: Boolean(esReversion),
+    rawNull: Boolean(esNull)
   };
 
   try {
@@ -1016,9 +1034,10 @@ async function generarYProcesarPlantilla() {
   const montoCP = document.getElementById('montoCeroPagosLS')?.value.trim() || "";
   const esReversion = document.getElementById("chkReversionLS")?.checked || false;
   const esRec = document.getElementById("chkRecLS")?.checked || false;
+  const esNull = document.getElementById("chkNullLS")?.checked || false;
   const cedula = document.getElementById("cedula")?.value.trim() || "";
 
-  const tieneSaldoFPoCP = (seleccion === "LIMPIEZA DE SALDOS") && !esRec && (montoFP !== "" || montoCP !== "");
+  const tieneSaldoFPoCP = (seleccion === "LIMPIEZA DE SALDOS") && !esRec && !esNull && (montoFP !== "" || montoCP !== "");
 
   if (tieneSaldoFPoCP) {
     const cedulaExistente = !esReversion ? await buscarCedulaExistente(cedula) : null;
@@ -1055,7 +1074,7 @@ async function generarYProcesarPlantilla() {
       }
 
       // Capturar datos ANTES de que copiarTexto() limpie los campos
-      const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion);
+      const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion, esNull);
       datosHist.condiciones = "Condonación";
 
       if (generarPlantilla()) {
@@ -1069,7 +1088,7 @@ async function generarYProcesarPlantilla() {
     }
 
     // Capturar datos ANTES de que copiarTexto() limpie los campos
-    const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion);
+    const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion, esNull);
 
     const subido = await subirLimpiezaDesdePlantilla();
     if (subido) {
@@ -1082,14 +1101,16 @@ async function generarYProcesarPlantilla() {
     }
   } else {
     // Capturar datos ANTES de que copiarTexto() limpie los campos
-    const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion);
+    const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion, esNull);
 
     if (generarPlantilla()) {
       if (typeof guardarEnHistorialPlantillas === "function") {
         guardarEnHistorialPlantillas(datosHist);
       }
       copiarTexto();
-      if (esRec) {
+      if (esNull) {
+        notificar("info", "NULL - Plantilla Generada", `Plantilla copiada al portapapeles y registrada en el Historial. No se subiÃ³ a la hoja de limpiezas por ser NULL (No se puede realizar limpieza).`);
+      } else if (esRec) {
         notificar("info", "REC - Plantilla Generada", `Plantilla copiada al portapapeles y registrada en el Historial. No se subió a la hoja de limpiezas por ser REC.`);
       }
     }
