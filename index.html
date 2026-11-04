@@ -66,9 +66,9 @@
           <span class="nav-icon">📊</span>
           <span class="nav-label">Hoja de Control</span>
         </button>
-        <button id="navItemHistorial" class="sidebar-nav-btn" onclick="cambiarVista('historial')" title="Historial de Plantillas (BETA)">
+        <button id="navItemHistorial" class="sidebar-nav-btn" onclick="cambiarVista('historial')" title="Historial de Plantillas">
           <span class="nav-icon">📋</span>
-          <span class="nav-label">Historial (BETA)</span>
+          <span class="nav-label">Historial</span>
         </button>
         <button id="navItemEstadisticas" class="sidebar-nav-btn" onclick="cambiarVista('estadisticas')" title="Métricas & Tabla Dinámica">
           <span class="nav-icon">📈</span>
@@ -263,7 +263,12 @@
         <label for="plantilla">Seleccionar Plantilla:</label>
         <select id="plantilla"></select>
 
-        <label for="gestion">Numero de gestion:</label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; margin-bottom: 2px;">
+          <label for="gestion" style="margin: 0; cursor: pointer;">Numero de gestion:</label>
+          <button type="button" class="btn-recuperar-gestion" onclick="recuperarUltimaGestionAgente()" title="Recuperar los datos de la última gestión realizada por ti">
+            🔄 Recuperar última gestión
+          </button>
+        </div>
         <div class="campo-wrapper">
           <input type="text" id="gestion" placeholder="Ej:239393" oninput="this.value = this.value.replace(/\D/g, '');">
           <span id="gestionError" class="error-msg">*Información Obligatoria*</span>
@@ -603,68 +608,148 @@
   </div>
 
   <!-- ======================================================= -->
-  <!-- VISTA 4: HISTORIAL DE PLANTILLAS (BETA)                 -->
+  <!-- VISTA 4: HISTORIAL DE PLANTILLAS                          -->
   <!-- ======================================================= -->
   <div id="vistaHistorial" style="display: none;">
     <div class="sheet-wrapper">
-      <div class="sheet-header-bar">
-        <div class="sheet-header-left">
-          <span class="sheet-header-title">📋 Historial de Plantillas <span style="font-size: 0.72rem; background: #ab47bc; color: #fff; padding: 2px 7px; border-radius: 6px; font-weight: bold; vertical-align: middle; margin-left: 6px;">BETA</span></span>
-          <span class="sheet-info-badge">Trámites y plantillas registradas (Limpiezas de saldos, REC, Visto Bueno, No Procede, Rechazos, etc.)</span>
+
+      <!-- SUB-NAVEGACION INTERNA DEL HISTORIAL -->
+      <div style="padding: 10px 16px; background: rgba(0,0,0,0.15); border-bottom: 1px solid var(--card-border); display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-subnav-historial active" id="btnSubnavTabla" onclick="cambiarSubVistaHistorial('tabla')">
+            &#128203; Registros de Tr&aacute;mites
+          </button>
+          <button type="button" class="btn-subnav-historial" id="btnSubnavMetricas" onclick="cambiarSubVistaHistorial('metricas')">
+            &#128202; M&eacute;tricas de Agentes y Plantillas
+          </button>
         </div>
-        <div class="sheet-header-right">
-          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button type="button" class="btn-rango-stats" onclick="setRangoRapidoHistorial('hoy', this)">📅 Hoy</button>
-            <button type="button" class="btn-rango-stats" onclick="setRangoRapidoHistorial('mes', this)">📅 Este Mes</button>
-            <button type="button" class="btn-rango-stats active" id="btnHistorialTodo" onclick="setRangoRapidoHistorial('todo', this)">📁 Todo</button>
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <input type="date" id="historialFechaDesde" class="sheet-header-input sheet-date-input" onchange="filtrarHistorialPlantillas()" title="Fecha Desde">
-            <span style="color: var(--accent-oncolor); opacity: 0.85; font-size: 0.84rem; font-weight: bold;">a</span>
-            <input type="date" id="historialFechaHasta" class="sheet-header-input sheet-date-input" onchange="filtrarHistorialPlantillas()" title="Fecha Hasta">
-          </div>
-          <select id="historialFiltroTipo" class="sheet-header-input" style="width: auto; max-width: 170px;" onchange="filtrarHistorialPlantillas()">
-            <option value="">Todas las Plantillas</option>
-            <option value="LIMPIEZA">Limpiezas</option>
-            <option value="REC">Limpiezas REC</option>
-            <option value="NO PROCEDE">No Procede</option>
-            <option value="RECHAZOS">Rechazos</option>
-            <option value="VISTO BUENO">Visto Bueno</option>
-          </select>
-          <input type="text" id="filtroHistorial" class="sheet-header-input" style="width: 200px;" placeholder="🔍 Buscar cédula, gestión, DTS..." oninput="filtrarHistorialPlantillas()">
-          <button class="btn-header-action btn-header-success" onclick="exportarHistorialPlantillasCSV()">📥 Exportar CSV</button>
-          <button class="btn-header-action" onclick="cargarHistorialSupabase()" title="Recargar historial">🔄 Sincronizar</button>
-          <button class="btn-header-action" id="btnHistorialBorrarTodo" style="display: none; background: rgba(229, 57, 53, 0.22); border-color: rgba(229, 57, 53, 0.45); color: #ff8a80;" onclick="vaciarHistorialPlantillas()" title="Borrar todo el historial">🗑️ Borrar Todo</button>
+        <div style="font-size: 0.82rem; color: var(--text-muted);">
+          <span>Auditor&iacute;a y estad&iacute;sticas en tiempo real</span>
         </div>
       </div>
 
-      <div style="padding: 10px 16px; background: rgba(0,0,0,0.18); border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; font-size: 0.84rem;">
-        <span id="historialContador" style="color: var(--text-secondary);">Mostrando: <strong>0</strong> registros</span>
+      <!-- SECCION 1: TABLA DE REGISTROS -->
+      <div id="seccionHistorialTabla">
+        <div class="sheet-header-bar">
+          <div class="sheet-header-left">
+            <span class="sheet-header-title">&#128203; Historial de Plantillas</span>
+            <span class="sheet-info-badge">Tr&aacute;mites registrados (Limpiezas, REC, Visto Bueno, No Procede, Rechazos, etc.)</span>
+          </div>
+          <div class="sheet-header-right">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="btn-rango-stats" onclick="setRangoRapidoHistorial('hoy', this)">&#128197; Hoy</button>
+              <button type="button" class="btn-rango-stats" onclick="setRangoRapidoHistorial('mes', this)">&#128197; Este Mes</button>
+              <button type="button" class="btn-rango-stats active" id="btnHistorialTodo" onclick="setRangoRapidoHistorial('todo', this)">&#128193; Todo</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <input type="date" id="historialFechaDesde" class="sheet-header-input sheet-date-input" onchange="filtrarHistorialPlantillas()" title="Fecha Desde">
+              <span style="color: var(--accent-oncolor); opacity: 0.85; font-size: 0.84rem; font-weight: bold;">a</span>
+              <input type="date" id="historialFechaHasta" class="sheet-header-input sheet-date-input" onchange="filtrarHistorialPlantillas()" title="Fecha Hasta">
+            </div>
+            <select id="historialFiltroTipo" class="sheet-header-input" style="width: auto; max-width: 170px;" onchange="filtrarHistorialPlantillas()">
+              <option value="">Todas las Plantillas</option>
+              <option value="LIMPIEZA">Limpiezas</option>
+              <option value="REC">Limpiezas REC</option>
+              <option value="NO PROCEDE">No Procede</option>
+              <option value="RECHAZOS">Rechazos</option>
+              <option value="VISTO BUENO">Visto Bueno</option>
+            </select>
+            <input type="text" id="filtroHistorial" class="sheet-header-input" style="width: 220px;" placeholder="&#128269; Buscar gesti&oacute;n, c&eacute;dula, DTS en BD..." oninput="filtrarHistorialPlantillas()">
+            <button class="btn-header-action btn-header-success" onclick="exportarHistorialPlantillasCSV()">&#128229; Exportar CSV</button>
+            <button class="btn-header-action" onclick="cargarHistorialSupabase()" title="Recargar historial">&#128260; Sincronizar</button>
+            <button class="btn-header-action" id="btnHistorialBorrarTodo" style="display: none; background: rgba(229, 57, 53, 0.22); border-color: rgba(229, 57, 53, 0.45); color: #ff8a80;" onclick="vaciarHistorialPlantillas()" title="Borrar todo el historial">&#128465;&#65039; Borrar Todo</button>
+          </div>
+        </div>
+
+        <div style="padding: 10px 16px; background: rgba(0,0,0,0.18); border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; font-size: 0.84rem;">
+          <span id="historialContador" style="color: var(--text-secondary);">Mostrando: <strong>0</strong> registros</span>
+        </div>
+
+        <div class="sheet-table-container" id="contenedorTablaHistorial">
+          <table class="sheet-table" id="tablaHistorial" style="table-layout: fixed; width: 100%;">
+            <thead>
+              <tr>
+                <th style="width: 140px; min-width: 140px; max-width: 140px;">Fecha / Hora</th>
+                <th style="width: 95px; min-width: 95px; max-width: 95px; text-align: center;">Gesti&oacute;n</th>
+                <th style="width: 135px; min-width: 135px; max-width: 135px;">DTS (Distribuidor)</th>
+                <th class="th-cedula" style="text-align: center; width: 135px; min-width: 135px; max-width: 135px;">C&eacute;dula / Documento</th>
+                <th style="width: 120px; min-width: 120px; max-width: 120px;">Agente</th>
+                <th style="width: 140px; min-width: 140px; max-width: 140px;">Plantilla</th>
+                <th style="width: 250px; min-width: 250px; max-width: 250px;">Detalle / Condiciones</th>
+                <th style="width: 120px; min-width: 120px; max-width: 120px; text-align: right;">Monto</th>
+                <th style="width: 75px; min-width: 75px; max-width: 75px; text-align: center;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaHistorialBody">
+              <!-- Filas dinamicas -->
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="sheet-table-container" id="contenedorTablaHistorial">
-        <table class="sheet-table" id="tablaHistorial" style="table-layout: fixed; width: 100%;">
-          <thead>
-            <tr>
-              <th style="width: 140px; min-width: 140px; max-width: 140px;">Fecha / Hora</th>
-              <th style="width: 95px; min-width: 95px; max-width: 95px; text-align: center;">Gesti&oacute;n</th>
-              <th style="width: 135px; min-width: 135px; max-width: 135px;">DTS (Distribuidor)</th>
-              <th class="th-cedula" style="text-align: center; width: 135px; min-width: 135px; max-width: 135px;">C&eacute;dula / Documento</th>
-              <th style="width: 120px; min-width: 120px; max-width: 120px;">Agente</th>
-              <th style="width: 140px; min-width: 140px; max-width: 140px;">Plantilla</th>
-              <th style="width: 250px; min-width: 250px; max-width: 250px;">Detalle / Condiciones</th>
-              <th style="width: 120px; min-width: 120px; max-width: 120px; text-align: right;">Monto</th>
-              <th style="width: 75px; min-width: 75px; max-width: 75px; text-align: center;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tablaHistorialBody">
-            <!-- Filas dinámicas -->
-          </tbody>
-        </table>
+      <!-- SECCION 2: METRICAS DE AGENTES Y PLANTILLAS -->
+      <div id="seccionHistorialMetricas" style="display: none; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+          <div>
+            <h2 style="margin: 0 0 4px 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+              <span>&#128202; M&eacute;tricas de Agentes y Plantillas Generadas</span>
+            </h2>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Estad&iacute;sticas de generaci&oacute;n por agente y distribuci&oacute;n de plantillas m&aacute;s utilizadas</span>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn-rango-stats active" id="btnMetricasHoy" onclick="setRangoMetricasHistorial('hoy', this)">&#128197; Hoy</button>
+              <button type="button" class="btn-rango-stats" id="btnMetricasMes" onclick="setRangoMetricasHistorial('mes', this)">&#128197; Este Mes</button>
+              <button type="button" class="btn-rango-stats" id="btnMetricasTodo" onclick="setRangoMetricasHistorial('todo', this)">&#128193; Todo</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <input type="date" id="metricasFechaDesde" class="sheet-header-input sheet-date-input" onchange="actualizarMetricasHistorial()" title="Fecha Desde">
+              <span style="color: var(--text-muted); font-size: 0.84rem;">a</span>
+              <input type="date" id="metricasFechaHasta" class="sheet-header-input sheet-date-input" onchange="actualizarMetricasHistorial()" title="Fecha Hasta">
+            </div>
+            <button type="button" class="btn-header-action" onclick="actualizarMetricasHistorial()" title="Refrescar m&eacute;tricas">&#128260; Actualizar</button>
+          </div>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px;" id="metricasKPICards">
+          <!-- Render dinamico de KPIs -->
+        </div>
+
+        <!-- GRID DE 2 COLUMNAS: RANKING AGENTES & PLANTILLAS MAS USADAS -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;" id="gridMetricasHistorial">
+          <!-- Panel Izquierdo: Agentes -->
+          <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px;">
+              <h3 style="margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                <span>&#128101; Ranking de Agentes</span>
+              </h3>
+              <span id="badgeTotalAgentes" style="font-size: 0.8rem; background: rgba(0, 120, 215, 0.18); color: #64b5f6; padding: 2px 8px; border-radius: 12px; font-weight: bold;">0 agentes</span>
+            </div>
+            <div id="listaRankingAgentes" style="max-height: 480px; overflow-y: auto;">
+              <!-- Filas de agentes -->
+            </div>
+          </div>
+
+          <!-- Panel Derecho: Plantillas mas usadas -->
+          <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px;">
+              <h3 style="margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                <span>&#128203; Plantillas M&aacute;s Utilizadas</span>
+              </h3>
+              <span id="badgeTotalPlantillas" style="font-size: 0.8rem; background: rgba(171, 71, 188, 0.18); color: #ce93d8; padding: 2px 8px; border-radius: 12px; font-weight: bold;">0 tipos</span>
+            </div>
+            <div id="listaPlantillasMasUsadas" style="max-height: 480px; overflow-y: auto;">
+              <!-- Filas de plantillas -->
+            </div>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
-      </main>
+  </main>
     </div>
   </div>
 
@@ -857,6 +942,29 @@
 
       <div style="display: flex; justify-content: flex-end; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--card-border);">
         <button class="btn-primary" onclick="cerrarModalNotasParche()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Diálogo Personalizado (Alertas y Confirmaciones estilo sistema) -->
+  <div id="modalDialogoPersonalizado" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(5, 5, 10, 0.78); backdrop-filter: none; -webkit-backdrop-filter: none; z-index: 1000000; justify-content: center; align-items: center;">
+    <div class="dialog-card-custom" id="dialogCardCustom">
+      <div class="dialog-header-custom">
+        <div class="dialog-icon-badge" id="dialogIconBadge">
+          <span id="dialogIconText">&#9888;&#65039;</span>
+        </div>
+        <div class="dialog-title-group">
+          <h3 id="dialogTitle" class="dialog-title-text">Confirmar eliminaci&oacute;n</h3>
+          <span id="dialogSubtitle" class="dialog-subtitle-text">Esta acci&oacute;n es irreversible</span>
+        </div>
+      </div>
+      <div id="dialogMessage" class="dialog-message-body"></div>
+      <div id="dialogInputContainer" style="display: none; margin: 0 0 22px 0;">
+        <input type="text" id="dialogInputPrompt" class="sheet-header-input" style="width: 100%; box-sizing: border-box; font-size: 1.05rem; font-weight: 600; padding: 10px 14px; border-radius: 10px; background: rgba(255, 255, 255, 0.08); border: 1.5px solid var(--accent, #0078d7); color: #ffffff;" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="dialog-actions-custom">
+        <button type="button" id="dialogBtnCancelar" class="dialog-btn-cancelar" onclick="cerrarModalDialogo(null)">Cancelar</button>
+        <button type="button" id="dialogBtnConfirmar" class="dialog-btn-confirmar" onclick="confirmarModalDialogo()">S&iacute;, eliminar</button>
       </div>
     </div>
   </div>

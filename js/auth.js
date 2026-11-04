@@ -398,7 +398,15 @@ async function eliminarUsuarioAdmin(index) {
     notificar("error", "Acción Bloqueada", "No puedes eliminar tu propio usuario activo.");
     return;
   }
-  const confirmar = confirm(`¿Estás seguro de que deseas eliminar al usuario @${u.usuario} (${u.nombre})?`);
+  const confirmar = (typeof mostrarModalConfirmacion === "function")
+    ? await mostrarModalConfirmacion({
+        titulo: "Confirmar eliminación de usuario",
+        subtitulo: "Esta acción es irreversible",
+        mensaje: `¿Estás seguro de que deseas eliminar al usuario <strong>@${typeof escapeHTML === 'function' ? escapeHTML(u.usuario) : u.usuario}</strong> (${typeof escapeHTML === 'function' ? escapeHTML(u.nombre) : u.nombre})? Se borrará permanentemente de la base de datos.`,
+        textoConfirmar: "Sí, eliminar",
+        textoCancelar: "Cancelar"
+      })
+    : confirm(`¿Estás seguro de que deseas eliminar al usuario @${u.usuario} (${u.nombre})?`);
   if (!confirmar) return;
 
   if (supabaseClient) {

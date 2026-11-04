@@ -82,7 +82,7 @@ function cambiarVista(vista) {
     if (btnGen) btnGen.classList.remove("active");
     if (btnHoj) btnHoj.classList.remove("active");
     if (btnEst) btnEst.classList.remove("active");
-    if (topTitle) topTitle.textContent = "Historial de Plantillas (BETA)";
+    if (topTitle) topTitle.textContent = "Historial de Plantillas";
     if (topSubtitle) topSubtitle.textContent = "Auditoría y registro independiente de trámites (Visto Bueno, No Procede, Rechazos, REC, NC)";
     if (typeof renderizarTablaHistorial === "function") renderizarTablaHistorial();
     if (typeof cargarHistorialSupabase === "function") cargarHistorialSupabase();
@@ -529,10 +529,42 @@ function inicializarTema() {
 // ==========================================
 const NOTAS_DEL_PARCHE = [
   {
-    version: "v3.0 (BETA)",
-    fecha: "01/11/2026",
-    titulo: "Historial de Plantillas (BETA), Registro DTS & Diferenciación de Limpiezas y REC",
+    version: "v3.1",
+    fecha: "04/11/2026",
+    titulo: "Lanzamiento Oficial Historial de Plantillas, Métricas de Agentes y Control de Límites",
     esActual: true,
+    cambios: [
+      {
+        icono: "🚀",
+        texto: "<strong>Historial de Plantillas Oficial:</strong> Se gradúa a módulo oficial del sistema, con búsqueda instantánea directa contra la base de datos completa de Supabase."
+      },
+      {
+        icono: "📊",
+        texto: "<strong>Métricas de Agentes y Plantillas:</strong> Nuevo panel analítico en el Historial para visualizar el ranking de agentes por volumen de trámites, las plantillas más utilizadas y KPIs filtrables por Hoy, Este Mes o rango de fechas."
+      },
+      {
+        icono: "🔄",
+        texto: "<strong>Botón 'Recuperar Última Gestión':</strong> Permite a cada agente restaurar con un solo clic los datos de su último trámite realizado (gestión, DTS, plantilla, montos y cliente)."
+      },
+      {
+        icono: "🛑",
+        texto: "<strong>Validación de Límites en Limpiezas (₡2,750 - ₡63,000):</strong> Se implementa bloqueo automático si el total condonado está fuera de este rango, impidiendo generar la plantilla o subirla si supera los ₡63,000 colones."
+      },
+      {
+        icono: "📝",
+        texto: "<strong>Plantilla 'Sin Información' Actualizada:</strong> Nuevo formato oficial de rechazo por información incompleta con estructura limpia y profesional."
+      },
+      {
+        icono: "✨",
+        texto: "<strong>Estandarización de Textos:</strong> Todos los motivos y detalles en el historial ahora se formatean automáticamente con mayúsculas y minúsculas uniformes (Title Case)."
+      }
+    ]
+  },
+  {
+    version: "v3.0",
+    fecha: "01/11/2026",
+    titulo: "Historial de Plantillas, Registro DTS & Diferenciación de Limpiezas y REC",
+    esActual: false,
     cambios: [
       {
         icono: "📋",

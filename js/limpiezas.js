@@ -943,20 +943,74 @@ function extraerDatosParaHistorial(seleccion, esRec, esReversion) {
       condicionesVal = seleccion;
     }
   }
-  return {
+  const res = {
     gestion: gestionVal,
     dts: dtsVal,
     cedula: docVal,
     nombre: nombreVal,
     plantilla: plantillaNombre,
     monto: montoVal || "-",
-    condiciones: condicionesVal || "-"
+    condiciones: condicionesVal || "-",
+    rawFP: (seleccion === "LIMPIEZA DE SALDOS") ? (document.getElementById('montoFacturasPendientesLS')?.value.trim() || "") : "",
+    rawCP: (seleccion === "LIMPIEZA DE SALDOS") ? (document.getElementById('montoCeroPagosLS')?.value.trim() || "") : "",
+    rawWO: (seleccion === "LIMPIEZA DE SALDOS") ? (document.getElementById('montoWritteOffLS')?.value.trim() || "") : ""
   };
+
+  try {
+    const ag = (typeof usuarioLogueado !== "undefined" && usuarioLogueado) 
+      ? (usuarioLogueado.usuario || usuarioLogueado.nombre || "") 
+      : "";
+    if (ag) {
+      localStorage.setItem("ultimaGestionAgente_" + ag, JSON.stringify(res));
+    }
+  } catch (e) {}
+
+  return res;
 }
 
 async function generarYProcesarPlantilla() {
   const select = document.getElementById("plantilla");
   const seleccion = select.value;
+
+  if (seleccion === "LIMPIEZA DE SALDOS") {
+    const totalSaldos = (typeof calcularTotalLimpiezaSaldos === "function") ? calcularTotalLimpiezaSaldos() : 0;
+    if (totalSaldos > 63000) {
+      if (typeof notificar === "function") {
+        notificar("error", "Monto Excedido", `Monto excedido validar monto. El total es ₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, el máximo permitido es ₡63,000.00.`);
+      }
+      if (typeof mostrarModalAlerta === "function") {
+        await mostrarModalAlerta({
+          tipo: "danger",
+          icono: "&#9888;&#65039;",
+          titulo: "Monto excedido validar monto",
+          subtitulo: "Límite máximo permitido: ₡63,000.00",
+          mensaje: `El monto total de la condonación (<strong>₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>) supera el límite máximo permitido de <strong>₡63,000.00</strong>.`,
+          textoConfirmar: "Aceptar"
+        });
+      } else {
+        alert(`Monto excedido validar monto.\n\nEl monto total de la condonación (₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) supera el límite máximo permitido de ₡63,000.00.`);
+      }
+      return;
+    }
+    if (totalSaldos < 2750) {
+      if (typeof notificar === "function") {
+        notificar("error", "Monto Fuera de Rango", `Monto fuera de rango validar monto. El total es ₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, el mínimo permitido es ₡2,750.00.`);
+      }
+      if (typeof mostrarModalAlerta === "function") {
+        await mostrarModalAlerta({
+          tipo: "warning",
+          icono: "&#9888;&#65039;",
+          titulo: "Monto fuera de rango validar monto",
+          subtitulo: "Límite mínimo requerido: ₡2,750.00",
+          mensaje: `El monto total de la condonación (<strong>₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>) es inferior al mínimo permitido de ₡2,750.00.`,
+          textoConfirmar: "Aceptar"
+        });
+      } else {
+        alert(`Monto fuera de rango validar monto.\n\nEl monto total de la condonación (₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) es inferior al mínimo permitido de ₡2,750.00.`);
+      }
+      return;
+    }
+  }
 
   const montoFP = document.getElementById('montoFacturasPendientesLS')?.value.trim() || "";
   const montoCP = document.getElementById('montoCeroPagosLS')?.value.trim() || "";
@@ -977,7 +1031,24 @@ async function generarYProcesarPlantilla() {
       if (cedulaExistente.categoria) detalleAviso += `\n🏷️ Categoría: ${cedulaExistente.categoria}`;
       detalleAviso += `\n\n¿Deseas generar la plantilla pero SIN subirla a la hoja de limpiezas?`;
 
-      const deseaGenerar = confirm(detalleAviso);
+      let detalleHtml = `La cédula <strong>${typeof escapeHTML === 'function' ? escapeHTML(cedula) : cedula}</strong> ya se encuentra registrada en la hoja de cálculo.<br>`;
+      if (cedulaExistente.marcaTemporal) detalleHtml += `<br>⏱️ <strong>Fecha:</strong> ${cedulaExistente.marcaTemporal}`;
+      if (cedulaExistente.agente) detalleHtml += `<br>👤 <strong>Solicitada por:</strong> ${cedulaExistente.agente}`;
+      if (cedulaExistente.soporte) detalleHtml += `<br>🎧 <strong>Atendida por:</strong> ${cedulaExistente.soporte}`;
+      if (cedulaExistente.categoria) detalleHtml += `<br>🏷️ <strong>Categoría:</strong> ${cedulaExistente.categoria}`;
+      detalleHtml += `<br><br>¿Deseas generar la plantilla pero <strong>SIN subirla</strong> a la hoja de limpiezas?`;
+
+      const deseaGenerar = (typeof mostrarModalConfirmacion === "function")
+        ? await mostrarModalConfirmacion({
+            tipo: "warning",
+            icono: "&#9888;&#65039;",
+            titulo: "Cédula ya registrada",
+            subtitulo: "Advertencia de trámite duplicado",
+            mensaje: detalleHtml,
+            textoConfirmar: "Generar plantilla",
+            textoCancelar: "Cancelar"
+          })
+        : confirm(detalleAviso);
 
       if (!deseaGenerar) {
         return;
@@ -992,7 +1063,7 @@ async function generarYProcesarPlantilla() {
           guardarEnHistorialPlantillas(datosHist);
         }
         copiarTexto();
-        notificar("warning", "Plantilla Generada (Sin Subir)", `Plantilla copiada al portapapeles y registrada en el Historial (BETA). La cédula <strong>${cedula}</strong> ya estaba en la hoja de cálculo.`);
+        notificar("warning", "Plantilla Generada (Sin Subir)", `Plantilla copiada al portapapeles y registrada en el Historial. La cédula <strong>${cedula}</strong> ya estaba en la hoja de cálculo.`);
       }
       return;
     }
@@ -1019,7 +1090,7 @@ async function generarYProcesarPlantilla() {
       }
       copiarTexto();
       if (esRec) {
-        notificar("info", "REC - Plantilla Generada", `Plantilla copiada al portapapeles y registrada en el Historial (BETA). No se subió a la hoja de limpiezas por ser REC.`);
+        notificar("info", "REC - Plantilla Generada", `Plantilla copiada al portapapeles y registrada en el Historial. No se subió a la hoja de limpiezas por ser REC.`);
       }
     }
   }
@@ -1423,7 +1494,19 @@ async function editarCedulaDirecta(rowId) {
   const item = listaLimpiezas.find(x => x.id === rowId);
   if (!item) return;
 
-  const nueva = prompt("Modificar número de cédula:", item.cedula || "");
+  const nueva = (typeof mostrarModalPrompt === "function")
+    ? await mostrarModalPrompt({
+        tipo: "info",
+        icono: "🪪",
+        titulo: "Modificar número de cédula",
+        subtitulo: "Actualizar datos en la hoja de control",
+        mensaje: "Ingresa el nuevo número de identificación o cédula del cliente:",
+        valorInicial: item.cedula || "",
+        placeholder: "Ej: 110620997",
+        textoConfirmar: "Aceptar",
+        textoCancelar: "Cancelar"
+      })
+    : prompt("Modificar número de cédula:", item.cedula || "");
   if (nueva === null) return;
 
   const valorFinal = nueva.trim();
@@ -1608,7 +1691,17 @@ async function eliminarRegistro(id) {
   }
   const item = listaLimpiezas.find(x => x.id === id);
   const cedulaInfo = item && item.cedula ? ` para la cédula ${item.cedula}` : "";
-  const confirmar = confirm(`¿Estás seguro de que deseas eliminar este registro${cedulaInfo}? Esta acción no se puede deshacer.`);
+  let detalleFactura = (item && item.factura && item.factura !== "-") ? ` la limpieza con factura <strong>${typeof escapeHTML === 'function' ? escapeHTML(item.factura) : item.factura}</strong>` : "";
+  let detalleTexto = detalleFactura || (item && item.cedula ? ` este registro para la cédula <strong>${typeof escapeHTML === 'function' ? escapeHTML(item.cedula) : item.cedula}</strong>` : ` este registro`);
+  const confirmar = (typeof mostrarModalConfirmacion === "function")
+    ? await mostrarModalConfirmacion({
+        titulo: "Confirmar eliminación",
+        subtitulo: "Esta acción es irreversible",
+        mensaje: `¿Estás seguro de que deseas eliminar${detalleTexto}? Se borrará permanentemente de la base de datos.`,
+        textoConfirmar: "Sí, eliminar",
+        textoCancelar: "Cancelar"
+      })
+    : confirm(`¿Estás seguro de que deseas eliminar este registro${cedulaInfo}? Esta acción no se puede deshacer.`);
   if (!confirmar) return;
 
   listaLimpiezas = listaLimpiezas.filter(x => x.id !== id);

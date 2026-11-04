@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // NOTIFICACIONES FLOTANTES (INTELIGENTES) Y DE ESCRITORIO
 // ==========================================
 
@@ -172,3 +172,181 @@ function verificarCedulaEnLimpiezas(cedulaVal) {
     );
   }
 }
+
+// ==========================================
+// MODAL DE DIÁLOGO PERSONALIZADO (PROMISE-BASED)
+// ==========================================
+let _resolverDialogoActual = null;
+let _esPromptDialogo = false;
+
+function mostrarModalDialogo({
+  tipo = "danger", // "danger" | "warning" | "info"
+  icono = "⚠️",
+  titulo = "Confirmar acción",
+  subtitulo = "Esta acción es irreversible",
+  mensaje = "¿Estás seguro?",
+  textoConfirmar = "Aceptar",
+  textoCancelar = "Cancelar",
+  esConfirmacion = false,
+  esPrompt = false,
+  valorInicialPrompt = "",
+  placeholderPrompt = ""
+}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("modalDialogoPersonalizado");
+    const card = document.getElementById("dialogCardCustom");
+    const iconBadge = document.getElementById("dialogIconBadge");
+    const iconText = document.getElementById("dialogIconText");
+    const elTitle = document.getElementById("dialogTitle");
+    const elSub = document.getElementById("dialogSubtitle");
+    const elMsg = document.getElementById("dialogMessage");
+    const containerInput = document.getElementById("dialogInputContainer");
+    const inputPrompt = document.getElementById("dialogInputPrompt");
+    const btnCancel = document.getElementById("dialogBtnCancelar");
+    const btnConfirm = document.getElementById("dialogBtnConfirmar");
+
+    if (!modal || !card) {
+      if (esPrompt) {
+        resolve(window.prompt(mensaje.replace(/<[^>]+>/g, ""), valorInicialPrompt));
+      } else if (esConfirmacion) {
+        resolve(window.confirm(mensaje.replace(/<[^>]+>/g, "")));
+      } else {
+        window.alert(mensaje.replace(/<[^>]+>/g, ""));
+        resolve(true);
+      }
+      return;
+    }
+
+    _resolverDialogoActual = resolve;
+    _esPromptDialogo = esPrompt;
+
+    // Resetear clases de tipo
+    card.className = "dialog-card-custom dialog-tipo-" + tipo;
+    if (iconBadge) iconBadge.className = "dialog-icon-badge dialog-icon-" + tipo;
+    if (btnConfirm) btnConfirm.className = "dialog-btn-confirmar dialog-btn-" + tipo;
+
+    if (iconText) iconText.innerHTML = icono;
+    if (elTitle) elTitle.textContent = titulo;
+    if (elSub) {
+      elSub.textContent = subtitulo;
+      elSub.style.display = subtitulo ? "block" : "none";
+    }
+    if (elMsg) {
+      elMsg.innerHTML = mensaje;
+      elMsg.style.display = mensaje ? "block" : "none";
+    }
+
+    if (containerInput && inputPrompt) {
+      if (esPrompt) {
+        containerInput.style.display = "block";
+        inputPrompt.value = valorInicialPrompt || "";
+        inputPrompt.placeholder = placeholderPrompt || "";
+      } else {
+        containerInput.style.display = "none";
+      }
+    }
+
+    if (btnConfirm) btnConfirm.textContent = textoConfirmar;
+    if (btnCancel) {
+      if (esConfirmacion || esPrompt) {
+        btnCancel.style.display = "inline-block";
+        btnCancel.textContent = textoCancelar;
+      } else {
+        btnCancel.style.display = "none";
+      }
+    }
+
+    modal.style.display = "flex";
+
+    // Foco automático
+    setTimeout(() => {
+      if (esPrompt && inputPrompt) {
+        inputPrompt.focus();
+        inputPrompt.select();
+      } else if (esConfirmacion && btnCancel) {
+        btnCancel.focus();
+      } else if (btnConfirm) {
+        btnConfirm.focus();
+      }
+    }, 50);
+  });
+}
+
+function confirmarModalDialogo() {
+  if (_esPromptDialogo) {
+    const inputPrompt = document.getElementById("dialogInputPrompt");
+    const val = inputPrompt ? inputPrompt.value : "";
+    cerrarModalDialogo(val);
+  } else {
+    cerrarModalDialogo(true);
+  }
+}
+
+function cerrarModalDialogo(resultado) {
+  const modal = document.getElementById("modalDialogoPersonalizado");
+  if (modal) modal.style.display = "none";
+  _esPromptDialogo = false;
+  if (typeof _resolverDialogoActual === "function") {
+    const fn = _resolverDialogoActual;
+    _resolverDialogoActual = null;
+    fn(resultado);
+  }
+}
+
+// Atajo para confirmaciones con diseño idéntico al solicitado
+function mostrarModalConfirmacion(opciones = {}) {
+  return mostrarModalDialogo({
+    tipo: opciones.tipo || "danger",
+    icono: opciones.icono || "&#9888;&#65039;",
+    titulo: opciones.titulo || "Confirmar eliminación",
+    subtitulo: (opciones.subtitulo !== undefined) ? opciones.subtitulo : "Esta acción es irreversible",
+    mensaje: opciones.mensaje || "¿Estás seguro de que deseas realizar esta acción?",
+    textoConfirmar: opciones.textoConfirmar || "Sí, eliminar",
+    textoCancelar: opciones.textoCancelar || "Cancelar",
+    esConfirmacion: true
+  });
+}
+
+// Atajo para alertas con diseño estilizado
+function mostrarModalAlerta(opciones = {}) {
+  return mostrarModalDialogo({
+    tipo: opciones.tipo || "danger",
+    icono: opciones.icono || "&#9888;&#65039;",
+    titulo: opciones.titulo || "Aviso",
+    subtitulo: (opciones.subtitulo !== undefined) ? opciones.subtitulo : "",
+    mensaje: opciones.mensaje || "",
+    textoConfirmar: opciones.textoConfirmar || "Aceptar",
+    esConfirmacion: false
+  });
+}
+
+// Atajo para prompt modal (captura de texto como la cédula)
+function mostrarModalPrompt(opciones = {}) {
+  return mostrarModalDialogo({
+    tipo: opciones.tipo || "info",
+    icono: opciones.icono || "✏️",
+    titulo: opciones.titulo || "Modificar valor",
+    subtitulo: (opciones.subtitulo !== undefined) ? opciones.subtitulo : "Actualización de datos",
+    mensaje: opciones.mensaje || "",
+    valorInicialPrompt: opciones.valorInicial || "",
+    placeholderPrompt: opciones.placeholder || "",
+    textoConfirmar: opciones.textoConfirmar || "Guardar",
+    textoCancelar: opciones.textoCancelar || "Cancelar",
+    esPrompt: true
+  });
+}
+
+// Listeners de teclado y click fuera del diálogo
+document.addEventListener("keydown", (e) => {
+  const modal = document.getElementById("modalDialogoPersonalizado");
+  if (!modal || modal.style.display !== "flex") return;
+  if (e.key === "Escape") {
+    cerrarModalDialogo(null);
+  } else if (e.key === "Enter") {
+    if (document.activeElement && document.activeElement.id === "dialogBtnCancelar") {
+      cerrarModalDialogo(null);
+    } else {
+      confirmarModalDialogo();
+    }
+  }
+});

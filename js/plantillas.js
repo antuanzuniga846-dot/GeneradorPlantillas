@@ -40,7 +40,7 @@ const plantillas = {
 
   "SIN CÉDULA": " Buen día,\n\nEl caso se rechaza por no adjuntar el documento de identidad, fundamental para realizar el trámite.\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
 
-  "SIN INFORMACIÓN": "Buen día,\n\nEl caso se rechaza por no venir la plantilla completa. Deben completarla y enviarla junto con la cédula del cliente por ambos lados.\n\nBuenas tardes\n\nSu apoyo con la validación del caso \n\nNombre del cliente: xxxxxxxxxxx\n\nCédula del cliente: xxxxxxxxxxx\n\n**Solicitud visto bueno**\n\nAdjuntar documento de identidad por ambos lados (legible) \n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
+  "SIN INFORMACIÓN": "Caso rechazado.\n⚠️Información incompleta⚠️\n\nNombre del cliente: (Nombre completo)\n\nCédula del cliente: (Cédula completa)\n\nSolicitud: (Visto bueno)\n\nNombre DTS: (DTS)\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente puedes comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
 
   "CONTACTO": "Buen día,\n\nPara brindarle una mejor atención, me brinda por favor su nombre completo y a cuál agente autorizado pertenece\n\nCualquier duda adicional con gusto.\n\n¡Nos encantó atenderte el día de hoy!\nSu número de gestión es:{gestion}\nAnte cualquier duda o inconveniente que tengás podés comunicarte a los siguientes medios:\n📱 WhatsApp: 7002 4600\n¡Qué pases un excelente día!.",
 
@@ -295,6 +295,22 @@ function formatMonto(valor) {
   return suma.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function calcularTotalLimpiezaSaldos() {
+  const mFP = document.getElementById('montoFacturasPendientesLS')?.value.trim() || "";
+  const mWO = document.getElementById('montoWritteOffLS')?.value.trim() || "";
+  const mCP = document.getElementById('montoCeroPagosLS')?.value.trim() || "";
+
+  let suma = 0;
+  [mFP, mWO, mCP].forEach(m => {
+    if (m) {
+      m.split('+').forEach(t => {
+        if (t.trim()) suma += parseMontoTermino(t);
+      });
+    }
+  });
+  return Math.round(suma * 100) / 100;
+}
+
 function marcarError(id, hayError) {
   const input = document.getElementById(id);
   const error = document.getElementById(id + "Error");
@@ -394,7 +410,46 @@ function validarCampos() {
         return el && el.value.trim();
       });
     marcarErrorGrupo("grupoSaldosLS", "saldosLSError", !algunoLS);
-    if (!algunoLS) valido = false;
+    if (!algunoLS) {
+      valido = false;
+    } else {
+      const totalSaldos = calcularTotalLimpiezaSaldos();
+      if (totalSaldos > 63000) {
+        if (typeof notificar === "function") {
+          notificar("error", "Monto Excedido", `Monto excedido validar monto. El total es ₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, el máximo permitido es ₡63,000.00.`);
+        }
+        if (typeof mostrarModalAlerta === "function") {
+          mostrarModalAlerta({
+            tipo: "danger",
+            icono: "&#9888;&#65039;",
+            titulo: "Monto excedido validar monto",
+            subtitulo: "Límite máximo permitido: ₡63,000.00",
+            mensaje: `El monto total de la condonación (<strong>₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>) supera el límite máximo permitido de <strong>₡63,000.00</strong>.`,
+            textoConfirmar: "Aceptar"
+          });
+        } else {
+          alert(`Monto excedido validar monto.\n\nEl monto total de la condonación (₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) supera el límite máximo permitido de ₡63,000.00.`);
+        }
+        valido = false;
+      } else if (totalSaldos < 2750) {
+        if (typeof notificar === "function") {
+          notificar("error", "Monto Fuera de Rango", `Monto fuera de rango validar monto. El total es ₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, el mínimo permitido es ₡2,750.00.`);
+        }
+        if (typeof mostrarModalAlerta === "function") {
+          mostrarModalAlerta({
+            tipo: "warning",
+            icono: "&#9888;&#65039;",
+            titulo: "Monto fuera de rango validar monto",
+            subtitulo: "Límite mínimo requerido: ₡2,750.00",
+            mensaje: `El monto total de la condonación (<strong>₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>) es inferior al mínimo permitido de <strong>₡2,750.00</strong>.`,
+            textoConfirmar: "Aceptar"
+          });
+        } else {
+          alert(`Monto fuera de rango validar monto.\n\nEl monto total de la condonación (₡${totalSaldos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) es inferior al mínimo permitido de ₡2,750.00.`);
+        }
+        valido = false;
+      }
+    }
   }
 
   return valido;
@@ -602,5 +657,117 @@ function toggleSeccion(id) {
   const section = document.getElementById(id);
   if (section) {
     section.style.display = (section.style.display === "none") ? "block" : "none";
+  }
+}
+
+
+// ==========================================
+// RECUPERAR ÚLTIMA GESTIÓN DEL AGENTE
+// ==========================================
+async function recuperarUltimaGestionAgente() {
+  const agenteActual = (typeof usuarioLogueado !== "undefined" && usuarioLogueado) 
+    ? (usuarioLogueado.usuario || usuarioLogueado.nombre || "") 
+    : "";
+
+  let ultima = null;
+
+  // 1. Probar en localStorage primero
+  try {
+    const rawLocal = localStorage.getItem("ultimaGestionAgente_" + agenteActual);
+    if (rawLocal) ultima = JSON.parse(rawLocal);
+  } catch (e) {}
+
+  // 2. Probar en memoria de historial
+  if (!ultima && typeof listaHistorialPlantillas !== "undefined" && Array.isArray(listaHistorialPlantillas)) {
+    ultima = listaHistorialPlantillas.find(r => r && r.agente && r.agente.toLowerCase() === agenteActual.toLowerCase());
+  }
+
+  // 3. Consultar en Supabase si no está en memoria
+  if (!ultima && typeof supabaseClient !== "undefined" && supabaseClient && agenteActual) {
+    try {
+      const { data, error } = await supabaseClient
+        .from("historial_plantillas")
+        .select("*")
+        .eq("agente", agenteActual)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (!error && data && data.length > 0) {
+        ultima = data[0];
+      }
+    } catch (e) {}
+  }
+
+  if (!ultima) {
+    if (typeof notificar === "function") {
+      notificar("info", "Sin Gestiones Previas", "No se encontró ninguna gestión previa registrada para tu usuario.");
+    } else {
+      if (typeof mostrarModalAlerta === "function") {
+        mostrarModalAlerta({
+          tipo: "info",
+          icono: "ℹ️",
+          titulo: "Sin Gestiones Previas",
+          subtitulo: "Búsqueda de última gestión",
+          mensaje: "No se encontró ninguna gestión previa registrada para tu usuario.",
+          textoConfirmar: "Entendido"
+        });
+      } else {
+        alert("No se encontró ninguna gestión previa registrada para tu usuario.");
+      }
+    }
+    return;
+  }
+
+  // Cargar datos en los campos del generador
+  const inpGestion = document.getElementById("gestion");
+  if (inpGestion && ultima.gestion) {
+    inpGestion.value = ultima.gestion;
+    marcarError("gestion", false);
+  }
+
+  const inpDts = document.getElementById("dts");
+  if (inpDts && ultima.dts && ultima.dts !== "-") {
+    inpDts.value = ultima.dts;
+    marcarError("dts", false);
+  }
+
+  if (ultima.plantilla) {
+    const selPlantilla = document.getElementById("plantilla");
+    if (selPlantilla) {
+      selPlantilla.value = ultima.plantilla;
+      cambiarPlantilla(ultima.plantilla);
+    }
+  }
+
+  const inpNombre = document.getElementById("nombre");
+  if (inpNombre && ultima.nombre && ultima.nombre !== "-") {
+    inpNombre.value = ultima.nombre;
+    marcarError("nombre", false);
+  }
+
+  const cedulaVal = (ultima.cedula && ultima.cedula !== "SIN DOCUMENTO" && ultima.cedula !== "-") ? ultima.cedula : "";
+  const inpCedula = document.getElementById("cedula");
+  if (inpCedula && cedulaVal) {
+    inpCedula.value = cedulaVal;
+    marcarError("cedula", false);
+  }
+
+  const inpCedulaRechazo = document.getElementById("cedulaRechazo");
+  if (inpCedulaRechazo && cedulaVal) {
+    inpCedulaRechazo.value = cedulaVal;
+    marcarError("cedulaRechazo", false);
+  }
+
+  if (ultima.rawFP && document.getElementById('montoFacturasPendientesLS')) {
+    document.getElementById('montoFacturasPendientesLS').value = ultima.rawFP;
+  }
+  if (ultima.rawCP && document.getElementById('montoCeroPagosLS')) {
+    document.getElementById('montoCeroPagosLS').value = ultima.rawCP;
+  }
+  if (ultima.rawWO && document.getElementById('montoWritteOffLS')) {
+    document.getElementById('montoWritteOffLS').value = ultima.rawWO;
+  }
+
+  if (typeof notificar === "function") {
+    notificar("success", "Gestión Recuperada", `Se cargaron los datos de la gestión <strong>${ultima.gestion || ""}</strong> (${ultima.plantilla || ""}).`);
   }
 }
