@@ -702,6 +702,12 @@ async function toggleTomarCedula(rowId) {
 // ==========================================
 
 // Consulta de duplicados directa contra la base de datos completa de Supabase
+function esRegistroControlAltas(reg) {
+  if (!reg) return false;
+  const cat = String(reg.categoria || "").trim().toLowerCase();
+  const mot = String(reg.motivo || "").trim().toLowerCase();
+  return cat === "control de altas" || cat.includes("control de altas") || mot.includes("control de altas");
+}
 async function buscarCedulaExistente(cedulaRaw) {
   const cedula = String(cedulaRaw || '').trim();
   if (!cedula) return null;
@@ -728,9 +734,13 @@ async function buscarCedulaExistente(cedulaRaw) {
   }
 
   // 1. Revisar primero en la memoria local (0ms si ya está cargada)
-  const localMatch = listaLimpiezas.find(coincideRegistro);
-  if (localMatch) {
-    return localMatch;
+  const localMatches = listaLimpiezas.filter(coincideRegistro);
+  if (localMatches.length > 0) {
+    const matchCA = localMatches.find(esRegistroControlAltas);
+    const principal = matchCA || localMatches[0];
+    principal.todosMatches = localMatches;
+    if (matchCA) principal.matchControlAltas = matchCA;
+    return principal;
   }
 
   // 2. Si no está en memoria local (ej. días anteriores no cargados en la hoja),
@@ -764,15 +774,22 @@ async function buscarCedulaExistente(cedulaRaw) {
           .limit(30);
 
         if (!error && data && data.length > 0) {
-          const matchDB = data.find(coincideRegistro);
-          if (matchDB) {
-            const mapeado = mapearRegistroLimpieza(matchDB);
+          const matchesDB = data.filter(coincideRegistro);
+          if (matchesDB.length > 0) {
+            const mapeados = matchesDB.map(m => mapearRegistroLimpieza(m));
+            const matchCA = mapeados.find(esRegistroControlAltas);
+            const principal = matchCA || mapeados[0];
+            principal.todosMatches = mapeados;
+            if (matchCA) principal.matchControlAltas = matchCA;
+
             // Conservar en memoria para que no tenga que volver a consultar
-            if (!listaLimpiezas.some(x => x.id === mapeado.id)) {
-              listaLimpiezas.push(mapeado);
-              guardarLimpiezasLocalmente();
-            }
-            return mapeado;
+            mapeados.forEach(m => {
+              if (!listaLimpiezas.some(x => x.id === m.id)) {
+                listaLimpiezas.push(m);
+              }
+            });
+            guardarLimpiezasLocalmente();
+            return principal;
           }
         }
       }
@@ -784,7 +801,8 @@ async function buscarCedulaExistente(cedulaRaw) {
   return null;
 }
 
-async function subirLimpiezaDesdePlantilla() {
+async function subirLimpiezaDesdePlantilla(opciones = {}) {
+  const permitirControlAltas = Boolean(opciones && opciones.permitirControlAltas);
   if (!usuarioLogueado) {
     notificar("warning", "Sesión Requerida", "Debes iniciar sesión para subir una limpieza.");
     document.getElementById("modalLogin").style.display = "flex";
@@ -808,7 +826,7 @@ async function subirLimpiezaDesdePlantilla() {
   const esReversion = document.getElementById("chkReversionLS")?.checked || false;
 
   // Validación de duplicados: No permitir subir la misma cédula consultando la base de datos (excepto si es una Reversión)
-  const cedulaExistente = !esReversion ? await buscarCedulaExistente(cedula) : null;
+  const cedulaExistente = (!esReversion && !permitirControlAltas) ? await buscarCedulaExistente(cedula) : null;
 
   if (cedulaExistente) {
     let detalle = `La cédula <strong>${cedula}</strong> ya se encuentra registrada en la hoja de control.`;
@@ -1043,6 +1061,78 @@ async function generarYProcesarPlantilla() {
     const cedulaExistente = !esReversion ? await buscarCedulaExistente(cedula) : null;
 
     if (cedulaExistente) {
+      // Determinar si el registro existente o alguno de sus matches previos es Control de altas
+      const todosLosMatches = Array.isArray(cedulaExistente.todosMatches) && cedulaExistente.todosMatches.length > 0
+        ? cedulaExistente.todosMatches
+        : [cedulaExistente];
+
+      const matchCA = cedulaExistente.matchControlAltas || todosLosMatches.find(esRegistroControlAltas);
+
+      if (matchCA) {
+        // Extraer todos los documentos encontrados en los registros coincidentes
+        const docsEncontrados = [];
+        todosLosMatches.forEach(m => {
+          if (m.cedula) {
+            const partes = String(m.cedula).split(/[,;\/\n\r]+/).map(p => p.trim()).filter(Boolean);
+            partes.forEach(p => {
+              if (!docsEncontrados.includes(p)) docsEncontrados.push(p);
+            });
+          }
+        });
+        const docsTexto = docsEncontrados.length > 0 ? docsEncontrados.join(', ') : (matchCA.cedula || cedula);
+
+        let detalleControlAltasHtml = `
+          <div style="text-align: left; margin-bottom: 8px; font-size: 0.9rem; line-height: 1.5;">
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--card-border); margin-bottom: 12px;">
+              📄 <strong>Documento(s) en la hoja:</strong> <span style="color: var(--accent); font-weight: 700; word-break: break-all;">${typeof escapeHTML === 'function' ? escapeHTML(docsTexto) : docsTexto}</span><br>
+              🔍 <strong>Documento ingresado:</strong> <strong>${typeof escapeHTML === 'function' ? escapeHTML(cedula) : cedula}</strong><br>
+              🏷️ <strong>Categoría previa:</strong> <span class="pill-cat-controlaltas" style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; margin-left: 4px;">Control de altas</span>
+              ${matchCA.marcaTemporal ? `<br>⏱️ <strong>Fecha:</strong> ${matchCA.marcaTemporal}` : ''}
+              ${matchCA.agente ? `<br>👤 <strong>Solicitado por:</strong> ${matchCA.agente}` : ''}
+              ${matchCA.soporte ? `<br>🎧 <strong>Atendido por:</strong> ${matchCA.soporte}` : ''}
+            </div>
+            <div style="background: rgba(0, 188, 212, 0.12); border-left: 4px solid var(--accent); padding: 12px 14px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); text-align: center;">
+              Documento con control de altas, ¿ya se corrigió la información del cliente en el sistema?
+            </div>
+          </div>
+        `;
+
+        let detalleControlAltasTexto = `Documento(s) en la hoja: ${docsTexto}\nDocumento ingresado: ${cedula}\nCategoría: Control de altas\n\nDocumento con control de altas, ¿ya se corrigió la información del cliente en el sistema?`;
+
+        const yaSeCorrigio = (typeof mostrarModalConfirmacion === "function")
+          ? await mostrarModalConfirmacion({
+              tipo: "warning",
+              icono: "&#128203;",
+              titulo: "Documento con Control de Altas",
+              subtitulo: "Validación de información del cliente",
+              mensaje: detalleControlAltasHtml,
+              textoConfirmar: "Sí",
+              textoCancelar: "No"
+            })
+          : confirm(detalleControlAltasTexto);
+
+        if (yaSeCorrigio) {
+          // Capturar datos ANTES de que copiarTexto() limpie los campos
+          const datosHist = extraerDatosParaHistorial(seleccion, esRec, esReversion, esNull);
+
+          const subido = await subirLimpiezaDesdePlantilla({ permitirControlAltas: true });
+          if (subido) {
+            if (generarPlantilla()) {
+              if (typeof guardarEnHistorialPlantillas === "function") {
+                guardarEnHistorialPlantillas(datosHist);
+              }
+              copiarTexto();
+            }
+          }
+          return;
+        } else {
+          // Si seleccionan que No: no permite subir a limpieza
+          if (typeof notificar === "function") {
+            notificar("warning", "Subida No Permitida", `No se permite subir a la hoja de limpiezas el documento <strong>${typeof escapeHTML === 'function' ? escapeHTML(cedula) : cedula}</strong> porque la información del cliente no ha sido corregida en el sistema.`);
+          }
+          return;
+        }
+      }
       let detalleAviso = `⚠️ La cédula ${cedula} ya se encuentra registrada en la hoja de cálculo.`;
       if (cedulaExistente.marcaTemporal) detalleAviso += `\n⏱️ Fecha: ${cedulaExistente.marcaTemporal}`;
       if (cedulaExistente.agente) detalleAviso += `\n👤 Solicitada por: ${cedulaExistente.agente}`;
