@@ -1,9 +1,9 @@
-﻿// ==========================================
+// ==========================================
 // CONFIGURACIÓN GLOBAL, SUPABASE & CONSTANTES
 // ==========================================
 
-const DEFAULT_SUPABASE_URL = "https://upxhiylyiebljnpfgmut.supabase.co";
-const DEFAULT_SUPABASE_KEY = "sb_publishable_ctDXquEkqLpXpuzOoRvtXQ_Vazap6tB";
+const DEFAULT_SUPABASE_URL = "https://bzphaddtpptmbvlyyiap.supabase.co";
+const DEFAULT_SUPABASE_KEY = "sb_publishable_NYRhamOxxWJVWMWnldOLwQ_crtoZPkM";
 
 let supabaseClient = null;
 
@@ -11,11 +11,25 @@ function inicializarSupabase() {
   let url = DEFAULT_SUPABASE_URL;
   let key = DEFAULT_SUPABASE_KEY;
   try {
-    url = localStorage.getItem("supabaseUrlBuro") || DEFAULT_SUPABASE_URL;
-    key = localStorage.getItem("supabaseKeyBuro") || DEFAULT_SUPABASE_KEY;
+    const savedUrl = localStorage.getItem("supabaseUrlBuro");
+    const savedKey = localStorage.getItem("supabaseKeyBuro");
+    if (savedUrl && !savedUrl.includes("upxhiylyiebljnpfgmut")) {
+      url = savedUrl;
+      key = savedKey || DEFAULT_SUPABASE_KEY;
+    } else {
+      url = DEFAULT_SUPABASE_URL;
+      key = DEFAULT_SUPABASE_KEY;
+      localStorage.removeItem("supabaseUrlBuro");
+      localStorage.removeItem("supabaseKeyBuro");
+    }
   } catch (e) {
     url = DEFAULT_SUPABASE_URL;
     key = DEFAULT_SUPABASE_KEY;
+  }
+
+  // Sanitizar URL eliminando sufijo /rest/v1 o barras finales
+  if (url) {
+    url = url.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, "");
   }
 
   const dot = document.getElementById("dbDot");
@@ -53,7 +67,7 @@ function cerrarModalConfigSupabase() {
 }
 
 function guardarConfigSupabase() {
-  const url = document.getElementById("txtSupabaseUrl").value.trim();
+  let url = document.getElementById("txtSupabaseUrl").value.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, "");
   const key = document.getElementById("txtSupabaseKey").value.trim();
 
   localStorage.setItem("supabaseUrlBuro", url);
@@ -64,7 +78,7 @@ function guardarConfigSupabase() {
 }
 
 async function probarConexionSupabase() {
-  const url = document.getElementById("txtSupabaseUrl").value.trim();
+  let url = document.getElementById("txtSupabaseUrl").value.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, "");
   const key = document.getElementById("txtSupabaseKey").value.trim();
   if (!url || !key) {
     notificar("warning", "Faltan Datos", "Ingresa la URL y la Key de Supabase.");
