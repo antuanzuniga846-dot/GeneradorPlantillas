@@ -549,6 +549,46 @@ label {
   border-color: #ff5c65 !important;
 }
 
+.btn-topbar-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(255, 92, 101, 0.12);
+  color: #ff5c65;
+  border: 1px solid rgba(255, 92, 101, 0.35);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  line-height: 1.35;
+}
+.btn-topbar-logout:hover {
+  background: rgba(255, 92, 101, 0.22);
+  border-color: #ff5c65;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 10px rgba(255, 92, 101, 0.25);
+}
+.btn-topbar-logout:active {
+  transform: translateY(0);
+}
+.btn-topbar-logout .logout-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+:root[data-theme="light"] .btn-topbar-logout {
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.28);
+}
+:root[data-theme="light"] .btn-topbar-logout:hover {
+  background: rgba(220, 38, 38, 0.16);
+  border-color: #dc2626;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+}
+
 .db-status-badge {
   display: inline-flex;
   align-items: center;

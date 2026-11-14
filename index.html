@@ -100,9 +100,9 @@
 
         <div class="sidebar-separator"></div>
 
-        <button class="sidebar-nav-btn btn-sidebar-logout" onclick="cerrarSesionUsuario()" title="Cerrar Sesión">
+        <button id="sidebarBtnLogout" class="sidebar-nav-btn btn-sidebar-logout" onclick="cerrarSesionUsuario()" title="Cerrar Sesión">
           <span class="nav-icon">🚪</span>
-          <span class="nav-label">Salir</span>
+          <span class="nav-label">Cerrar Sesión</span>
         </button>
       </nav>
 
@@ -208,6 +208,11 @@
             <span id="lblUsuarioUser" class="user-name">Usuario</span>
             <span id="lblRolActual" class="role-badge role-reader">Lector</span>
           </div>
+
+          <button type="button" id="btnCerrarSesionTop" class="btn-topbar-logout" onclick="cerrarSesionUsuario()" title="Cerrar sesión">
+            <span class="logout-icon">🚪</span>
+            <span class="logout-text">Cerrar Sesión</span>
+          </button>
 
           <span id="lblUsuarioNombre" style="display:none;">Usuario</span>
           <div id="dbStatusBadge" style="display:none;"></div>

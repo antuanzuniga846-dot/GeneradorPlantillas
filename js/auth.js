@@ -268,6 +268,8 @@ function actualizarUIUsuario() {
   const lblRol = document.getElementById("lblRolActual");
   const btnAdmin = document.getElementById("btnAdminUsuarios");
   const sidebarBtnAdmin = document.getElementById("sidebarBtnAdmin");
+  const btnLogoutTop = document.getElementById("btnCerrarSesionTop");
+  const btnLogoutSidebar = document.getElementById("sidebarBtnLogout") || document.querySelector(".btn-sidebar-logout");
 
   if (!usuarioLogueado) {
     if (lblNombre) lblNombre.textContent = "Invitado";
@@ -278,9 +280,13 @@ function actualizarUIUsuario() {
     }
     if (btnAdmin) btnAdmin.style.display = "none";
     if (sidebarBtnAdmin) sidebarBtnAdmin.style.display = "none";
+    if (btnLogoutTop) btnLogoutTop.style.display = "none";
+    if (btnLogoutSidebar) btnLogoutSidebar.style.display = "none";
   } else {
     if (lblNombre) lblNombre.textContent = usuarioLogueado.nombre;
     if (lblUser) lblUser.textContent = usuarioLogueado.usuario;
+    if (btnLogoutTop) btnLogoutTop.style.display = "inline-flex";
+    if (btnLogoutSidebar) btnLogoutSidebar.style.display = "flex";
     if (esEditor()) {
       if (lblRol) {
         lblRol.textContent = "Editor";
