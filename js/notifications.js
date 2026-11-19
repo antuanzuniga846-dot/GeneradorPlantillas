@@ -104,17 +104,15 @@ function notificar(tipo, titulo, mensaje, duracionManual = null) {
 
   const toast = document.createElement("div");
 
-  // Detección: Alertas de No Procede vs Limpieza Realizada
+  // Detección: Alertas de No Procede en Hoja de Control vs Limpieza Realizada
   const tLower = (titulo || "").toLowerCase();
   const mLower = (mensaje || "").toLowerCase();
 
-  const esNoProcede = 
-    tLower.includes("no procede") ||
-    mLower.includes("no procede") ||
-    (tipo === "error" && (tLower.includes("rechazo") || mLower.includes("rechazo")));
+  // Solo se trata como alerta de No Procede de la Hoja de Control si el título corresponde a la hoja
+  const esAlertaHojaNoProcede = tLower.includes("limpieza no procede");
 
   const esLimpiezaRealizada = 
-    !esNoProcede && (
+    !esAlertaHojaNoProcede && (
       tLower.includes("atendida") ||
       tLower.includes("realizada") ||
       tLower.includes("ya se realizó") ||
@@ -131,25 +129,23 @@ function notificar(tipo, titulo, mensaje, duracionManual = null) {
       mLower.includes("ya estaba en la hoja")
     );
 
-  // Si es alerta de No Procede, reproducir sonido de Pac-Man y disparar notificación nativa con icono de error
-  if (esNoProcede) {
-    reproducirSonidoNoProcede();
+  // Disparar notificación nativa de escritorio solo para eventos de la Hoja de Control
+  if (esAlertaHojaNoProcede) {
     notificarEscritorio(titulo, mensaje, "error");
   } else if (esLimpiezaRealizada) {
-    // Si es alerta de que la limpieza ya está realizada, disparar también notificación nativa de escritorio
     notificarEscritorio(titulo, mensaje, "success");
   }
 
-  // Tiempo de permanencia: Tanto limpiezas realizadas como No Procede duran 9.5s
+  // Tiempo de permanencia: Tanto limpiezas realizadas como No Procede de la hoja duran 9.5s
   let tiempoVisibleMs = 3200;
   if (typeof duracionManual === "number") {
     tiempoVisibleMs = duracionManual;
-  } else if (esNoProcede || esLimpiezaRealizada) {
+  } else if (esAlertaHojaNoProcede || esLimpiezaRealizada) {
     tiempoVisibleMs = 9500;
   }
 
   let claseExtra = "";
-  if (esNoProcede) {
+  if (esAlertaHojaNoProcede) {
     claseExtra = "toast-persistent toast-no-procede";
   } else if (esLimpiezaRealizada) {
     claseExtra = "toast-persistent";
@@ -161,7 +157,7 @@ function notificar(tipo, titulo, mensaje, duracionManual = null) {
   if (tipo === "success") icono = "✅";
   if (tipo === "error") icono = "❌";
   if (tipo === "warning") icono = "⚠️";
-  if (esNoProcede) icono = "🚫";
+  if (esAlertaHojaNoProcede) icono = "🚫";
   else if (esLimpiezaRealizada) icono = "🔔";
 
   const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -218,14 +214,14 @@ function verificarCedulaEnLimpiezas(cedulaVal) {
     const esNoProc = catLower.includes("no procede") || catLower.includes("rechazo") || motLower.includes("no procede");
 
     if (esNoProc) {
-      let info = `La cédula <strong>${encontrada.cedula}</strong> no procede.`;
+      let info = `La cédula <strong>${encontrada.cedula}</strong> tiene un trámite previo registrado como <strong>NO PROCEDE</strong>.`;
       if (encontrada.soporte) info += `<br>👤 Atendido por: <strong>${encontrada.soporte}</strong>`;
       if (encontrada.categoria) info += `<br>🏷️ Categoría: <strong>${encontrada.categoria}</strong>`;
       if (encontrada.motivo) info += `<br>📝 Motivo: <strong>${encontrada.motivo}</strong>`;
       if (encontrada.marcaTemporal) info += `<br>🕒 Fecha: <strong>${encontrada.marcaTemporal}</strong>`;
       notificar(
-        "error",
-        "🚫 Limpieza No procede 🚫",
+        "warning",
+        "⚠️ Trámite Previo No Procede",
         info,
         true // PERSISTENTE (9.5s)
       );

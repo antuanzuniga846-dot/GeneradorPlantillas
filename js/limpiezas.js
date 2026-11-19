@@ -542,6 +542,7 @@ function manejarEventoRealtime(payload) {
           const esNoProcede = catLower.includes("no procede") || catLower.includes("rechazo") || motLower.includes("no procede");
 
           if (esNoProcede) {
+            reproducirSonidoNoProcede();
             let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> no procede.`;
             if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
             if (nuevaCat) msg += `<br>🏷️ Categoría: <strong>${nuevaCat}</strong>`;
@@ -1778,6 +1779,9 @@ async function actualizarColumna(id, campo, valor, selectElem) {
       selectElem.setAttribute("data-valor", valor || "");
       const lbl = selectElem.querySelector(".sheet-pill-label");
       if (lbl) lbl.textContent = valor || "";
+      if (String(valor || "").trim().toLowerCase().includes("no procede")) {
+        reproducirSonidoNoProcede();
+      }
     }
     else if (campo === "motivo") {
       selectElem.className = `sheet-pill-btn ${obtenerClaseMotivo(valor)}`;
