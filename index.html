@@ -356,15 +356,15 @@
           <div id="checkboxesNoProcede" class="checkbox-section" style="display: none;">
             <div class="saldos-extra" id="grupoNoProcede">
               <p class="saldos-extra-titulo">⛔ Ingresar el monto correspondiente</p>
-              <label for="npMonto_ceroPagos">Cero Pagos (¢):</label>
-              <input type="text" id="npMonto_ceroPagos" class="monto-input" placeholder="Ej: 25,000.00">
-              <label><input type="checkbox" id="np_incubadora"> Es Cero Pagos Incubadora</label>
-
               <label for="npMonto_facturasPendientes">Facturas Pendientes (¢):</label>
               <input type="text" id="npMonto_facturasPendientes" class="monto-input" placeholder="Ej: 25,000.00">
 
               <label for="npMonto_saldoWritteOff">Saldo WritteOff (¢):</label>
               <input type="text" id="npMonto_saldoWritteOff" class="monto-input" placeholder="Ej: 25,000.00">
+
+              <label for="npMonto_ceroPagos">Cero Pagos (¢):</label>
+              <input type="text" id="npMonto_ceroPagos" class="monto-input" placeholder="Ej: 25,000.00">
+              <label><input type="checkbox" id="np_incubadora"> Es Cero Pagos Incubadora</label>
 
               <p class="saldos-extra-titulo" style="margin-top: 16px;">☑️ Condiciones adicionales (una o varias)</p>
               <label><input type="checkbox" id="np_facturasMenoresAno"> Factura menor a 1 año</label>
@@ -986,6 +986,9 @@
 
   <!-- Menú Flotante Personalizado para Desplegables de la Tabla -->
   <div id="sheetDropdownMenu"></div>
+
+  <!-- Elemento de Audio para Alertas de No Procede -->
+  <audio id="audioNoProcede" src="audio/no_procede.mp4" preload="auto"></audio>
 
   <!-- Módulos JavaScript Separados -->
   <script src="js/config.js"></script>

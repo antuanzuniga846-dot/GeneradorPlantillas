@@ -2244,6 +2244,30 @@ button.sheet-pill-btn.pill-soporte-adriel,
   background: var(--panel-bg) !important;
   box-shadow: 0 8px 28px var(--shadow-color), 0 0 16px rgba(76, 175, 80, 0.3) !important;
 }
+.toast-item.toast-no-procede {
+  border-left: 6px solid #ff1744 !important;
+  background: linear-gradient(135deg, rgba(255, 23, 68, 0.14), rgba(15, 23, 42, 0.85)), var(--panel-bg) !important;
+  box-shadow: 0 8px 32px var(--shadow-color), 0 0 22px rgba(255, 23, 68, 0.45) !important;
+  border-top: 1px solid rgba(255, 23, 68, 0.45) !important;
+  border-right: 1px solid rgba(255, 23, 68, 0.3) !important;
+  border-bottom: 1px solid rgba(255, 23, 68, 0.3) !important;
+}
+.toast-item.toast-no-procede .toast-title {
+  color: #ff5252 !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 8px rgba(255, 23, 68, 0.4);
+}
+.toast-item.toast-no-procede .toast-icon {
+  animation: pulseIconNoProcede 0.9s ease-in-out infinite alternate;
+}
+@keyframes pulseIconNoProcede {
+  from { transform: scale(1); filter: drop-shadow(0 0 2px #ff1744); }
+  to { transform: scale(1.18); filter: drop-shadow(0 0 10px #ff1744); }
+}
 @keyframes slideInToast {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }

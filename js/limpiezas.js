@@ -537,11 +537,23 @@ function manejarEventoRealtime(payload) {
           (anterior.agente.toLowerCase() === usuarioLogueado.usuario.toLowerCase() || anterior.agente.toLowerCase() === usuarioLogueado.nombre.toLowerCase()) &&
           (anterior.soporte !== nuevoSoporte || anterior.categoria !== nuevaCat)
         ) {
-          let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> ya fue atendida / realizada.`;
-          if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
-          if (nuevaCat) msg += `<br>🏷️ Categoría: <strong>${nuevaCat}</strong>`;
-          if (nuevaFila.motivo) msg += `<br>📝 Motivo: <strong>${nuevaFila.motivo}</strong>`;
-          notificar("success", "🔔 ¡Limpieza Realizada!", msg, true);
+          const catLower = (nuevaCat || "").trim().toLowerCase();
+          const motLower = (nuevaFila.motivo || "").trim().toLowerCase();
+          const esNoProcede = catLower.includes("no procede") || catLower.includes("rechazo") || motLower.includes("no procede");
+
+          if (esNoProcede) {
+            let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> no procede.`;
+            if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
+            if (nuevaCat) msg += `<br>🏷️ Categoría: <strong>${nuevaCat}</strong>`;
+            if (nuevaFila.motivo) msg += `<br>📝 Motivo: <strong>${nuevaFila.motivo}</strong>`;
+            notificar("error", "🚫 Limpieza No procede 🚫", msg, true);
+          } else {
+            let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> ya fue atendida / realizada.`;
+            if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
+            if (nuevaCat) msg += `<br>🏷️ Categoría: <strong>${nuevaCat}</strong>`;
+            if (nuevaFila.motivo) msg += `<br>📝 Motivo: <strong>${nuevaFila.motivo}</strong>`;
+            notificar("success", "🔔 ¡Limpieza Realizada!", msg, true);
+          }
         }
 
         listaLimpiezas[idx] = {
@@ -835,7 +847,19 @@ async function subirLimpiezaDesdePlantilla(opciones = {}) {
     if (cedulaExistente.soporte) detalle += `<br>🎧 Atendido por: <strong>${cedulaExistente.soporte}</strong>`;
     if (cedulaExistente.categoria) detalle += `<br>🏷️ Categoría: <strong>${cedulaExistente.categoria}</strong>`;
 
-    notificar("warning", "⚠️ Cédula Ya Subida", detalle, 9500);
+    const catExLower = String(cedulaExistente.categoria || "").toLowerCase();
+    const esPreviaNoProcede = catExLower.includes("no procede") || catExLower.includes("rechazo");
+    if (esPreviaNoProcede) {
+      let detalleNP = `La cédula <strong>${cedula}</strong> no procede.`;
+      if (cedulaExistente.marcaTemporal) detalleNP += `<br>⏱️ Fecha: <strong>${cedulaExistente.marcaTemporal}</strong>`;
+      if (cedulaExistente.agente) detalleNP += `<br>👤 Solicitado por: <strong>${cedulaExistente.agente}</strong>`;
+      if (cedulaExistente.soporte) detalleNP += `<br>🎧 Atendido por: <strong>${cedulaExistente.soporte}</strong>`;
+      if (cedulaExistente.categoria) detalleNP += `<br>🏷️ Categoría: <strong>${cedulaExistente.categoria}</strong>`;
+      if (cedulaExistente.motivo) detalleNP += `<br>📝 Motivo: <strong>${cedulaExistente.motivo}</strong>`;
+      notificar("error", "🚫 Limpieza No procede 🚫", detalleNP, 9500);
+    } else {
+      notificar("warning", "⚠️ Cédula Ya Subida", detalle, 9500);
+    }
     return false;
   }
 

@@ -1,21 +1,44 @@
 // ==========================================
-// NOTIFICACIONES FLOTANTES (INTELIGENTES) Y DE ESCRITORIO
+// NOTIFICACIONES FLOTANTES (INTELIGENTES), AUDIO Y DE ESCRITORIO
 // ==========================================
 
 let ultimasCedulasNotificadas = new Set();
 
-// Pedir permiso para notificaciones de escritorio en la primera interacción
-function inicializarPermisoNotificaciones() {
-  if (!("Notification" in window)) return;
-  if (Notification.permission === "default") {
-    const pedir = () => {
-      Notification.requestPermission();
-      document.removeEventListener("click", pedir);
-      document.removeEventListener("keydown", pedir);
-    };
-    document.addEventListener("click", pedir, { once: true });
-    document.addEventListener("keydown", pedir, { once: true });
+// Reproducción del efecto de sonido para alertas de "No procede" (Pac-Man Death Sound)
+function reproducirSonidoNoProcede() {
+  try {
+    let audioElem = document.getElementById("audioNoProcede");
+    if (!audioElem) {
+      audioElem = new Audio("audio/no_procede.mp4");
+    }
+    audioElem.currentTime = 0;
+    audioElem.volume = 0.9;
+    const playPromise = audioElem.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => {
+        console.warn("Autoplay bloqueado o restringido por el navegador:", err);
+      });
+    }
+  } catch (e) {
+    console.warn("Error al reproducir audio No Procede:", e);
   }
+}
+
+// Pedir permiso para notificaciones de escritorio y preparar audio en la primera interacción
+function inicializarPermisoNotificaciones() {
+  const desbloquear = () => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    const audio = document.getElementById("audioNoProcede");
+    if (audio) {
+      try { audio.load(); } catch (_) {}
+    }
+    document.removeEventListener("click", desbloquear);
+    document.removeEventListener("keydown", desbloquear);
+  };
+  document.addEventListener("click", desbloquear, { once: true });
+  document.addEventListener("keydown", desbloquear, { once: true });
 }
 
 if (document.readyState === "loading") {
@@ -24,7 +47,7 @@ if (document.readyState === "loading") {
   inicializarPermisoNotificaciones();
 }
 
-function notificarEscritorio(titulo, mensajeHtmlOTexto) {
+function notificarEscritorio(titulo, mensajeHtmlOTexto, iconoTipo = "warning") {
   if (!("Notification" in window)) return;
 
   const textoPlano = (mensajeHtmlOTexto || "")
@@ -37,11 +60,21 @@ function notificarEscritorio(titulo, mensajeHtmlOTexto) {
     .replace(/<[^>]*>/g, "")
     .trim();
 
+  let svgChar = "⚠️";
+  const tLow = tituloPlano.toLowerCase();
+  const mLow = textoPlano.toLowerCase();
+
+  if (iconoTipo === "error" || tLow.includes("no procede") || mLow.includes("no procede")) {
+    svgChar = "🚫";
+  } else if (iconoTipo === "success" || tLow.includes("realizada")) {
+    svgChar = "🔔";
+  }
+
   const mostrar = () => {
     try {
       const n = new Notification(tituloPlano, {
         body: textoPlano,
-        icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚠️</text></svg>",
+        icon: `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${svgChar}</text></svg>`,
         requireInteraction: false
       });
       setTimeout(() => {
@@ -71,45 +104,65 @@ function notificar(tipo, titulo, mensaje, duracionManual = null) {
 
   const toast = document.createElement("div");
 
-  // Detección: Alertas de limpieza realizada o atendida
+  // Detección: Alertas de No Procede vs Limpieza Realizada
   const tLower = (titulo || "").toLowerCase();
   const mLower = (mensaje || "").toLowerCase();
-  const esLimpiezaRealizada = 
-    tLower.includes("atendida") ||
-    tLower.includes("realizada") ||
-    tLower.includes("ya se realizó") ||
-    tLower.includes("ya fue realizada") ||
-    tLower.includes("limpieza realizada") ||
-    tLower.includes("limpieza atendida") ||
-    tLower.includes("ya realizada") ||
-    tLower.includes("ya subida") ||
-    mLower.includes("ya se realizó") ||
-    mLower.includes("fue actualizada") ||
-    mLower.includes("atendida por") ||
-    mLower.includes("ya fue atendida") ||
-    mLower.includes("ya se encuentra registrada") ||
-    mLower.includes("ya estaba en la hoja");
 
-  // Si es alerta de que la limpieza ya está realizada, disparar también notificación nativa de escritorio
-  if (esLimpiezaRealizada) {
-    notificarEscritorio(titulo, mensaje);
+  const esNoProcede = 
+    tLower.includes("no procede") ||
+    mLower.includes("no procede") ||
+    (tipo === "error" && (tLower.includes("rechazo") || mLower.includes("rechazo")));
+
+  const esLimpiezaRealizada = 
+    !esNoProcede && (
+      tLower.includes("atendida") ||
+      tLower.includes("realizada") ||
+      tLower.includes("ya se realizó") ||
+      tLower.includes("ya fue realizada") ||
+      tLower.includes("limpieza realizada") ||
+      tLower.includes("limpieza atendida") ||
+      tLower.includes("ya realizada") ||
+      tLower.includes("ya subida") ||
+      mLower.includes("ya se realizó") ||
+      mLower.includes("fue actualizada") ||
+      mLower.includes("atendida por") ||
+      mLower.includes("ya fue atendida") ||
+      mLower.includes("ya se encuentra registrada") ||
+      mLower.includes("ya estaba en la hoja")
+    );
+
+  // Si es alerta de No Procede, reproducir sonido de Pac-Man y disparar notificación nativa con icono de error
+  if (esNoProcede) {
+    reproducirSonidoNoProcede();
+    notificarEscritorio(titulo, mensaje, "error");
+  } else if (esLimpiezaRealizada) {
+    // Si es alerta de que la limpieza ya está realizada, disparar también notificación nativa de escritorio
+    notificarEscritorio(titulo, mensaje, "success");
   }
 
-  // Tiempo de permanencia: Limpiezas realizadas duran 9.5s, las demás duran 3.2s
+  // Tiempo de permanencia: Tanto limpiezas realizadas como No Procede duran 9.5s
   let tiempoVisibleMs = 3200;
   if (typeof duracionManual === "number") {
     tiempoVisibleMs = duracionManual;
-  } else if (esLimpiezaRealizada) {
-    tiempoVisibleMs = 9500; // Dura más tiempo en pantalla antes de borrarse
+  } else if (esNoProcede || esLimpiezaRealizada) {
+    tiempoVisibleMs = 9500;
   }
 
-  toast.className = `toast-item ${tipo} ${esLimpiezaRealizada ? 'toast-persistent' : ''}`;
+  let claseExtra = "";
+  if (esNoProcede) {
+    claseExtra = "toast-persistent toast-no-procede";
+  } else if (esLimpiezaRealizada) {
+    claseExtra = "toast-persistent";
+  }
+
+  toast.className = `toast-item ${tipo} ${claseExtra}`.trim();
 
   let icono = "ℹ️";
   if (tipo === "success") icono = "✅";
   if (tipo === "error") icono = "❌";
   if (tipo === "warning") icono = "⚠️";
-  if (esLimpiezaRealizada) icono = "🔔";
+  if (esNoProcede) icono = "🚫";
+  else if (esLimpiezaRealizada) icono = "🔔";
 
   const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -160,16 +213,34 @@ function verificarCedulaEnLimpiezas(cedulaVal) {
 
   if (encontrada) {
     ultimasCedulasNotificadas.add(cLimpia);
-    let info = `La cédula <strong>${encontrada.cedula}</strong> ya tiene una limpieza atendida.`;
-    if (encontrada.soporte) info += `<br>👤 Atendido por: <strong>${encontrada.soporte}</strong>`;
-    if (encontrada.categoria) info += `<br>🏷️ Categoría: <strong>${encontrada.categoria}</strong>`;
-    if (encontrada.marcaTemporal) info += `<br>🕒 Fecha: <strong>${encontrada.marcaTemporal}</strong>`;
-    notificar(
-      "warning",
-      "⚠️ Limpieza Ya Realizada",
-      info,
-      true // PERSISTENTE (NO se borra sola)
-    );
+    const catLower = String(encontrada.categoria || "").trim().toLowerCase();
+    const motLower = String(encontrada.motivo || "").trim().toLowerCase();
+    const esNoProc = catLower.includes("no procede") || catLower.includes("rechazo") || motLower.includes("no procede");
+
+    if (esNoProc) {
+      let info = `La cédula <strong>${encontrada.cedula}</strong> no procede.`;
+      if (encontrada.soporte) info += `<br>👤 Atendido por: <strong>${encontrada.soporte}</strong>`;
+      if (encontrada.categoria) info += `<br>🏷️ Categoría: <strong>${encontrada.categoria}</strong>`;
+      if (encontrada.motivo) info += `<br>📝 Motivo: <strong>${encontrada.motivo}</strong>`;
+      if (encontrada.marcaTemporal) info += `<br>🕒 Fecha: <strong>${encontrada.marcaTemporal}</strong>`;
+      notificar(
+        "error",
+        "🚫 Limpieza No procede 🚫",
+        info,
+        true // PERSISTENTE (9.5s)
+      );
+    } else {
+      let info = `La cédula <strong>${encontrada.cedula}</strong> ya tiene una limpieza atendida.`;
+      if (encontrada.soporte) info += `<br>👤 Atendido por: <strong>${encontrada.soporte}</strong>`;
+      if (encontrada.categoria) info += `<br>🏷️ Categoría: <strong>${encontrada.categoria}</strong>`;
+      if (encontrada.marcaTemporal) info += `<br>🕒 Fecha: <strong>${encontrada.marcaTemporal}</strong>`;
+      notificar(
+        "warning",
+        "⚠️ Limpieza Ya Realizada",
+        info,
+        true // PERSISTENTE (NO se borra sola)
+      );
+    }
   }
 }
 
