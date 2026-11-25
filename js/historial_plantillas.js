@@ -469,6 +469,67 @@ function escapeHTML(str) {
     .replace(/'/g, "&#039;");
 }
 
+function coincideFiltroPlantilla(registro, tipoSel) {
+  if (!tipoSel) return true;
+  if (!registro) return false;
+  const t = String(tipoSel).trim();
+  const p = String(registro.plantilla || "").toUpperCase().trim();
+  const c = String(registro.condiciones || "").toUpperCase().trim();
+
+  if (t === "GRUPO:LIMPIEZAS" || t === "LIMPIEZA") {
+    return p.includes("LIMPIEZA");
+  }
+  if (t === "GRUPO:REC" || t === "REC") {
+    return p.includes("REC") || c.includes("REC");
+  }
+  if (t === "GRUPO:NO_PROCEDE" || t === "NO PROCEDE") {
+    return p.includes("NO PROCEDE") || p.includes("NO APLICA");
+  }
+  if (t === "GRUPO:PROCEDE" || t === "VISTO BUENO") {
+    return p.includes("VISTO BUENO") || p.includes("SEGMENTACIÓN") || p.includes("SEGMENTACION") || p.includes("APTO") || p.includes("NC APLICADA");
+  }
+  if (t === "GRUPO:RECHAZOS" || t === "RECHAZOS") {
+    const esNoRechazo = p.includes("LIMPIEZA") || p.includes("NO PROCEDE") || p.includes("NO APLICA") || p.includes("VISTO BUENO") || p.includes("SEGMENTACIÓN") || p.includes("SEGMENTACION") || p.includes("NC APLICADA");
+    return !esNoRechazo;
+  }
+  if (t.startsWith("EXACT:")) {
+    const exactName = t.replace("EXACT:", "").toUpperCase().trim();
+    return p === exactName || p.includes(exactName);
+  }
+  return p === t.toUpperCase() || p.includes(t.toUpperCase());
+}
+
+function aplicarFiltroPlantillaQuery(query, tipoSel) {
+  if (!tipoSel || !query) return query;
+  const t = String(tipoSel).trim();
+
+  if (t === "GRUPO:LIMPIEZAS" || t === "LIMPIEZA") {
+    return query.ilike("plantilla", "%LIMPIEZA%");
+  }
+  if (t === "GRUPO:REC" || t === "REC") {
+    return query.or("plantilla.ilike.%REC%,condiciones.ilike.%REC%");
+  }
+  if (t === "GRUPO:NO_PROCEDE" || t === "NO PROCEDE") {
+    return query.ilike("plantilla", "%NO PROCEDE%");
+  }
+  if (t === "GRUPO:PROCEDE" || t === "VISTO BUENO") {
+    return query.or("plantilla.ilike.%VISTO BUENO%,plantilla.ilike.%SEGMENTACIÓN%,plantilla.ilike.%SEGMENTACION%,plantilla.ilike.%APTO%,plantilla.ilike.%NC APLICADA%");
+  }
+  if (t === "GRUPO:RECHAZOS" || t === "RECHAZOS") {
+    return query
+      .not("plantilla", "ilike", "%LIMPIEZA%")
+      .not("plantilla", "ilike", "%NO PROCEDE%")
+      .not("plantilla", "ilike", "%VISTO BUENO%")
+      .not("plantilla", "ilike", "%SEGMENTAC%")
+      .not("plantilla", "ilike", "%NC APLICADA%");
+  }
+  if (t.startsWith("EXACT:")) {
+    const exactName = t.replace("EXACT:", "").trim();
+    return query.ilike("plantilla", exactName);
+  }
+  return query.ilike("plantilla", `%${t}%`);
+}
+
 function obtenerHistorialFiltrado() {
   const txtBuscar = (document.getElementById("filtroHistorial")?.value || "").trim().toLowerCase();
   const filtroTipo = document.getElementById("historialFiltroTipo")?.value || "";
@@ -492,15 +553,9 @@ function obtenerHistorialFiltrado() {
       if (!match) return false;
     }
 
-    // Filtro tipo
-    if (filtroTipo) {
-      const p = String(r.plantilla || "").toUpperCase();
-      const c = String(r.condiciones || "").toUpperCase();
-      if (filtroTipo === "LIMPIEZA" && (!p.includes("LIMPIEZA") || p.includes("REC") || c.includes("REC"))) return false;
-      if (filtroTipo === "REC" && (!p.includes("REC") && !c.includes("REC"))) return false;
-      if (filtroTipo === "NO PROCEDE" && !p.includes("NO PROCEDE")) return false;
-      if (filtroTipo === "RECHAZOS" && (!p.includes("RECHAZO") && !p.includes("DOCUMENTO") && !p.includes("CÉDULA") && !p.includes("CEDULA") && !p.includes("CAPTURA") && !p.includes("ESQUINAS") && !p.includes("SPAM") && !p.includes("CONTACTO") && !p.includes("SIN"))) return false;
-      if (filtroTipo === "VISTO BUENO" && !p.includes("VISTO BUENO")) return false;
+    // Filtro tipo (por grupo o por plantilla específica)
+    if (filtroTipo && !coincideFiltroPlantilla(r, filtroTipo)) {
+      return false;
     }
 
     // Filtro fechas
@@ -977,30 +1032,193 @@ async function eliminarRegistroHistorial(id) {
 }
 
 // ==========================================
-// EXPORTACIÓN A CSV
+// EXPORTACIÓN A CSV CON FILTROS Y SELECCIÓN DE CANTIDAD
 // ==========================================
-async function exportarHistorialPlantillasCSV() {
-  let paraExportar = listaHistorialPlantillas;
+function abrirModalExportarHistorialCSV() {
+  const modal = document.getElementById("modalExportarHistorialCSV");
+  if (!modal) return;
 
-  if (_hayMasHistorialSupabase && typeof supabaseClient !== "undefined" && supabaseClient) {
-    const confirmar = confirm(`Tienes ${listaHistorialPlantillas.length} registros cargados en pantalla, pero hay más en la base de datos.\n\n¿Deseas descargar TODO el historial completo desde Supabase?`);
-    if (confirmar) {
-      if (typeof notificar === "function") notificar("info", "Consultando", "Descargando historial completo de Supabase...");
-      try {
-        const { data, error } = await supabaseClient.from("historial_plantillas").select("*").order("created_at", { ascending: false });
-        if (!error && Array.isArray(data) && data.length > 0) {
-          paraExportar = data;
-        }
-      } catch (err) {
-        console.warn("Error descargando todo el historial:", err);
-      }
-    }
+  // Pre-cargar valores actuales del filtro si existen
+  const fDesdeHist = document.getElementById("historialFechaDesde")?.value || "";
+  const fHastaHist = document.getElementById("historialFechaHasta")?.value || "";
+  const tipoHist = document.getElementById("historialFiltroTipo")?.value || "";
+
+  const selTipo = document.getElementById("csvHistTipo");
+  const inpDesde = document.getElementById("csvHistFechaDesde");
+  const inpHasta = document.getElementById("csvHistFechaHasta");
+
+  if (selTipo) selTipo.value = tipoHist;
+  if (inpDesde) inpDesde.value = fDesdeHist;
+  if (inpHasta) inpHasta.value = fHastaHist;
+
+  modal.style.display = "flex";
+  actualizarContadorHistorialCSV();
+}
+
+function cerrarModalExportarHistorialCSV() {
+  const modal = document.getElementById("modalExportarHistorialCSV");
+  if (modal) modal.style.display = "none";
+}
+
+function setRangoRapidoHistCSV(tipo) {
+  const fDesde = document.getElementById("csvHistFechaDesde");
+  const fHasta = document.getElementById("csvHistFechaHasta");
+  if (!fDesde || !fHasta) return;
+
+  const hoy = new Date();
+  const y = hoy.getFullYear();
+  const m = String(hoy.getMonth() + 1).padStart(2, '0');
+  const d = String(hoy.getDate()).padStart(2, '0');
+  const hoyStr = `${y}-${m}-${d}`;
+
+  if (tipo === "hoy") {
+    fDesde.value = hoyStr;
+    fHasta.value = hoyStr;
+  } else if (tipo === "mes") {
+    fDesde.value = `${y}-${m}-01`;
+    fHasta.value = hoyStr;
+  } else if (tipo === "todo") {
+    fDesde.value = "";
+    fHasta.value = "";
   }
 
-  if (!paraExportar || paraExportar.length === 0) {
-    if (typeof notificar === "function") {
-      notificar("warning", "Sin Datos", "No hay registros en el historial para exportar.");
+  const btns = document.querySelectorAll("#modalExportarHistorialCSV .btn-rango-stats");
+  btns.forEach(b => b.classList.remove("active"));
+  const btnActivo = event?.target;
+  if (btnActivo && btnActivo.classList.contains("btn-rango-stats")) {
+    btnActivo.classList.add("active");
+  }
+
+  actualizarContadorHistorialCSV();
+}
+
+let _debounceContadorHistCSV = null;
+async function actualizarContadorHistorialCSV() {
+  const infoElem = document.getElementById("csvHistInfoRegistros");
+  if (!infoElem) return;
+
+  const cantidadSel = document.getElementById("csvHistCantidad")?.value || "todas";
+  const tipoSel = document.getElementById("csvHistTipo")?.value || "";
+  const desde = document.getElementById("csvHistFechaDesde")?.value || "";
+  const hasta = document.getElementById("csvHistFechaHasta")?.value || "";
+
+  if (cantidadSel === "pantalla") {
+    const n = (typeof listaHistorialFiltrada !== "undefined" && Array.isArray(listaHistorialFiltrada))
+      ? listaHistorialFiltrada.length
+      : listaHistorialPlantillas.length;
+    infoElem.innerHTML = `📊 Se exportarán los <strong>${n.toLocaleString()}</strong> registros visibles actualmente en pantalla.`;
+    return;
+  }
+
+  if (!supabaseClient) {
+    let filtrados = [...listaHistorialPlantillas];
+    if (tipoSel) filtrados = filtrados.filter(r => coincideFiltroPlantilla(r, tipoSel));
+    infoElem.innerHTML = `📊 Registros locales listos para exportar: <strong>${filtrados.length.toLocaleString()}</strong>`;
+    return;
+  }
+
+  infoElem.innerHTML = `⏳ Consultando total de registros en Supabase...`;
+
+  clearTimeout(_debounceContadorHistCSV);
+  _debounceContadorHistCSV = setTimeout(async () => {
+    try {
+      let query = supabaseClient.from("historial_plantillas").select("*", { count: "exact", head: true });
+      if (desde) query = query.gte("created_at", `${desde}T00:00:00`);
+      if (hasta) query = query.lte("created_at", `${hasta}T23:59:59`);
+      if (tipoSel) query = aplicarFiltroPlantillaQuery(query, tipoSel);
+
+      const { count, error } = await query;
+      if (!error && count !== null) {
+        if (cantidadSel === "todas" || count <= parseInt(cantidadSel, 10)) {
+          infoElem.innerHTML = `📊 Se exportará el <strong>100%</strong> de los datos: <strong>${count.toLocaleString()}</strong> registros encontrados.`;
+        } else {
+          infoElem.innerHTML = `📊 Se exportarán los últimos <strong>${parseInt(cantidadSel, 10).toLocaleString()}</strong> de <strong>${count.toLocaleString()}</strong> registros totales encontrados.`;
+        }
+      } else {
+        infoElem.innerHTML = `📊 Listos para exportación completa.`;
+      }
+    } catch(e) {
+      infoElem.innerHTML = `📊 Registros listos para exportar.`;
     }
+  }, 300);
+}
+
+async function ejecutarDescargaHistorialCSV() {
+  const infoElem = document.getElementById("csvHistInfoRegistros");
+  const cantidadSel = document.getElementById("csvHistCantidad")?.value || "todas";
+  const tipoSel = document.getElementById("csvHistTipo")?.value || "";
+  const desde = document.getElementById("csvHistFechaDesde")?.value || "";
+  const hasta = document.getElementById("csvHistFechaHasta")?.value || "";
+
+  if (infoElem) {
+    infoElem.innerHTML = `⏳ Preparando descarga desde Supabase...`;
+  }
+
+  if (typeof notificar === "function") {
+    notificar("info", "Descarga Iniciada", "Recopilando registros de Supabase sin límite...");
+  }
+
+  let registros = [];
+
+  try {
+    if (cantidadSel === "pantalla") {
+      registros = (typeof listaHistorialFiltrada !== "undefined" && Array.isArray(listaHistorialFiltrada))
+        ? [...listaHistorialFiltrada]
+        : [...listaHistorialPlantillas];
+    } else if (supabaseClient) {
+      const limiteTotal = cantidadSel === "todas" ? Infinity : parseInt(cantidadSel, 10);
+      let lote = 1000;
+      let desdeIdx = 0;
+      let hayMas = true;
+
+      while (hayMas && registros.length < limiteTotal) {
+        const cantidadPedir = Math.min(lote, limiteTotal - registros.length);
+        const hastaIdx = desdeIdx + cantidadPedir - 1;
+
+        let query = supabaseClient
+          .from("historial_plantillas")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (desde) query = query.gte("created_at", `${desde}T00:00:00`);
+        if (hasta) query = query.lte("created_at", `${hasta}T23:59:59`);
+        if (tipoSel) query = aplicarFiltroPlantillaQuery(query, tipoSel);
+
+        query = query.range(desdeIdx, hastaIdx);
+
+        const { data, error } = await query;
+        if (error || !data || data.length === 0) {
+          hayMas = false;
+        } else {
+          registros = registros.concat(data);
+          if (data.length < cantidadPedir) {
+            hayMas = false;
+          } else {
+            desdeIdx += data.length;
+          }
+        }
+      }
+    } else {
+      let filtrados = [...listaHistorialPlantillas];
+      if (tipoSel) filtrados = filtrados.filter(r => coincideFiltroPlantilla(r, tipoSel));
+      if (cantidadSel !== "todas") {
+        filtrados = filtrados.slice(0, parseInt(cantidadSel, 10));
+      }
+      registros = filtrados;
+    }
+  } catch (err) {
+    console.error("Error al exportar historial completo:", err);
+    if (typeof notificar === "function") {
+      notificar("error", "Error de Exportación", "No se pudo completar la consulta de registros.");
+    }
+    return;
+  }
+
+  if (!registros || registros.length === 0) {
+    if (typeof notificar === "function") {
+      notificar("warning", "Sin Datos", "No se encontraron registros en el historial con los filtros seleccionados.");
+    }
+    cerrarModalExportarHistorialCSV();
     return;
   }
 
@@ -1018,7 +1236,7 @@ async function exportarHistorialPlantillasCSV() {
     "Fecha Creación"
   ];
 
-  const filas = paraExportar.map(r => [
+  const filas = registros.map(r => [
     `"${(r.id || "").replace(/"/g, '""')}"`,
     `"${(r.marca_temporal || "").replace(/"/g, '""')}"`,
     `"${(r.gestion || "").replace(/"/g, '""')}"`,
@@ -1028,7 +1246,7 @@ async function exportarHistorialPlantillasCSV() {
     `"${(r.agente || "").replace(/"/g, '""')}"`,
     `"${(r.plantilla || "").replace(/"/g, '""')}"`,
     `"${(r.monto || "").replace(/"/g, '""')}"`,
-    `"${(formatearDetalleHistorial(r.condiciones) || "").replace(/"/g, '""')}"`,
+    `"${(typeof formatearDetalleHistorial === 'function' ? formatearDetalleHistorial(r.condiciones) : (r.condiciones || '')).replace(/"/g, '""')}"`,
     `"${(r.created_at || "").replace(/"/g, '""')}"`
   ]);
 
@@ -1037,16 +1255,23 @@ async function exportarHistorialPlantillasCSV() {
   const url = URL.createObjectURL(blob);
   const enlace = document.createElement("a");
   const fechaHoy = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const sufijoTipo = tipoSel ? `_${tipoSel.replace(/\s+/g, "_")}` : "";
   enlace.setAttribute("href", url);
-  enlace.setAttribute("download", `Historial_Plantillas_${fechaHoy}.csv`);
+  enlace.setAttribute("download", `Historial_Plantillas${sufijoTipo}_${fechaHoy}.csv`);
   document.body.appendChild(enlace);
   enlace.click();
   document.body.removeChild(enlace);
   URL.revokeObjectURL(url);
 
+  cerrarModalExportarHistorialCSV();
+
   if (typeof notificar === "function") {
-    notificar("success", "CSV Descargado", `Se exportaron <strong>${paraExportar.length}</strong> registros del historial.`);
+    notificar("success", "Exportación Exitosa", `Se descargaron con éxito <strong>${registros.length.toLocaleString()}</strong> registros del historial.`);
   }
+}
+
+function exportarHistorialPlantillasCSV() {
+  abrirModalExportarHistorialCSV();
 }
 
 async function vaciarHistorialPlantillas() {

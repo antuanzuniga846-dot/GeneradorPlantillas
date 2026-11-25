@@ -269,8 +269,20 @@
           </div>
         </div>
 
-        <label for="plantilla">Seleccionar Plantilla:</label>
-        <select id="plantilla"></select>
+        <!-- Selector de plantilla oculto en UI (la selección se realiza desde el índice lateral de la izquierda) -->
+        <div style="display: none;">
+          <label for="plantilla">Seleccionar Plantilla:</label>
+          <select id="plantilla"></select>
+        </div>
+
+        <div id="indicadorPlantillaSeleccionada" style="display: flex; align-items: center; justify-content: space-between; margin: 4px 0 14px 0; padding: 8px 12px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.28); border-radius: 8px; font-size: 0.88rem;">
+          <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+            <span style="font-size: 1.1rem; flex-shrink: 0;">📝</span>
+            <span style="color: var(--text-secondary); flex-shrink: 0;">Plantilla:</span>
+            <strong id="lblPlantillaActiva" style="color: #60a5fa; font-size: 0.9rem; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">CON ACTUALIZACIÓN DE SEGMENTACIÓN</strong>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--text-muted); background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 4px; flex-shrink: 0;">👈 Selecciona en el panel izquierdo</span>
+        </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; margin-bottom: 2px;">
           <label for="gestion" style="margin: 0; cursor: pointer;">Numero de gestion:</label>
@@ -656,16 +668,45 @@
               <span style="color: var(--accent-oncolor); opacity: 0.85; font-size: 0.84rem; font-weight: bold;">a</span>
               <input type="date" id="historialFechaHasta" class="sheet-header-input sheet-date-input" onchange="filtrarHistorialPlantillas()" title="Fecha Hasta">
             </div>
-            <select id="historialFiltroTipo" class="sheet-header-input" style="width: auto; max-width: 170px;" onchange="filtrarHistorialPlantillas()">
+            <select id="historialFiltroTipo" class="sheet-header-input" style="width: auto; max-width: 220px;" onchange="filtrarHistorialPlantillas()">
               <option value="">Todas las Plantillas</option>
-              <option value="LIMPIEZA">Limpiezas</option>
-              <option value="REC">Limpiezas REC</option>
-              <option value="NO PROCEDE">No Procede</option>
-              <option value="RECHAZOS">Rechazos</option>
-              <option value="VISTO BUENO">Visto Bueno</option>
+              <optgroup label="📂 Agrupaciones">
+                <option value="GRUPO:LIMPIEZAS">Limpiezas de Saldos (Inc. REC)</option>
+                <option value="GRUPO:REC">Limpiezas REC</option>
+                <option value="GRUPO:NO_PROCEDE">No Procede / No Aplica</option>
+                <option value="GRUPO:PROCEDE">Visto Bueno / Procede</option>
+                <option value="GRUPO:RECHAZOS">Todos los Rechazos</option>
+              </optgroup>
+              <optgroup label="📄 Por Plantilla Específica">
+                <option value="EXACT:CON ACTUALIZACIÓN DE SEGMENTACIÓN">CON ACTUALIZACIÓN DE SEGMENTACIÓN</option>
+                <option value="EXACT:NO SE PUEDE ACTUALIZAR SEGMENTACIÓN">NO SE PUEDE ACTUALIZAR SEGMENTACIÓN</option>
+                <option value="EXACT:VISTO BUENO">VISTO BUENO</option>
+                <option value="EXACT:VISTO BUENO CARTA DE DESCARGO">VISTO BUENO CARTA DE DESCARGO</option>
+                <option value="EXACT:NO PROCEDE">NO PROCEDE</option>
+                <option value="EXACT:NC APLICADA">NC APLICADA</option>
+                <option value="EXACT:LIMPIEZA DE SALDOS">LIMPIEZA DE SALDOS</option>
+                <option value="EXACT:DOCUMENTO ALTERADO">DOCUMENTO ALTERADO</option>
+                <option value="EXACT:RECHAZO POR CÉDULA NO LEGIBLE">RECHAZO POR CÉDULA NO LEGIBLE</option>
+                <option value="EXACT:RECHAZO POR CONTRATO ACTIVO">RECHAZO POR CONTRATO ACTIVO</option>
+                <option value="EXACT:CÉDULA AMBAS CARAS">CÉDULA AMBAS CARAS</option>
+                <option value="EXACT:CAPTURA DE PANTALLA">CAPTURA DE PANTALLA</option>
+                <option value="EXACT:CUATRO ESQUINAS">CUATRO ESQUINAS</option>
+                <option value="EXACT:CONTROL DE ALTAS">CONTROL DE ALTAS</option>
+                <option value="EXACT:NO COINCIDE">NO COINCIDE</option>
+                <option value="EXACT:NO LEGIBLE">NO LEGIBLE</option>
+                <option value="EXACT:SIN CÉDULA">SIN CÉDULA</option>
+                <option value="EXACT:SIN INFORMACIÓN">SIN INFORMACIÓN</option>
+                <option value="EXACT:CONTACTO">CONTACTO</option>
+                <option value="EXACT:SIN REGISTROS">SIN REGISTROS</option>
+                <option value="EXACT:DOCUMENTO VENCIDO">DOCUMENTO VENCIDO</option>
+                <option value="EXACT:DOCUMENTO DETERIORADO">DOCUMENTO DETERIORADO</option>
+                <option value="EXACT:DOCUMENTO CON MANCHAS">DOCUMENTO CON MANCHAS</option>
+                <option value="EXACT:SPAM">SPAM</option>
+                <option value="EXACT:FECHA SIN FORMATO">FECHA SIN FORMATO</option>
+              </optgroup>
             </select>
             <input type="text" id="filtroHistorial" class="sheet-header-input" style="width: 220px;" placeholder="&#128269; Buscar gesti&oacute;n, c&eacute;dula, DTS en BD..." oninput="filtrarHistorialPlantillas()">
-            <button class="btn-header-action btn-header-success" onclick="exportarHistorialPlantillasCSV()">&#128229; Exportar CSV</button>
+            <button class="btn-header-action btn-header-success" onclick="abrirModalExportarHistorialCSV()">&#128229; Exportar CSV</button>
             <button class="btn-header-action" onclick="cargarHistorialSupabase()" title="Recargar historial">&#128260; Sincronizar</button>
             <button class="btn-header-action" id="btnHistorialBorrarTodo" style="display: none; background: rgba(229, 57, 53, 0.22); border-color: rgba(229, 57, 53, 0.45); color: #ff8a80;" onclick="vaciarHistorialPlantillas()" title="Borrar todo el historial">&#128465;&#65039; Borrar Todo</button>
           </div>
@@ -773,9 +814,8 @@
       <h2 style="margin: 0 0 6px 0; font-size: 1.4rem;">Sistema de Control BURO</h2>
       <p style="font-size: 0.85rem; color: #bbb; margin-bottom: 16px;">Ingresa tus credenciales para acceder al generador y a la hoja de control.</p>
 
-      <div class="login-tabs">
-        <button id="tabLoginIngreso" class="login-tab-btn active" onclick="cambiarTabLogin('ingreso')">Iniciar Sesión</button>
-        <button id="tabLoginRegistro" class="login-tab-btn" onclick="cambiarTabLogin('registro')">Registrarse</button>
+      <div class="login-tabs" style="grid-template-columns: 1fr; margin-bottom: 16px;">
+        <button id="tabLoginIngreso" class="login-tab-btn active" style="cursor: default;" onclick="cambiarTabLogin('ingreso')">Iniciar Sesión</button>
       </div>
 
       <!-- MENSAJE DE ERROR / ESTADO INLINE -->
@@ -803,34 +843,6 @@
         </div>
 
         <button class="btn-action" style="margin-top: 10px; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarLogin()">🚀 Entrar al Sistema</button>
-
-        <div style="margin-top: 14px; font-size: 0.76rem; color: #aaa; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; text-align: left; line-height: 1.4;">
-          💡 <strong>Contraseña de agentes:</strong> Tu apellido + <code>123</code> (ej: <code>badilla123</code>, <code>barquero123</code>, <code>zuñiga123</code>).<br>
-          🔑 <strong>Editores / Soporte:</strong> <code>mora123</code>, <code>antuan123</code>, <code>maria123</code>, <code>fabricio123</code>, <code>enoc123</code>, <code>admin123</code>.
-        </div>
-      </div>
-
-      <!-- FORMULARIO DE REGISTRO -->
-      <div id="formRegistro" style="display: none;">
-        <div class="campo-wrapper" style="text-align: left;">
-          <label style="font-size: 0.82rem; margin: 4px 0;">Nombre Completo:</label>
-          <input type="text" id="txtRegNombre" placeholder="ej: Sharon Barquero">
-        </div>
-
-        <div class="campo-wrapper" style="text-align: left;">
-          <label style="font-size: 0.82rem; margin: 4px 0;">Usuario (sin espacios):</label>
-          <input type="text" id="txtRegUser" placeholder="ej: sharon.barquero" oninput="this.value = this.value.toLowerCase().replace(/\s+/g, '');">
-        </div>
-
-        <div class="campo-wrapper" style="text-align: left;">
-          <label style="font-size: 0.82rem; margin: 4px 0;">Contraseña:</label>
-          <div class="password-wrapper">
-            <input type="password" id="txtRegPass" placeholder="Crea una contraseña segura">
-            <span class="password-toggle-icon" onclick="togglePasswordVisibilidad('txtRegPass', this)">👁️</span>
-          </div>
-        </div>
-
-        <button class="btn-action" style="margin-top: 14px; background: #2e7d32; width: 100%; font-size: 1rem; padding: 11px;" onclick="ejecutarRegistro()">✨ Crear Cuenta</button>
       </div>
     </div>
   </div>
@@ -928,6 +940,109 @@
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
         <button class="btn-secondary" onclick="cerrarModalExportarCSV()">Cancelar</button>
         <button class="btn-primary" style="background: #2e7d32; border-color: #2e7d32;" onclick="ejecutarDescargaCSV()">📥 Descargar CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Exportar Historial de Plantillas con Filtros y Selección de Cantidad -->
+  <div id="modalExportarHistorialCSV" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 14px;">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.25rem;">
+          <span>📥</span> Exportar Historial de Plantillas
+        </h3>
+        <button class="btn-secondary" onclick="cerrarModalExportarHistorialCSV()" style="padding: 4px 10px; font-size: 0.85rem; border-radius: 6px; cursor: pointer;">✕</button>
+      </div>
+
+      <p style="font-size: 0.84rem; color: #ccc; margin-bottom: 14px; line-height: 1.4;">
+        Personaliza los filtros, el tipo de trámite y la cantidad de registros que deseas descargar a Excel / CSV:
+      </p>
+
+      <div style="background: var(--card-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 12px;">
+        <!-- Filtro por Tipo de Plantilla -->
+        <div>
+          <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">🏷️ Tipo de Trámite / Plantilla:</label>
+          <select id="csvHistTipo" class="sheet-header-input" style="width: 100%; box-sizing: border-box;" onchange="actualizarContadorHistorialCSV()">
+            <option value="">Todas las Plantillas (Completo)</option>
+            <optgroup label="📂 Agrupaciones">
+              <option value="GRUPO:LIMPIEZAS">Solo Limpiezas de Saldos (Incluye REC)</option>
+              <option value="GRUPO:REC">Solo Limpiezas REC</option>
+              <option value="GRUPO:NO_PROCEDE">Solo No Procede / No Aplica</option>
+              <option value="GRUPO:PROCEDE">Solo Visto Bueno / Procede (Aprobadas)</option>
+              <option value="GRUPO:RECHAZOS">Todos los Rechazos</option>
+            </optgroup>
+            <optgroup label="📄 Por Plantilla Específica">
+              <option value="EXACT:CON ACTUALIZACIÓN DE SEGMENTACIÓN">CON ACTUALIZACIÓN DE SEGMENTACIÓN</option>
+              <option value="EXACT:NO SE PUEDE ACTUALIZAR SEGMENTACIÓN">NO SE PUEDE ACTUALIZAR SEGMENTACIÓN</option>
+              <option value="EXACT:VISTO BUENO">VISTO BUENO</option>
+              <option value="EXACT:VISTO BUENO CARTA DE DESCARGO">VISTO BUENO CARTA DE DESCARGO</option>
+              <option value="EXACT:NO PROCEDE">NO PROCEDE</option>
+              <option value="EXACT:NC APLICADA">NC APLICADA</option>
+              <option value="EXACT:LIMPIEZA DE SALDOS">LIMPIEZA DE SALDOS</option>
+              <option value="EXACT:DOCUMENTO ALTERADO">DOCUMENTO ALTERADO</option>
+              <option value="EXACT:RECHAZO POR CÉDULA NO LEGIBLE">RECHAZO POR CÉDULA NO LEGIBLE</option>
+              <option value="EXACT:RECHAZO POR CONTRATO ACTIVO">RECHAZO POR CONTRATO ACTIVO</option>
+              <option value="EXACT:CÉDULA AMBAS CARAS">CÉDULA AMBAS CARAS</option>
+              <option value="EXACT:CAPTURA DE PANTALLA">CAPTURA DE PANTALLA</option>
+              <option value="EXACT:CUATRO ESQUINAS">CUATRO ESQUINAS</option>
+              <option value="EXACT:CONTROL DE ALTAS">CONTROL DE ALTAS</option>
+              <option value="EXACT:NO COINCIDE">NO COINCIDE</option>
+              <option value="EXACT:NO LEGIBLE">NO LEGIBLE</option>
+              <option value="EXACT:SIN CÉDULA">SIN CÉDULA</option>
+              <option value="EXACT:SIN INFORMACIÓN">SIN INFORMACIÓN</option>
+              <option value="EXACT:CONTACTO">CONTACTO</option>
+              <option value="EXACT:SIN REGISTROS">SIN REGISTROS</option>
+              <option value="EXACT:DOCUMENTO VENCIDO">DOCUMENTO VENCIDO</option>
+              <option value="EXACT:DOCUMENTO DETERIORADO">DOCUMENTO DETERIORADO</option>
+              <option value="EXACT:DOCUMENTO CON MANCHAS">DOCUMENTO CON MANCHAS</option>
+              <option value="EXACT:SPAM">SPAM</option>
+              <option value="EXACT:FECHA SIN FORMATO">FECHA SIN FORMATO</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Botones de Rango Rápido -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoHistCSV('hoy')">📅 Hoy</button>
+          <button type="button" class="btn-rango-stats" onclick="setRangoRapidoHistCSV('mes')">📅 Este Mes</button>
+          <button type="button" class="btn-rango-stats active" id="btnHistCSVTodos" onclick="setRangoRapidoHistCSV('todo')">📁 Todo el Tiempo</button>
+        </div>
+
+        <!-- Fechas Desde / Hasta -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">📅 Fecha Desde:</label>
+            <input type="date" id="csvHistFechaDesde" class="sheet-header-input" style="width: 100%; box-sizing: border-box;" oninput="actualizarContadorHistorialCSV()">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">📅 Fecha Hasta:</label>
+            <input type="date" id="csvHistFechaHasta" class="sheet-header-input" style="width: 100%; box-sizing: border-box;" oninput="actualizarContadorHistorialCSV()">
+          </div>
+        </div>
+
+        <!-- Selección de Cantidad -->
+        <div>
+          <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">📊 Cantidad de Registros a Descargar:</label>
+          <select id="csvHistCantidad" class="sheet-header-input" style="width: 100%; box-sizing: border-box;" onchange="actualizarContadorHistorialCSV()">
+            <option value="todas">🌟 Todo el historial completo (Sin límite de 1000)</option>
+            <option value="pantalla">💻 Solo los registros visibles en pantalla</option>
+            <option value="500">Últimos 500 registros</option>
+            <option value="1000">Últimos 1,000 registros</option>
+            <option value="2000">Últimos 2,000 registros</option>
+            <option value="5000">Últimos 5,000 registros</option>
+            <option value="10000">Últimos 10,000 registros</option>
+          </select>
+        </div>
+
+        <!-- Contador dinámico / Info -->
+        <div id="csvHistInfoRegistros" style="font-size: 0.82rem; color: #90caf9; background: rgba(13, 71, 161, 0.25); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(33, 150, 243, 0.3); text-align: center;">
+          Calculando registros...
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+        <button class="btn-secondary" onclick="cerrarModalExportarHistorialCSV()">Cancelar</button>
+        <button class="btn-primary" style="background: #2e7d32; border-color: #2e7d32;" onclick="ejecutarDescargaHistorialCSV()">📥 Descargar CSV</button>
       </div>
     </div>
   </div>

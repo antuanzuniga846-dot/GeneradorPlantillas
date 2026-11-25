@@ -169,6 +169,11 @@ function cambiarPlantilla(seleccionDirecta) {
     select.value = seleccion;
   }
 
+  const lblActiva = document.getElementById("lblPlantillaActiva");
+  if (lblActiva) {
+    lblActiva.textContent = seleccion || "NINGUNA";
+  }
+
   const checkboxesLimpiezaSaldos = document.getElementById("checkboxesLimpiezaSaldos");
   const checkboxesNoProcede = document.getElementById("checkboxesNoProcede");
   const formulario = document.getElementById("formulario");

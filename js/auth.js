@@ -66,21 +66,9 @@ function esEditor() {
 
 function cambiarTabLogin(tab) {
   const btnIngreso = document.getElementById("tabLoginIngreso");
-  const btnRegistro = document.getElementById("tabLoginRegistro");
   const formIngreso = document.getElementById("formIngreso");
-  const formRegistro = document.getElementById("formRegistro");
-
-  if (tab === "ingreso") {
-    btnIngreso.classList.add("active");
-    btnRegistro.classList.remove("active");
-    formIngreso.style.display = "block";
-    formRegistro.style.display = "none";
-  } else {
-    btnIngreso.classList.remove("active");
-    btnRegistro.classList.add("active");
-    formIngreso.style.display = "none";
-    formRegistro.style.display = "block";
-  }
+  if (btnIngreso) btnIngreso.classList.add("active");
+  if (formIngreso) formIngreso.style.display = "block";
 }
 
 function togglePasswordVisibilidad(inputId, iconElem) {
@@ -195,56 +183,7 @@ async function ejecutarLogin() {
 }
 
 async function ejecutarRegistro() {
-  const nombre = document.getElementById("txtRegNombre").value.trim();
-  const user = document.getElementById("txtRegUser").value.trim().toLowerCase();
-  const pass = document.getElementById("txtRegPass").value.trim();
-
-  if (!nombre || !user || !pass) {
-    notificar("warning", "Campos Requeridos", "Completa todos los campos para crear tu cuenta.");
-    return;
-  }
-
-  const existeLocal = listaUsuarios.some(u => u.usuario === user);
-  if (existeLocal) {
-    notificar("error", "Usuario Existente", "El nombre de usuario ya está en uso. Elige otro.");
-    return;
-  }
-
-  const nuevoUsuario = {
-    usuario: user,
-    nombre: nombre,
-    password: pass,
-    rol: "solicitante",
-    activo: true
-  };
-
-  if (supabaseClient) {
-    try {
-      const { error } = await supabaseClient.from("usuarios_permisos").insert({
-        usuario: user,
-        nombre: nombre,
-        password: pass,
-        rol: "solicitante",
-        activo: true
-      });
-      if (error) {
-        notificar("error", "Error Supabase", error.message);
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  listaUsuarios.push(nuevoUsuario);
-  guardarAuthLocalSeguro(STORAGE_KEY_USERS, listaUsuarios);
-
-  usuarioLogueado = nuevoUsuario;
-  guardarAuthLocalSeguro(STORAGE_KEY_AUTH, usuarioLogueado);
-
-  document.getElementById("modalLogin").style.display = "none";
-  actualizarUIUsuario();
-  notificar("success", "Cuenta Creada", `¡Bienvenido(a), <strong>${nombre}</strong>! Tu cuenta ha sido registrada.`);
+  notificar("warning", "Registro Deshabilitado", "El autorregistro está deshabilitado. Solicita a un administrador o editor la creación de tu usuario de forma oficial.");
 }
 
 function cerrarSesionUsuario() {
