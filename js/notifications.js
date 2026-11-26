@@ -3,6 +3,8 @@
 // ==========================================
 
 let ultimasCedulasNotificadas = new Set();
+let _timerAudioControlAltas = null;
+let _tokenAudioControlAltas = 0;
 
 // Reproducción del efecto de sonido para alertas de "No procede" (Pac-Man Death Sound)
 function reproducirSonidoNoProcede() {
@@ -24,16 +26,68 @@ function reproducirSonidoNoProcede() {
   }
 }
 
+// Reproducción del efecto de sonido para alertas de "Control de altas" (duración máxima de 3 segundos)
+function reproducirSonidoControlAltas() {
+  try {
+    let audioElem = document.getElementById("audioControlAltas");
+    if (!audioElem) {
+      audioElem = new Audio("audio/control_altas.mp3");
+    }
+    const tokenActual = ++_tokenAudioControlAltas;
+    if (_timerAudioControlAltas) {
+      clearTimeout(_timerAudioControlAltas);
+      _timerAudioControlAltas = null;
+    }
+    const detenerAudio = () => {
+      if (tokenActual !== _tokenAudioControlAltas) return;
+      try {
+        audioElem.pause();
+        audioElem.currentTime = 0;
+      } catch (_) {}
+      if (_timerAudioControlAltas) {
+        clearTimeout(_timerAudioControlAltas);
+        _timerAudioControlAltas = null;
+      }
+    };
+    audioElem.ontimeupdate = () => {
+      if (audioElem.currentTime >= 3) {
+        detenerAudio();
+      }
+    };
+    audioElem.pause();
+    audioElem.currentTime = 0;
+    audioElem.volume = 0.9;
+    const playPromise = audioElem.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          if (tokenActual !== _tokenAudioControlAltas) return;
+          if (_timerAudioControlAltas) clearTimeout(_timerAudioControlAltas);
+          _timerAudioControlAltas = setTimeout(detenerAudio, 3000);
+        })
+        .catch(err => {
+          console.warn("Autoplay bloqueado o restringido por el navegador:", err);
+        });
+    } else {
+      _timerAudioControlAltas = setTimeout(detenerAudio, 3000);
+    }
+  } catch (e) {
+    console.warn("Error al reproducir audio Control de Altas:", e);
+  }
+}
+
 // Pedir permiso para notificaciones de escritorio y preparar audio en la primera interacción
 function inicializarPermisoNotificaciones() {
   const desbloquear = () => {
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
-    const audio = document.getElementById("audioNoProcede");
-    if (audio) {
-      try { audio.load(); } catch (_) {}
-    }
+    ["audioNoProcede", "audioControlAltas"].forEach(id => {
+      const audio = document.getElementById(id);
+      if (audio) {
+        try { audio.load(); } catch (_) {}
+      }
+    });
     document.removeEventListener("click", desbloquear);
     document.removeEventListener("keydown", desbloquear);
   };

@@ -539,9 +539,19 @@ function manejarEventoRealtime(payload) {
         ) {
           const catLower = (nuevaCat || "").trim().toLowerCase();
           const motLower = (nuevaFila.motivo || "").trim().toLowerCase();
+          const esControlAltas = catLower.includes("control de altas");
           const esNoProcede = catLower.includes("no procede") || catLower.includes("rechazo") || motLower.includes("no procede");
 
-          if (esNoProcede) {
+          if (esControlAltas) {
+            if ((anterior.categoria || "").trim().toLowerCase() !== catLower) {
+              reproducirSonidoControlAltas();
+            }
+            let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> fue marcada como Control de altas.`;
+            if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
+            if (nuevaCat) msg += `<br>🏷️ Categoría: <strong>${nuevaCat}</strong>`;
+            if (nuevaFila.motivo) msg += `<br>📝 Motivo: <strong>${nuevaFila.motivo}</strong>`;
+            notificar("warning", "⚠️ Control de altas", msg, true);
+          } else if (esNoProcede) {
             reproducirSonidoNoProcede();
             let msg = `Tu limpieza para la cédula <strong>${nuevaFila.cedula}</strong> no procede.`;
             if (nuevoSoporte) msg += `<br>👤 Atendido por: <strong>${nuevoSoporte}</strong>`;
@@ -1753,6 +1763,16 @@ async function actualizarColumna(id, campo, valor, selectElem) {
   // Guardar en memoria y localStorage inmediatamente
   guardarLimpiezasLocalmente();
 
+  // Reproducir sonido según la categoría seleccionada en la hoja de control
+  if (campo === "categoria") {
+    const valCatLower = String(valor || "").trim().toLowerCase();
+    if (valCatLower.includes("no procede")) {
+      reproducirSonidoNoProcede();
+    } else if (valCatLower.includes("control de altas")) {
+      reproducirSonidoControlAltas();
+    }
+  }
+
   // Actualización visual directa e instantánea sin destruir el DOM (0ms de retraso)
   if (selectElem) {
     if (campo === "soporte") {
@@ -1779,9 +1799,6 @@ async function actualizarColumna(id, campo, valor, selectElem) {
       selectElem.setAttribute("data-valor", valor || "");
       const lbl = selectElem.querySelector(".sheet-pill-label");
       if (lbl) lbl.textContent = valor || "";
-      if (String(valor || "").trim().toLowerCase().includes("no procede")) {
-        reproducirSonidoNoProcede();
-      }
     }
     else if (campo === "motivo") {
       selectElem.className = `sheet-pill-btn ${obtenerClaseMotivo(valor)}`;
